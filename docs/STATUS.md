@@ -103,6 +103,18 @@
 - 四柱交叉校验：`tests/test_bazi_crosscheck.py` 用 lunar_python 独立实现比对 10 组日期（含立春前后、23:00 日界），全部一致；本项目采用「晚子时归次日」，对应 `getDayInGanZhiExact()`
 - 不依赖 AI 的规则解读方案与所需资料清单：`docs/INTERPRETATION-RULES.md`
 
+### 运维与 Telegram Mini App
+
+- `scripts/telegram-miniapp.sh`：一条命令把本机站点挂成 Cloudflare quick tunnel 的 HTTPS 地址，并设为机器人底部菜单按钮（`setChatMenuButton`，`type: web_app`）
+  - 前置自检：`127.0.0.1:5173` 与 `127.0.0.1:8000/api/v1/meta` 必须 200，否则直接报错并打印启动命令（脚本不负责拉服务）
+  - 起 `cloudflared tunnel --url http://127.0.0.1:5173 --no-autoupdate`，从日志正则取 `https://*.trycloudflare.com`，最多等 30 秒；拿不到就打印日志尾部 20 行
+  - 经隧道回访 `/` 与 `/api/v1/meta`，先等 4 秒再重试到 200：quick tunnel 域名刚生成时会被系统缓存一次 NXDOMAIN，实测要等 4–10 秒才通，所以脚本必须等而不是一探到底
+  - token 从 `backend/.local/telegram.json`（0600，字段 `bot_token` / `proxy`）或 `SM_TELEGRAM_BOT_TOKEN` 读，只在 python 进程内使用；失败只报 Telegram 的 `description` 或异常类型名，绝不打印含 token 的 URL
+  - 参数：`--dry-run`（只起隧道 + 打印将发送的 payload）、`--no-menu`、`SM_MINIAPP_TEXT`（默认「玄机算命」）、`SM_TUNNEL_PORT`（默认 5173）、`SM_MINIAPP_API_PORT`（默认 8000）、`SM_TUNNEL_HOLD_SECONDS`（到点自动退出，便于自动化）
+  - 前台常驻，`trap EXIT/INT/TERM` 结束 cloudflared 并删临时日志；实测 `--dry-run` 回访 `/` 与 `/api/v1/meta` 均 200，到时/Ctrl-C 退出后 `pgrep -fl cloudflared` 无残留
+- Mini App 适配点：`frontend/vite.config.ts` 已有 `server.allowedHosts: ['.trycloudflare.com']`（否则 Vite 的 host 校验会用 403 拦掉隧道域名）；`frontend/src/lib/telegram.ts` 接入 Telegram WebApp SDK，在 Telegram 内 `ready()` / `expand()`、标题栏与背景跟随站内明暗主题、`safe-area-inset-bottom` 避开全面屏手势区，普通浏览器打开时全部跳过
+- 本轮未做 Telegram 登录与 `initData` 校验：Mini App 内仍是本站账号密码登录，临时地址用普通浏览器也能直接访问
+
 ### 设计
 
 - `design/DESIGN.md` 设计规范（东方玄学 × 现代极简）
@@ -117,6 +129,7 @@
 - AI 解读知识库（把 `text` + 牌义/星曜/卦辞/签文做成检索增强）
 - 多设备同步 / 云备份（当前是单机 SQLite，备份 `backend/.local/app.db` 即可迁移）
 - 部署（Docker Compose：uvicorn + 静态站点）
+- 固定域名暴露：Cloudflare named tunnel（自有域名）或 VPS + HTTPS 反代，替换掉 quick tunnel；同时补 Telegram `initData` 校验
 - SEO 与分享卡片
 - 奇门终身局的流派差异说明与更多用神（当前固定年命/日干/时干三宫）
 
@@ -138,4 +151,5 @@
 - AI 输出目前仍用 `v-html` 渲染 Markdown，尚未引入 HTML 消毒库，属于已知风险（上游是用户自配的模型，内容不可全信）
 - 设置页的模型配置接口现由管理员独占，但仍允许填写任意 http(s) 地址（便于接本机 Ollama/自建网关）；公网部署前建议额外加出站白名单
 - 运行时密钥以明文保存在后端 `.local/llm.json`（权限 0600，已 gitignore），生产环境建议改用密钥管理服务
+- Telegram Mini App 走 Cloudflare quick tunnel：地址每次重启都变（菜单按钮会失效，需要重跑 `scripts/telegram-miniapp.sh`），隧道只转发本机 5173，本机关机或前后端停止时 Mini App 立即打不开，也没有 Telegram 登录校验
 - 「解读方向」只是提示词约束，不是规则引擎；规则化解读所需资料见 `docs/INTERPRETATION-RULES.md`

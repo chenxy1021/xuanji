@@ -104,12 +104,51 @@ node scripts/smoke.mjs
 冒烟脚本零依赖（Node 原生 WebSocket 直驱 headless Chrome），失败时会把现场文本落到 `/tmp/smoke-fail-*.txt`，
 截图在 `/tmp/smoke-*.png`。
 
+## Telegram Mini App（临时公网地址）
+
+本机站点可以直接当 Telegram Mini App（Web App）打开。思路是：先挂一个手机能访问的 HTTPS 地址，再把它设成机器人聊天界面左下角的菜单按钮。
+
+```bash
+# 前置：5173 前端与 8000 后端已在运行（脚本不负责启动服务）
+bash scripts/telegram-miniapp.sh
+```
+
+脚本做的事：
+
+1. 检查 `127.0.0.1:5173` 与 `127.0.0.1:8000/api/v1/meta` 是否 200，不通就报错退出并给出启动命令；
+2. 后台起 `cloudflared tunnel --url http://127.0.0.1:5173 --no-autoupdate`，日志落临时文件，正则解析 `https://*.trycloudflare.com`（最多等 30 秒，失败打印日志尾部）；
+3. 经隧道回访 `/` 与 `/api/v1/meta`，确认都是 200（quick tunnel 域名刚生成时解析会失败一阵，脚本会先等几秒再重试）；
+4. 调用 Telegram `setChatMenuButton`，把地址设成菜单按钮（`type: web_app`）。token 从 `backend/.local/telegram.json`（0600）或 `SM_TELEGRAM_BOT_TOKEN` 读，只在 python 进程内存里用，不进命令行、不进日志；
+5. 前台常驻隧道，`Ctrl-C` 会结束 cloudflared 并清理临时日志。
+
+常用变体：
+
+```bash
+bash scripts/telegram-miniapp.sh --dry-run    # 只起隧道 + 打印将发送的 JSON，不调 Telegram
+bash scripts/telegram-miniapp.sh --no-menu    # 只起隧道，不动菜单按钮
+SM_MINIAPP_TEXT='玄机算命' bash scripts/telegram-miniapp.sh
+SM_TUNNEL_PORT=5183 bash scripts/telegram-miniapp.sh          # 隧道指向别的端口
+SM_TUNNEL_HOLD_SECONDS=20 bash scripts/telegram-miniapp.sh --dry-run   # 20 秒后自动退出（自动化用）
+```
+
+打开方式：Telegram 里进 `t.me/cxy_muse_bot`，点底部菜单按钮。
+
+几个必须知道的点：
+
+- **quick tunnel 地址每次重启都会变**。变了必须重跑脚本，否则菜单按钮还指着旧地址，点开是打不开的。
+- 隧道只在本机运行：本机关机、`5173`/`8000` 停了，Mini App 立刻打不开。
+- 想要固定地址：自有域名 + Cloudflare **named tunnel**（`cloudflared tunnel create` / `tunnel route dns`），或者部署到 VPS 后用自建 HTTPS 反代，把 URL 写死一次。
+- **BotFather `/newapp` 和 Bot API 菜单按钮不是一回事**：`/newapp` 是给 bot 登记一个独立的 Web App 入口（有自己的短名字）；`setChatMenuButton` 改的是聊天输入框左下角的菜单按钮。两者可以并存，但在 quick tunnel 场景下建议只配菜单按钮，免得两处地址不一致。
+- 本轮**没有**做 Telegram 登录 / `initData` 校验：Mini App 里就是本站的账号密码登录，这个地址用普通浏览器也能直接打开（只是临时地址不公开、会很快失效）。
+
+前端适配点：`frontend/vite.config.ts` 已配 `server.allowedHosts: ['.trycloudflare.com']`（否则 dev server 会以 403 拦掉隧道域名）；`Telegram WebApp SDK` 已接入（`frontend/src/lib/telegram.ts`），在 Telegram 内调用 `ready()` / `expand()`，标题栏与背景跟随站内明暗主题，底部 TabBar 用 `safe-area-inset-bottom` 避开全面屏手势区；普通浏览器打开时这些逻辑自动跳过。
+
 ## 目录
 
 ```
 backend/    FastAPI 服务与各体系排盘引擎（账号与记录在 .local/app.db）
 frontend/   Vue 单页应用
-scripts/    端到端冒烟（smoke.mjs / 全量 smoke-isolated.sh）
+scripts/    端到端冒烟（smoke.mjs / 全量 smoke-isolated.sh）与 Telegram Mini App 隧道（telegram-miniapp.sh）
 docs/       产品计划（PLAN.md）与架构契约（ARCHITECTURE.md）
 ```
 

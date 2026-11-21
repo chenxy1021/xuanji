@@ -7,6 +7,8 @@ import TabBar from '@/components/layout/TabBar.vue'
 import { t } from '@/i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useChartsStore } from '@/stores/charts'
+import { useSettingsStore } from '@/stores/settings'
+import { syncTelegramTheme } from '@/lib/telegram'
 
 // 启动时拉一次登录态；失败按未登录处理
 const auth = useAuthStore()
@@ -14,6 +16,9 @@ const charts = useChartsStore()
 const route = useRoute()
 const router = useRouter()
 auth.bootstrap()
+
+// Telegram 标题栏/背景色跟随站内主题切换
+watch(() => useSettingsStore().isDark, syncTelegramTheme, { flush: 'post' })
 
 // 换账号就换一套记录：登录后拉自己的，登出清空并离开依赖记录的页面
 watch(
