@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>玄机 · 移动端交互原型</title>
+<link rel="stylesheet" href="./tokens.css" />
+<style>
+  /* ========== 基础 ========== */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-sans);
+    background: #dedad0;
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    display: grid;
+    place-items: center;
+    padding: 28px 16px 40px;
+  }
+  [data-theme="dark"] body { background: #0b0c09; }
+
+  button, input, select { font-family: inherit; }
+  button { cursor: pointer; }
+  svg { display: block; }
+
+  /* ========== 舞台 + 开发切换条 ========== */
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .devbar {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255, 255, 255, .72);
+    border: 1px solid rgba(31, 29, 24, .1);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius-pill);
+    padding: 5px 6px 5px 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  [data-theme="dark"] .devbar { background: rgba(26, 28, 23, .8); border-color: rgba(255, 255, 255, .08); }
+  .devbar__label { font-size: 11px; letter-spacing: .08em; color: var(--color-text-muted); }
+  .devbar__theme {
+    height: 32px; padding: 0 12px; border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border-strong); background: transparent;
+    color: var(--color-text-secondary); font-size: 12px; white-space: nowrap;
+  }
+
+  /* ========== 手机壳 ========== */
+  .phone {
+    position: relative;
+    width: 390px; height: 844px;
+    background: var(--color-bg);
+    border: 9px solid #22231e;
+    border-radius: 48px;
+    box-shadow: 0 40px 80px -30px rgba(20, 18, 14, .55), 0 0 0 1px rgba(0, 0, 0, .35);
+    overflow: hidden;
+  }
+  .phone__notch {
+    position: absolute; top: 9px; left: 50%; transform: translateX(-50%);
+    width: 112px; height: 26px; background: #22231e;
+    border-radius: 0 0 16px 16px; z-index: 60;
+  }
+  .screens { position: absolute; inset: 0; padding-top: 44px; }
+
+  .statusbar {
+    position: absolute; top: 0; left: 0; right: 0; height: 44px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; font-size: 13px; font-weight: 600;
+    letter-spacing: .01em; color: var(--color-text);
+    z-index: 50; pointer-events: none;
+  }
+  .statusbar svg { opacity: .85; }
+
+  /* ========== 屏幕 ========== */
+  .screen { position: absolute; inset: 44px 0 0; display: none; flex-direction: column; }
+  .screen.is-active { display: flex; animation: screenIn var(--dur-slow) var(--ease-out); }
+  @keyframes screenIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .appbar {
+    display: flex; align-items: center; gap: 6px;
+    height: 52px; padding: 0 10px; flex: none;
+  }
+  .appbar__title { font-size: 15px; font-weight: 600; letter-spacing: .01em; }
+  .appbar__title small { font-weight: 400; color: var(--color-text-muted); font-size: 12px; margin-left: 6px; }
+  .appbar__spacer { flex: 1; }
+  .iconbtn {
+    width: 40px; height: 40px; display: grid; place-items: center;
+    border: 0; background: transparent; border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+  }
+  .iconbtn:active { background: var(--color-bg-subtle); }
+  .iconbtn--text { width: auto; padding: 0 10px; font-size: 12px; color: var(--color-primary); }
+
+  .scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-4) var(--space-4) 32px; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* ========== 通用组件 ========== */
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+  .card + .card { margin-top: var(--space-3); }
+
+  .section { margin-top: var(--space-6); }
+  .section__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-3); }
+  .section__title { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); letter-spacing: .02em; }
+  .section__hint { font-size: 11px; color: var(--color-text-muted); }
+
+  .label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-2); display: flex; align-items: center; gap: 6px; }
+  .label__opt { font-size: 11px; color: var(--color-text-muted); }
+
+  .btn {
+    height: 48px; border-radius: var(--radius-md); border: 1px solid transparent;
+    font-size: 15px; font-weight: 600; letter-spacing: .02em;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background var(--dur-fast), transform var(--dur-fast);
+  }
+  .btn:active { transform: scale(.985); }
+  .btn--primary { width: 100%; background: var(--color-primary); color: var(--color-text-on-primary); }
+  .btn--primary:active { background: var(--color-primary-active); }
+  .btn--secondary {
+    background: var(--color-surface); color: var(--color-primary);
+    border-color: var(--color-primary-border); padding: 0 16px; height: 40px; font-size: 13px;
+  }
+  .btn--ghost { background: transparent; color: var(--color-primary); height: 36px; padding: 0 10px; font-size: 13px; font-weight: 500; }
+
+  .seg { display: flex; gap: 2px; padding: 3px; background: var(--color-bg-subtle); border-radius: 10px; }
+  .seg button {
+    flex: 1; height: 36px; border: 0; border-radius: 8px; background: transparent;
+    font-size: 13px; color: var(--color-text-secondary);
+    transition: background var(--dur-fast), color var(--dur-fast);
+  }
+  .seg button.is-on {
+    background: var(--color-surface); color: var(--color-primary);
+    font-weight: 600; box-shadow: var(--shadow-xs);
+  }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 26px; padding: 0 10px; border-radius: var(--radius-pill);
+    font-size: 12px; background: var(--color-bg-subtle); color: var(--color-text-secondary);
+    border: 1px solid transparent; white-space: nowrap;
+  }
+  .chip--primary { background: var(--color-primary-soft); color: var(--color-primary); }
+  .chip--accent { background: var(--color-accent-soft); color: var(--color-accent); }
+  .chip--warn { background: var(--color-warning-soft); color: var(--color-warning); }
+  .chip--muted { border: 1px dashed var(--color-border-strong); background: transparent; color: var(--color-text-muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: ""; position: absolute; right: 13px; top: 50%;
+    width: 7px; height: 7px; border-right: 1.5px solid var(--color-text-muted);
+    border-bottom: 1.5px solid var(--color-text-muted);
+    transform: translateY(-68%) rotate(45deg); pointer-events: none;
+  }
+  select.field, input.field {
+    width: 100%; height: 48px; padding: 0 34px 0 12px;
+    font-size: 16px; color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    appearance: none; -webkit-appearance: none;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+  }
+  select.field:focus, input.field:focus {
+    outline: none; border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+  }
+  input.field { padding-right: 12px; }
+  input.field::placeholder { color: var(--color-text-muted); }
+  select.field:disabled, input.field:disabled {
+    color: var(--color-text-muted); background: var(--color-bg-subtle); opacity: .8;
+  }
+
+  .grid3 { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 8px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .formrow + .formrow { margin-top: var(--space-4); }
+
+  .switch {
+    position: relative; flex: none; width: 46px; height: 28px; padding: 0;
+    border: 0; border-radius: var(--radius-pill); background: var(--color-border-strong);
+    transition: background var(--dur-base);
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .24);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .switch[aria-checked="true"] { background: var(--color-primary); }
+  .switch[aria-checked="true"]::after { transform: translateX(18px); }
+
+  .row { display: flex; align-items: center; gap: 12px; min-height: var(--touch-min); }
+  .row__text { flex: 1; min-width: 0; }
+  .row__title { font-size: 15px; }
+  .row__desc { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; line-height: 1.45; }
+
+  .hint {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: var(--space-2); padding: 8px 10px;
+    font-size: 12px; color: var(--color-primary);
+    background: var(--color-primary-soft); border-radius: var(--radius-sm);
+  }
+  .hint--muted { color: var(--color-text-muted); background: var(--color-bg-subtle); }
+
+  /* ========== 首页 ========== */
+  .brand { display: flex; align-items: center; gap: 12px; padding: 4px 0 var(--space-4); }
+  .brand__mark {
+    width: 42px; height: 42px; border-radius: 12px; flex: none;
+    background: var(--color-primary); display: grid; place-items: center;
+    box-shadow: 0 6px 18px -10px var(--color-primary);
+  }
+  .brand__name { font-family: var(--font-serif); font-size: 24px; letter-spacing: .18em; }
+  .brand__tag { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+
+  .hero {
+    margin-top: var(--space-2); padding: var(--space-4);
+    border-radius: var(--radius-lg); border: 1px solid var(--color-border);
+    background: var(--gradient-hero);
+  }
+  .hero__k { font-size: 11px; letter-spacing: .12em; color: var(--color-text-muted); }
+  .hero__v { font-family: var(--font-serif); font-size: 20px; margin-top: 6px; letter-spacing: .04em; }
+  .hero__sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.6; }
+
+  .syslist { display: flex; flex-direction: column; gap: 10px; }
+  .sys {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; text-align: left; padding: 14px;
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); color: inherit;
+    transition: background var(--dur-fast), border-color var(--dur-fast);
+  }
+  .sys:active { background: var(--color-surface-2); }
+  .sys__icon {
+    width: 40px; height: 40px; flex: none; border-radius: 10px;
+    display: grid; place-items: center;
+    background: var(--color-primary-soft); color: var(--color-primary);
+  }
+  .sys__body { flex: 1; min-width: 0; }
+  .sys__name { font-size: 15px; font-weight: 600; }
+  .sys__tag { font-size: 12px; color: var(--color-text-muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .sys__go { flex: none; color: var(--color-text-muted); }
+  .sys[disabled] { cursor: not-allowed; background: var(--color-bg-subtle); border-style: dashed; }
+  .sys[disabled] .sys__icon { background: transparent; color: var(--color-text-muted); opacity: .65; }
+  .sys[disabled] .sys__name { color: var(--color-text-secondary); }
+  .sys[disabled] .sys__go { display: none; }
+
+  .tabbar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 58px;
+    display: flex; align-items: center; justify-content: space-around;
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--color-border);
+  }
+  .tab { border: 0; background: transparent; color: var(--color-text-muted); font-size: 10px; display: grid; justify-items: center; gap: 3px; padding: 6px 18px; }
+  .tab.is-on { color: var(--color-primary); }
+  .home-scroll { padding-bottom: 80px; }
+
+  /* ========== 起盘页 ========== */
+  .sys-switch { padding: 0 var(--space-4) var(--space-3); }
+  .cta-bar {
+    flex: none; padding: 12px var(--space-4) max(16px, env(safe-area-inset-bottom));
+    background: var(--color-bg); border-top: 1px solid var(--color-border);
+  }
+  .suggest {
+    display: none; margin-top: 6px; overflow: hidden;
+    border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+  .suggest.is-on { display: block; }
+  .suggest button {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    min-height: var(--touch-min); padding: 0 12px; border: 0; background: transparent;
+    font-size: 14px; color: var(--color-text); text-align: left;
+  }
+  .suggest button + button { border-top: 1px solid var(--color-border); }
+  .suggest button:active { background: var(--color-surface-2); }
+  .suggest span { font-size: 12px; color: var(--color-text-muted); margin-left: auto; }
+  .check { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--color-text-secondary); }
+  .check input { width: 18px; height: 18px; accent-color: var(--color-primary); }
+
+  /* ========== 结果页通用 ========== */
+  .meta { padding: var(--space-4); }
+  .meta__line { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+  .meta__line + .meta__line { margin-top: 6px; }
+  .meta__k { color: var(--color-text-muted); flex: none; }
+  .meta__v { color: var(--color-text); text-align: right; font-variant-numeric: tabular-nums; }
+  .meta__line--sub .meta__v { color: var(--color-text-secondary); }
+
+  .notice {
+    display: flex; gap: 8px; margin-top: 12px; padding: 10px 12px;
+    font-size: 12px; line-height: 1.5; border-radius: var(--radius-sm);
+    background: var(--color-warning-soft); color: var(--color-warning);
+  }
+
+  /* 四柱表 */
+  .pillar { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+  .pillar th, .pillar td { text-align: center; padding: 8px 2px; border-bottom: 1px solid var(--color-border); }
+  .pillar tr:last-child td { border-bottom: 0; }
+  .pillar thead th { font-size: 12px; font-weight: 500; color: var(--color-text-muted); background: var(--color-surface-2); padding: 9px 2px; }
+  .pillar .ss { font-size: 12px; color: var(--color-text-muted); }
+  .pillar .gz { font-family: var(--font-serif); font-size: 30px; line-height: 1.2; }
+  .pillar .cg { font-size: 11px; color: var(--color-text-secondary); line-height: 1.55; }
+  .pillar .is-day { background: var(--color-primary-soft); }
+  .pillar thead .is-day { color: var(--color-primary); }
+  .pillar .cg-k { display: block; font-size: 11px; color: var(--color-text-muted); margin-bottom: 2px; }
+
+  .wuxing { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .wx { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--color-text-secondary); }
+  .wx i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .wx--mu i { background: var(--color-mu); } .wx--huo i { background: var(--color-huo); }
+  .wx--tu i { background: var(--color-tu); } .wx--jin i { background: var(--color-jin); }
+  .wx--shui i { background: var(--color-shui); }
+
+  /* 横向滚动 */
+  .hscroll-wrap { position: relative; }
+  .hscroll {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+  }
+  .hscroll::-webkit-scrollbar { display: none; }
+  .hscroll > * { scroll-snap-align: start; }
+  .hscroll-wrap::after {
+    content: ""; position: absolute; top: 0; right: -16px; bottom: 4px; width: 40px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0), var(--color-bg) 72%);
+    pointer-events: none; transition: opacity var(--dur-base);
+  }
+  .hscroll-wrap.is-end::after { opacity: 0; }
+  .scrollhint { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--color-text-muted); margin-top: 8px; }
+
+  .dayun {
+    flex: none; width: 66px; text-align: center; padding: 10px 0;
+    border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+  .dayun__age { font-size: 11px; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+  .dayun__gz { font-family: var(--font-serif); font-size: 19px; margin-top: 2px; }
+  .dayun__ss { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+  .dayun.is-now { border-color: var(--color-primary-border); background: var(--color-primary-soft); }
+  .dayun.is-now .dayun__age, .dayun.is-now .dayun__ss { color: var(--color-primary); }
+
+  /* AI 解读 */
+  .ai { border-left: 2px solid var(--color-primary); }
+  .ai__head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .ai__title { font-size: 13px; font-weight: 600; }
+  .ai__badge { font-size: 11px; color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 1px 8px; }
+  .ai__body { font-size: 14px; line-height: 1.75; color: var(--color-text-secondary); white-space: pre-wrap; min-height: 20px; }
+  .ai__foot { display: flex; gap: 8px; margin-top: 14px; }
+  .keyerror {
+    display: none; margin-top: 12px; padding: 12px; border-radius: var(--radius-sm);
+    background: var(--color-danger-soft); color: var(--color-danger); font-size: 12px; line-height: 1.6;
+  }
+  .keyerror.is-on { display: block; }
+
+  /* ========== 紫微 ========== */
+  .zw-summary { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .zw-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(94px, auto); gap: 2px;
+    background: var(--color-border); border: 1px solid var(--color-border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .palace {
+    position: relative; background: var(--color-surface);
+    padding: 6px 7px 16px; text-align: left; border: 0; color: inherit;
+    display: flex; flex-direction: column; gap: 3px;
+    min-width: 0; font-family: inherit;
+  }
+  .palace:active { background: var(--color-surface-2); }
+  .palace__top { display: flex; align-items: baseline; justify-content: space-between; gap: 2px; }
+  .palace__name { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+  .palace__age {
+    position: absolute; left: 7px; bottom: 3px;
+    font-size: 11px; color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .palace__stars { display: flex; flex-wrap: wrap; gap: 1px 3px; }
+  .star { font-family: var(--font-serif); font-size: 16px; line-height: 1.3; white-space: nowrap; }
+  .star sup { font-size: 11px; font-family: var(--font-sans); color: var(--color-text-muted); margin-left: 1px; }
+  .palace__minor { display: flex; flex-wrap: wrap; gap: 0 4px; font-size: 11px; line-height: 1.45; color: var(--color-text-muted); }
+  .palace__minor span { white-space: nowrap; }
+  .palace__branch {
+    position: absolute; right: 6px; bottom: 3px;
+    font-size: 11px; color: var(--color-text-muted); opacity: .8;
+  }
+  .hua {
+    display: inline-block; font-size: 11px; font-family: var(--font-sans); font-style: normal;
+    line-height: 1.4; padding: 0 2px; margin-left: 1px; border-radius: 3px;
+    border: 1px solid currentColor; vertical-align: 2px;
+  }
+  .hua--禄 { color: var(--color-hua-lu); }
+  .hua--权 { color: var(--color-hua-quan); }
+  .hua--科 { color: var(--color-hua-ke); }
+  .hua--忌 { color: var(--color-hua-ji); }
+  .palace.is-ming { background: var(--color-primary-soft); box-shadow: inset 0 0 0 1.5px var(--color-primary); }
+  .palace.is-ming .palace__name { color: var(--color-primary); font-weight: 600; }
+  .palace.is-shen::after {
+    content: ""; position: absolute; right: 6px; top: 6px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--color-accent);
+  }
+  .zw-center {
+    grid-area: 2 / 2 / 4 / 4;
+    background: var(--color-bg-subtle);
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 7px; padding: 10px 12px;
+  }
+  .zw-center__row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; color: var(--color-text-muted); }
+  .zw-center__row b { font-size: 13px; font-weight: 500; color: var(--color-text); }
+  .zw-center__big { font-family: var(--font-serif); font-size: 15px; color: var(--color-text); text-align: center; margin-bottom: 2px; }
+  .zw-center__big span { font-size: 11px; font-family: var(--font-sans); color: var(--color-text-muted); display: block; margin-top: 2px; letter-spacing: .1em; }
+
+  .zw-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 11px; color: var(--color-text-muted); }
+  .zw-legend i { font-style: normal; }
+
+  .detail {
+    margin-top: 12px; display: none;
+    border: 1px solid var(--color-primary-border); border-radius: var(--radius-md);
+    background: var(--color-surface); padding: 12px 14px;
+  }
+  .detail.is-on { display: block; animation: screenIn var(--dur-base) var(--ease-out); }
+  .detail__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .detail__title { font-size: 14px; font-weight: 600; }
+  .detail__title small { font-size: 11px; color: var(--color-text-muted); font-weight: 400; margin-left: 6px; }
+  .detail__row { display: flex; gap: 8px; font-size: 12px; line-height: 1.9; }
+  .detail__k { color: var(--color-text-muted); width: 36px; flex: none; }
+  .detail__v { color: var(--color-text-secondary); }
+
+  /* 列表模式 */
+  .zw-grid.is-list { grid-template-columns: 1fr; grid-auto-rows: auto; gap: 1px; }
+  .zw-grid.is-list .palace, .zw-grid.is-list .zw-center { grid-area: auto !important; }
+  .zw-grid.is-list .palace { flex-direction: row; align-items: center; gap: 10px; padding: 10px 12px; min-height: 52px; }
+  .zw-grid.is-list .palace__top { flex: none; width: 62px; display: block; }
+  .zw-grid.is-list .palace__age { display: none; }
+  .zw-grid.is-list .palace__stars { flex: 1; }
+  .zw-grid.is-list .star { font-size: 15px; }
+  .zw-grid.is-list .palace__minor { display: none; }
+  .zw-grid.is-list .palace__branch { position: static; margin-left: auto; }
+  .zw-grid.is-list .zw-center { display: none; }
+
+  /* ========== 动效遮罩 ========== */
+  .overlay {
+    position: absolute; inset: 0; z-index: 70; display: none;
+    place-items: center; background: var(--color-overlay); backdrop-filter: blur(3px);
+  }
+  .overlay.is-on { display: grid; animation: fadeIn var(--dur-base) ease-out; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .compass { position: relative; width: 168px; height: 168px; display: grid; place-items: center; margin: 0 auto; }
+  .compass__ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1px solid var(--color-primary-border);
+    animation: spin 9s linear infinite;
+  }
+  .compass__ring--2 { inset: 22px; border-style: dashed; animation-duration: 14s; animation-direction: reverse; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .compass__labels { position: absolute; inset: 0; }
+  .compass__labels span {
+    position: absolute; left: 50%; top: 50%;
+    font-family: var(--font-serif); font-size: 12px; color: var(--color-primary);
+    opacity: .8;
+  }
+  .compass__core {
+    width: 62px; height: 62px; border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--color-primary) 0 50%, var(--color-bg) 50% 100%);
+    border: 1px solid var(--color-primary-border);
+    animation: spin 3.2s linear infinite;
+  }
+  .overlay__text {
+    margin-top: 20px; text-align: center; color: #fff;
+    font-size: 13px; letter-spacing: .2em;
+  }
+  .overlay__text small { display: block; font-size: 11px; letter-spacing: .08em; opacity: .72; margin-top: 6px; }
+
+  .toast {
+    position: absolute; left: 50%; bottom: 82px; transform: translate(-50%, 8px);
+    background: var(--color-surface-inverse); color: var(--color-text-inverse);
+    font-size: 12px; padding: 9px 14px; border-radius: var(--radius-md);
+    opacity: 0; pointer-events: none; transition: opacity var(--dur-base), transform var(--dur-base);
+    z-index: 80; white-space: nowrap;
+  }
+  .toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 460px) {
+    body { padding: 0; background: var(--color-bg); display: block; }
+    .stage { gap: 0; display: block; }
+    .devbar {
+      position: fixed; top: max(8px, env(safe-area-inset-top)); left: 50%;
+      transform: translateX(-50%); z-index: 200;
+      padding: 3px 4px; gap: 4px; border-radius: 12px;
+      background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    }
+    .devbar__label { display: none; }
+    .devbar #screenSwitch { width: auto !important; gap: 0; padding: 2px; background: transparent; }
+    .devbar #screenSwitch button { height: 30px; padding: 0 9px; font-size: 11px; flex: none; }
+    .devbar__theme { height: 28px; padding: 0 8px; font-size: 11px; white-space: nowrap; }
+    .phone { width: 100vw; height: 100vh; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
+    .phone__notch { display: none; }
+    .screens { padding-top: 52px; }
+    .statusbar { display: none; }
+    .appbar { height: 46px; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="devbar">
+    <span class="devbar__label">原型</span>
+    <div class="seg" id="screenSwitch" style="width:300px">
+      <button data-screen="home" class="is-on">首页</button>
+      <button data-screen="birth">起盘</button>
+      <button data-screen="bazi">八字结果</button>
+      <button data-screen="ziwei">紫微结果</button>
+    </div>
+    <button class="devbar__theme" id="themeBtn">暗色</button>
+  </div>
+
+  <div class="phone">
+    <div class="phone__notch"></div>
+
+    <div class="statusbar">
+      <span>9:41</span>
+      <svg width="66" height="12" viewBox="0 0 66 12" fill="currentColor" aria-hidden="true">
+        <rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="6" width="3" height="6" rx="1"/>
+        <rect x="10" y="4" width="3" height="8" rx="1"/><rect x="15" y="2" width="3" height="10" rx="1"/>
+        <path d="M24 4.6a8 8 0 0 1 10 0l-1.3 1.5a6 6 0 0 0-7.4 0Z"/>
+        <circle cx="29" cy="9" r="1.6"/>
+        <rect x="44" y="2.5" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1"/>
+        <rect x="45.8" y="4.3" width="12" height="3.4" rx="1"/>
+        <rect x="63" y="4.6" width="1.6" height="2.8" rx=".8"/>
+      </svg>
+    </div>
+
+    <div class="screens">
+
+      <!-- ================= 1. 首页 ================= -->
+      <section class="screen is-active" id="screen-home">
+        <div class="scroll home-scroll">
+          <div class="brand">
+            <div class="brand__mark">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round">
+                <path d="M4 7h16M4 12h9M4 17h13"/>
+              </svg>
+            </div>
+            <div>
+              <div class="brand__name">玄机</div>
+              <div class="brand__tag">排盘交给代码 · 解读交给 AI</div>
+            </div>
+          </div>
+
+          <div class="hero">
+            <div class="hero__k">今日 · 丙午年 己亥月</div>
+            <div class="hero__v">庚午日 · 未时</div>
+            <div class="hero__sub">宜静观。所有排盘结果均可复核，AI 只解释，不改写命盘。</div>
+          </div>
+
+          <div class="section">
+            <div class="section__head">
+              <span class="section__title">选择体系</span>
+              <span class="section__hint">2 个可用</span>
+            </div>
+
+            <div class="syslist">
+              <button class="sys" data-go="birth">
+                <span class="sys__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                    <path d="M5 4v16M10 4v16M15 4v16M20 4v16"/>
+                  </svg>
+                </span>
+                <span class="sys__body">
+                  <span class="sys__name">四柱八字</span>
+                  <span class="sys__tag">四柱十神 · 藏干神煞 · 大运流年</span>
+                </span>
+                <span class="sys__go">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg>
+                </span>
+              </button>
+
+              <button class="sys" data-go="ziwei">
+                <span class="sys__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/>
+                    <rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.4"/>
+                  </svg>
+                </span>
+                <span class="sys__body">
+                  <span class="sys__name">紫微斗数</span>
+                  <span class="sys__tag">十二宫 · 主辅星 · 四化大限</span>
+                </span>
+                <span class="sys__go">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg>
+                </span>
+              </button>
+
+              <button class="sys" disabled>
+                <span class="sys__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                    <path d="M4 7h16M4 12h10M4 17h16"/>
+                  </svg>
+                </span>
+                <span class="sys__body">
+                  <span class="sys__name">六爻</span>
+                  <span class="sys__tag">铜钱起卦 · 六亲六神 · 世应</span>
+                </span>
+                <span class="chip chip--muted">开发中</span>
+              </button>
+
+              <button class="sys" disabled>
+                <span class="sys__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="8.2"/><path d="M12 3.8v16.4M3.8 12h16.4" opacity=".45"/>
+                  </svg>
+                </span>
+                <span class="sys__body">
+                  <span class="sys__name">西方占星</span>
+                  <span class="sys__tag">日月升 · 行星落座 · 相位</span>
+                </span>
+                <span class="chip chip--muted">开发中</span>
+              </button>
+
+              <button class="sys" disabled>
+                <span class="sys__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="4" y="3" width="12" height="18" rx="2"/><path d="M12 3l4 4-4 4" opacity=".5"/>
+                  </svg>
+                </span>
+                <span class="sys__body">
+                  <span class="sys__name">塔罗</span>
+                  <span class="sys__tag">牌阵 · 正逆位 · 牌义</span>
+                </span>
+                <span class="chip chip--muted">开发中</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <button class="tab is-on">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>
+            首页
+          </button>
+          <button class="tab" data-toast="原型未实现：排盘记录">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.5V12l3 2"/></svg>
+            记录
+          </button>
+          <button class="tab" data-toast="原型未实现：设置">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
+            设置
+          </button>
+        </nav>
+      </section>
+
+      <!-- ================= 2. 起盘页 ================= -->
+      <section class="screen" id="screen-birth">
+        <div class="appbar">
+          <button class="iconbtn" data-screen="home" aria-label="返回">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>
+          </button>
+          <div class="appbar__title">起盘<small>四柱八字</small></div>
+          <div class="appbar__spacer"></div>
+        </div>
+
+        <div class="sys-switch">
+          <div class="seg">
+            <button class="is-on">四柱八字</button>
+            <button data-toast="本原型仅演示八字起盘">紫微斗数</button>
+          </div>
+        </div>
+
+        <div class="scroll" style="padding-top:4px">
+          <div class="card">
+            <div class="formrow">
+              <div class="seg">
+                <button class="is-on" id="calSolar">公历</button>
+                <button id="calLunar">农历</button>
+              </div>
+              <label class="check" id="leapRow" style="display:none">
+                <input type="checkbox" /> 该月为闰月
+              </label>
+            </div>
+
+            <div class="formrow">
+              <div class="label">出生日期</div>
+              <div class="grid3">
+                <div class="select-wrap">
+                  <select class="field" aria-label="年">
+                    <option>1990 年</option><option>1991 年</option><option>1992 年</option>
+                  </select>
+                </div>
+                <div class="select-wrap">
+                  <select class="field" aria-label="月">
+                    <option>5 月</option><option>6 月</option><option>7 月</option>
+                  </select>
+                </div>
+                <div class="select-wrap">
+                  <select class="field" aria-label="日">
+                    <option>15 日</option><option>16 日</option><option>17 日</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <div class="label">出生时间 <span class="label__opt">可只选时辰</span></div>
+              <div class="grid2">
+                <div class="select-wrap">
+                  <select class="field" id="selHour" aria-label="时">
+                    <option>14 时</option><option>13 时</option><option>15 时</option><option>16 时</option>
+                  </select>
+                </div>
+                <div class="select-wrap">
+                  <select class="field" id="selMin" aria-label="分">
+                    <option>30 分</option><option>00 分</option><option>15 分</option><option>45 分</option>
+                  </select>
+                </div>
+              </div>
+              <div class="hint" id="shichenHint">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+                14:30 → 未时（13:00–15:00）
+              </div>
+            </div>
+
+            <div class="formrow">
+              <div class="row">
+                <div class="row__text">
+                  <div class="row__title">不知道出生时间</div>
+                  <div class="row__desc">将按「时辰未知」处理，部分体系无法排盘</div>
+                </div>
+                <button class="switch" id="swUnknown" role="switch" aria-checked="false" aria-label="不知道出生时间"></button>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <div class="label">出生地 <span class="label__opt">用于真太阳时</span></div>
+              <input class="field" id="cityInput" placeholder="搜索城市，如 北京" autocomplete="off" />
+              <div class="suggest" id="cityList"></div>
+            </div>
+
+            <div class="formrow">
+              <div class="label">性别</div>
+              <div class="seg" id="genderSeg">
+                <button class="is-on">男</button>
+                <button>女</button>
+              </div>
+            </div>
+
+            <div class="formrow">
+              <div class="row">
+                <div class="row__text">
+                  <div class="row__title">真太阳时校正</div>
+                  <div class="row__desc" id="tstDesc">北京市 116.407° · 约 −10.6 分钟（含均时差）</div>
+                </div>
+                <button class="switch" id="swTst" role="switch" aria-checked="true" aria-label="真太阳时校正"></button>
+              </div>
+            </div>
+          </div>
+
+          <p style="margin-top:14px;font-size:12px;color:var(--color-text-muted);line-height:1.7">
+            农历输入请核对闰月；节气交界（立春、交节前后 24 小时）会在结果页给出提醒。
+          </p>
+        </div>
+
+        <div class="cta-bar">
+          <button class="btn btn--primary" id="btnStart">开始排盘</button>
+        </div>
+      </section>
+
+      <!-- ================= 3. 八字结果页 ================= -->
+      <section class="screen" id="screen-bazi">
+        <div class="appbar">
+          <button class="iconbtn" data-screen="birth" aria-label="返回">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>
+          </button>
+          <div class="appbar__title">四柱八字<small>男 · 乾造</small></div>
+          <div class="appbar__spacer"></div>
+          <button class="iconbtn" data-toast="原型未实现：分享卡片" aria-label="分享">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8.5 7.5L12 4l3.5 3.5"/><path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg>
+          </button>
+        </div>
+
+        <div class="scroll">
+          <div class="card meta">
+            <div class="meta__line"><span class="meta__k">公历</span><span class="meta__v">1990-05-15 14:30</span></div>
+            <div class="meta__line"><span class="meta__k">农历</span><span class="meta__v">庚午年 四月廿一 未时</span></div>
+            <div class="meta__line meta__line--sub"><span class="meta__k">真太阳时</span><span class="meta__v">14:19（−10.6 分）</span></div>
+            <div class="notice">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="flex:none;margin-top:1px"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>
+              已按真太阳时校正（经度 116.407°，合计 −10.62 分钟），时柱未跨时辰。
+            </div>
+          </div>
+
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="pillar">
+              <thead>
+                <tr><th>年柱</th><th>月柱</th><th class="is-day">日柱</th><th>时柱</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ss">比肩</td><td class="ss">劫财</td><td class="ss is-day">日主</td><td class="ss">伤官</td>
+                </tr>
+                <tr>
+                  <td class="gz">庚</td><td class="gz">辛</td><td class="gz is-day">庚</td><td class="gz">癸</td>
+                </tr>
+                <tr>
+                  <td class="gz">午</td><td class="gz">巳</td><td class="gz is-day">辰</td><td class="gz">未</td>
+                </tr>
+                <tr>
+                  <td class="cg"><span class="cg-k">藏干</span>丁火<br/>己土</td>
+                  <td class="cg"><span class="cg-k">藏干</span>丙火 庚金<br/>戊土</td>
+                  <td class="cg is-day"><span class="cg-k">藏干</span>戊土 乙木<br/>癸水</td>
+                  <td class="cg"><span class="cg-k">藏干</span>己土 丁火<br/>乙木</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="wuxing">
+            <span class="wx wx--mu"><i></i>木 2</span>
+            <span class="wx wx--huo"><i></i>火 3</span>
+            <span class="wx wx--tu"><i></i>土 3</span>
+            <span class="wx wx--jin"><i></i>金 2</span>
+            <span class="wx wx--shui"><i></i>水 1</span>
+          </div>
+
+          <div class="section">
+            <div class="section__head"><span class="section__title">神煞</span><span class="section__hint">11 项</span></div>
+            <div class="chips">
+              <span class="chip chip--primary">天乙贵人</span>
+              <span class="chip">月德</span>
+              <span class="chip">天德</span>
+              <span class="chip">将星</span>
+              <span class="chip">华盖</span>
+              <span class="chip">学堂</span>
+              <span class="chip">天医</span>
+              <span class="chip chip--accent">劫煞</span>
+              <span class="chip chip--accent">亡神</span>
+              <span class="chip chip--accent">灾煞</span>
+              <span class="chip">寡宿</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section__head"><span class="section__title">大运</span><span class="section__hint">7 岁 3 个月起运</span></div>
+            <div class="hscroll-wrap" id="dayunWrap">
+              <div class="hscroll" id="dayunScroll">
+                <div class="dayun"><div class="dayun__age">0–7</div><div class="dayun__gz">辛巳</div><div class="dayun__ss">小运</div></div>
+                <div class="dayun"><div class="dayun__age">7–16</div><div class="dayun__gz">壬午</div><div class="dayun__ss">食神</div></div>
+                <div class="dayun"><div class="dayun__age">17–26</div><div class="dayun__gz">癸未</div><div class="dayun__ss">伤官</div></div>
+                <div class="dayun is-now"><div class="dayun__age">27–36</div><div class="dayun__gz">甲申</div><div class="dayun__ss">偏财</div></div>
+                <div class="dayun"><div class="dayun__age">37–46</div><div class="dayun__gz">乙酉</div><div class="dayun__ss">正财</div></div>
+                <div class="dayun"><div class="dayun__age">47–56</div><div class="dayun__gz">丙戌</div><div class="dayun__ss">七杀</div></div>
+                <div class="dayun"><div class="dayun__age">57–66</div><div class="dayun__gz">丁亥</div><div class="dayun__ss">正官</div></div>
+                <div class="dayun"><div class="dayun__age">67–76</div><div class="dayun__gz">戊子</div><div class="dayun__ss">偏印</div></div>
+              </div>
+            </div>
+            <div class="scrollhint">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg>
+              左右滑动查看 8 步大运
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section__head"><span class="section__title">流年</span><span class="section__hint">近 12 年</span></div>
+            <div class="hscroll-wrap">
+              <div class="hscroll">
+                <div class="dayun" style="width:58px"><div class="dayun__age">2024</div><div class="dayun__gz">甲辰</div></div>
+                <div class="dayun" style="width:58px"><div class="dayun__age">2025</div><div class="dayun__gz">乙巳</div></div>
+                <div class="dayun is-now" style="width:58px"><div class="dayun__age">2026</div><div class="dayun__gz">丙午</div></div>
+                <div class="dayun" style="width:58px"><div class="dayun__age">2027</div><div class="dayun__gz">丁未</div></div>
+                <div class="dayun" style="width:58px"><div class="dayun__age">2028</div><div class="dayun__gz">戊申</div></div>
+                <div class="dayun" style="width:58px"><div class="dayun__age">2029</div><div class="dayun__gz">己酉</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section__head"><span class="section__title">AI 解读</span><span class="section__hint">基于上方命盘</span></div>
+            <div class="card ai">
+              <div class="ai__head">
+                <span class="ai__title">命局速读</span>
+                <span class="ai__badge">deepseek-chat</span>
+              </div>
+              <div class="ai__body" id="aiBody"></div>
+              <div class="keyerror" id="keyError">
+                未配置模型 API Key，AI 解读暂不可用。可先在「设置」中填写 OpenAI 兼容接口，或查看本地规则解读。
+              </div>
+              <div class="ai__foot">
+                <button class="btn btn--secondary" id="btnReplay">重新解读</button>
+                <button class="btn btn--ghost" id="btnKeyErr">模拟未配置 Key</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. 紫微结果页 ================= -->
+      <section class="screen" id="screen-ziwei">
+        <div class="appbar">
+          <button class="iconbtn" data-screen="home" aria-label="返回">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>
+          </button>
+          <div class="appbar__title">紫微斗数<small>男 · 土五局</small></div>
+          <div class="appbar__spacer"></div>
+          <button class="iconbtn iconbtn--text" id="btnLayout">切列表</button>
+        </div>
+
+        <div class="scroll">
+          <div class="zw-summary">
+            <span class="chip chip--primary">命宫 戌</span>
+            <span class="chip">身宫 子</span>
+            <span class="chip">土五局</span>
+            <span class="chip">虚岁 37</span>
+          </div>
+
+          <div class="zw-grid" id="zwGrid" role="grid" aria-label="紫微十二宫">
+            <!-- 巳 -->
+            <button class="palace" style="grid-area:1/1" data-i="0">
+              <div class="palace__top"><span class="palace__name">疾厄</span><span class="palace__age">75–84</span></div>
+              <div class="palace__stars"><span class="star">天同<sup>庙</sup><i class="hua hua--科">科</i></span></div>
+              <div class="palace__minor">天使</div>
+              <div class="palace__branch">巳</div>
+            </button>
+            <!-- 午 -->
+            <button class="palace" style="grid-area:1/2" data-i="1">
+              <div class="palace__top"><span class="palace__name">财帛</span><span class="palace__age">85–94</span></div>
+              <div class="palace__stars"><span class="star">天府<sup>旺</sup></span><span class="star">武曲<sup>旺</sup><i class="hua hua--权">权</i></span></div>
+              <div class="palace__minor">地劫</div>
+              <div class="palace__branch">午</div>
+            </button>
+            <!-- 未 -->
+            <button class="palace" style="grid-area:1/3" data-i="2">
+              <div class="palace__top"><span class="palace__name">子女</span><span class="palace__age">95–104</span></div>
+              <div class="palace__stars"><span class="star">太阳<sup>得</sup><i class="hua hua--禄">禄</i></span><span class="star">太阴<sup>陷</sup><i class="hua hua--忌">忌</i></span></div>
+              <div class="palace__minor">右弼 天钺 左辅</div>
+              <div class="palace__branch">未</div>
+            </button>
+            <!-- 申 -->
+            <button class="palace" style="grid-area:1/4" data-i="3">
+              <div class="palace__top"><span class="palace__name">夫妻</span><span class="palace__age">105–114</span></div>
+              <div class="palace__stars"><span class="star">贪狼<sup>平</sup></span></div>
+              <div class="palace__minor">天马 禄存</div>
+              <div class="palace__branch">申</div>
+            </button>
+
+            <!-- 辰 -->
+            <button class="palace" style="grid-area:2/1" data-i="4">
+              <div class="palace__top"><span class="palace__name">迁移</span><span class="palace__age">65–74</span></div>
+              <div class="palace__stars"><span class="star">破军<sup>旺</sup></span></div>
+              <div class="palace__minor">地空 天姚</div>
+              <div class="palace__branch">辰</div>
+            </button>
+            <!-- 酉 -->
+            <button class="palace" style="grid-area:2/4" data-i="5">
+              <div class="palace__top"><span class="palace__name">兄弟</span><span class="palace__age">115–124</span></div>
+              <div class="palace__stars"><span class="star">天机<sup>旺</sup></span><span class="star">巨门<sup>庙</sup></span></div>
+              <div class="palace__minor">擎羊 红鸾</div>
+              <div class="palace__branch">酉</div>
+            </button>
+
+            <!-- 卯 -->
+            <button class="palace" style="grid-area:3/1" data-i="6">
+              <div class="palace__top"><span class="palace__name">交友</span><span class="palace__age">55–64</span></div>
+              <div class="palace__stars"><span class="star" style="font-size:13px;color:var(--color-text-muted)">无主星</span></div>
+              <div class="palace__minor">文昌 天喜</div>
+              <div class="palace__branch">卯</div>
+            </button>
+            <!-- 戌 命宫 -->
+            <button class="palace is-ming" style="grid-area:3/4" data-i="7">
+              <div class="palace__top"><span class="palace__name">命宫</span><span class="palace__age">5–14</span></div>
+              <div class="palace__stars"><span class="star">紫微<sup>得</sup></span><span class="star">天相<sup>得</sup></span></div>
+              <div class="palace__minor">铃星</div>
+              <div class="palace__branch">戌</div>
+            </button>
+
+            <!-- 寅 -->
+            <button class="palace" style="grid-area:4/1" data-i="8">
+              <div class="palace__top"><span class="palace__name">官禄</span><span class="palace__age">45–54</span></div>
+              <div class="palace__stars"><span class="star">廉贞<sup>庙</sup></span></div>
+              <div class="palace__branch">寅</div>
+            </button>
+            <!-- 丑 -->
+            <button class="palace" style="grid-area:4/2" data-i="9">
+              <div class="palace__top"><span class="palace__name">田宅</span><span class="palace__age">35–44</span></div>
+              <div class="palace__stars"><span class="star" style="font-size:13px;color:var(--color-text-muted)">无主星</span></div>
+              <div class="palace__minor">天魁</div>
+              <div class="palace__branch">丑</div>
+            </button>
+            <!-- 子 身宫 -->
+            <button class="palace is-shen" style="grid-area:4/3" data-i="10">
+              <div class="palace__top"><span class="palace__name">福德</span><span class="palace__age">25–34</span></div>
+              <div class="palace__stars"><span class="star">七杀<sup>旺</sup></span></div>
+              <div class="palace__minor">天刑 天哭</div>
+              <div class="palace__branch">子</div>
+            </button>
+            <!-- 亥 -->
+            <button class="palace" style="grid-area:4/4" data-i="11">
+              <div class="palace__top"><span class="palace__name">父母</span><span class="palace__age">15–24</span></div>
+              <div class="palace__stars"><span class="star">天梁<sup>陷</sup></span></div>
+              <div class="palace__minor">文曲</div>
+              <div class="palace__branch">亥</div>
+            </button>
+
+            <!-- 中心信息 -->
+            <div class="zw-center">
+              <div class="zw-center__big">紫微在戌<span>身主 · 火星</span></div>
+              <div class="zw-center__row"><span>性别</span><b>男</b></div>
+              <div class="zw-center__row"><span>农历</span><b>四月廿一</b></div>
+              <div class="zw-center__row"><span>四化</span><b style="font-size:12px">禄太阳 权武曲</b></div>
+              <div class="zw-center__row"><span></span><b style="font-size:12px">科天同 忌太阴</b></div>
+            </div>
+          </div>
+
+          <div class="zw-legend">
+            <span><i class="hua hua--禄">禄</i> 化禄</span>
+            <span><i class="hua hua--权">权</i> 化权</span>
+            <span><i class="hua hua--科">科</i> 化科</span>
+            <span><i class="hua hua--忌">忌</i> 化忌</span>
+            <span>· 点击宫位看全量星曜</span>
+          </div>
+
+          <div class="detail" id="palaceDetail">
+            <div class="detail__head">
+              <span class="detail__title" id="dtTitle">命宫 <small>戌 · 丙戌</small></span>
+              <span class="chip chip--primary" id="dtAge">5–14 岁</span>
+            </div>
+            <div class="detail__row"><span class="detail__k">主星</span><span class="detail__v" id="dtMajor">紫微（得地） 天相（得地）</span></div>
+            <div class="detail__row"><span class="detail__k">辅煞</span><span class="detail__v" id="dtMinor">铃星</span></div>
+            <div class="detail__row"><span class="detail__k">四化</span><span class="detail__v" id="dtHua">—</span></div>
+            <div class="detail__row"><span class="detail__k">大限</span><span class="detail__v" id="dtDecade">5–14 岁 · 丙戌</span></div>
+          </div>
+
+          <div class="section">
+            <div class="section__head"><span class="section__title">大限</span><span class="section__hint">顺时针 · 10 年一宫</span></div>
+            <div class="hscroll-wrap">
+              <div class="hscroll">
+                <div class="dayun"><div class="dayun__age">5–14</div><div class="dayun__gz">命宫</div><div class="dayun__ss">丙戌</div></div>
+                <div class="dayun"><div class="dayun__age">15–24</div><div class="dayun__gz">父母</div><div class="dayun__ss">丁亥</div></div>
+                <div class="dayun"><div class="dayun__age">25–34</div><div class="dayun__gz">福德</div><div class="dayun__ss">戊子</div></div>
+                <div class="dayun is-now"><div class="dayun__age">35–44</div><div class="dayun__gz">田宅</div><div class="dayun__ss">己丑</div></div>
+                <div class="dayun"><div class="dayun__age">45–54</div><div class="dayun__gz">官禄</div><div class="dayun__ss">庚寅</div></div>
+                <div class="dayun"><div class="dayun__age">55–64</div><div class="dayun__gz">交友</div><div class="dayun__ss">辛卯</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section__head"><span class="section__title">AI 解读</span><span class="section__hint">紫微在戌</span></div>
+            <div class="card ai">
+              <div class="ai__head">
+                <span class="ai__title">命宫速读</span>
+                <span class="ai__badge">deepseek-chat</span>
+              </div>
+              <div class="ai__body" id="aiBody2"></div>
+              <div class="ai__foot">
+                <button class="btn btn--secondary" id="btnReplay2">重新解读</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 排盘遮罩 -->
+      <div class="overlay" id="overlay">
+        <div>
+          <div class="compass">
+            <div class="compass__ring"></div>
+            <div class="compass__ring compass__ring--2"></div>
+            <div class="compass__labels" id="compassLabels"></div>
+            <div class="compass__core"></div>
+          </div>
+          <div class="overlay__text">正在排盘<small>定十二宫 · 布主辅星 · 起大运</small></div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ---------- 屏幕切换 ---------- */
+  var screens = {
+    home: document.getElementById('screen-home'),
+    birth: document.getElementById('screen-birth'),
+    bazi: document.getElementById('screen-bazi'),
+    ziwei: document.getElementById('screen-ziwei')
+  };
+  var switchBtns = document.querySelectorAll('#screenSwitch button');
+
+  function go(name) {
+    Object.keys(screens).forEach(function (k) {
+      screens[k].classList.toggle('is-active', k === name);
+    });
+    switchBtns.forEach(function (b) {
+      b.classList.toggle('is-on', b.dataset.screen === name);
+    });
+    var sc = screens[name].querySelector('.scroll');
+    if (sc) sc.scrollTop = 0;
+    if (name === 'bazi') typeInto('aiBody', BAZI_TEXT, 'bazi');
+    if (name === 'ziwei') typeInto('aiBody2', ZIWEI_TEXT, 'ziwei');
+  }
+
+  switchBtns.forEach(function (b) {
+    b.addEventListener('click', function () { go(b.dataset.screen); });
+  });
+  document.querySelectorAll('[data-screen]').forEach(function (el) {
+    if (el.closest('#screenSwitch')) return;
+    el.addEventListener('click', function () { go(el.dataset.screen); });
+  });
+  document.querySelectorAll('[data-go]').forEach(function (el) {
+    el.addEventListener('click', function () { go(el.dataset.go); });
+  });
+
+  /* ---------- 主题 ---------- */
+  var themeBtn = document.getElementById('themeBtn');
+  var dark = false;
+  themeBtn.addEventListener('click', function () {
+    dark = !dark;
+    document.documentElement.dataset.theme = dark ? 'dark' : '';
+    themeBtn.textContent = dark ? '亮色' : '暗色';
+  });
+
+  /* ---------- Toast ---------- */
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('is-on'); }, 2200);
+  }
+  document.querySelectorAll('[data-toast]').forEach(function (el) {
+    el.addEventListener('click', function () { toast(el.dataset.toast); });
+  });
+
+  /* ---------- 时辰提示 ---------- */
+  var SHICHEN = [
+    ['子', 23, 1], ['丑', 1, 3], ['寅', 3, 5], ['卯', 5, 7], ['辰', 7, 9], ['巳', 9, 11],
+    ['午', 11, 13], ['未', 13, 15], ['申', 15, 17], ['酉', 17, 19], ['戌', 19, 21], ['亥', 21, 23]
+  ];
+  var selHour = document.getElementById('selHour');
+  var selMin = document.getElementById('selMin');
+  var hint = document.getElementById('shichenHint');
+
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  function updateHint() {
+    var h = parseInt(selHour.value, 10);
+    var m = parseInt(selMin.value, 10);
+    var name = '子', range = '23:00–01:00';
+    for (var i = 0; i < SHICHEN.length; i++) {
+      var s = SHICHEN[i];
+      var inRange = s[2] > s[1] ? (h >= s[1] && h < s[2]) : (h >= 23 || h < 1);
+      if (inRange) {
+        name = s[0];
+        range = pad(s[1]) + ':00–' + pad(s[2] % 24) + ':00';
+        break;
+      }
+    }
+    hint.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>' +
+      pad(h) + ':' + pad(m) + ' → ' + name + '时（' + range + '）';
+  }
+  selHour.addEventListener('change', updateHint);
+  selMin.addEventListener('change', updateHint);
+
+  /* ---------- 不知道出生时间 ---------- */
+  var swUnknown = document.getElementById('swUnknown');
+  swUnknown.addEventListener('click', function () {
+    var on = swUnknown.getAttribute('aria-checked') !== 'true';
+    swUnknown.setAttribute('aria-checked', String(on));
+    selHour.disabled = on;
+    selMin.disabled = on;
+    hint.classList.toggle('hint--muted', on);
+    if (on) {
+      hint.textContent = '时辰未知：八字按三柱排，紫微无法排盘';
+    } else {
+      hint.classList.remove('hint--muted');
+      updateHint();
+    }
+  });
+
+  /* ---------- 农历 / 闰月 ---------- */
+  var calSolar = document.getElementById('calSolar');
+  var calLunar = document.getElementById('calLunar');
+  var leapRow = document.getElementById('leapRow');
+  function setCal(lunar) {
+    calSolar.classList.toggle('is-on', !lunar);
+    calLunar.classList.toggle('is-on', lunar);
+    leapRow.style.display = lunar ? 'flex' : 'none';
+  }
+  calSolar.addEventListener('click', function () { setCal(false); });
+  calLunar.addEventListener('click', function () { setCal(true); });
+
+  /* ---------- 真太阳时 ---------- */
+  var swTst = document.getElementById('swTst');
+  var tstDesc = document.getElementById('tstDesc');
+  swTst.addEventListener('click', function () {
+    var on = swTst.getAttribute('aria-checked') !== 'true';
+    swTst.setAttribute('aria-checked', String(on));
+    tstDesc.textContent = on
+      ? '北京市 116.407° · 约 −10.6 分钟（含均时差）'
+      : '按出生地经度换算，未开启';
+  });
+
+  /* ---------- 性别 ---------- */
+  document.querySelectorAll('#genderSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('#genderSeg button').forEach(function (x) { x.classList.remove('is-on'); });
+      b.classList.add('is-on');
+    });
+  });
+
+  /* ---------- 城市联想 ---------- */
+  var CITIES = [
+    { name: '北京市', province: '北京', lon: 116.407 },
+    { name: '上海市', province: '上海', lon: 121.473 },
+    { name: '广州市', province: '广东', lon: 113.264 },
+    { name: '成都市', province: '四川', lon: 104.066 },
+    { name: '乌鲁木齐市', province: '新疆', lon: 87.617 },
+    { name: '哈尔滨市', province: '黑龙江', lon: 126.534 }
+  ];
+  var cityInput = document.getElementById('cityInput');
+  var cityList = document.getElementById('cityList');
+
+  function renderCities(kw) {
+    var list = CITIES.filter(function (c) {
+      return !kw || c.name.indexOf(kw) > -1 || c.province.indexOf(kw) > -1;
+    });
+    cityList.innerHTML = list.map(function (c) {
+      return '<button data-city="' + c.name + '">' + c.name + '<span>' + c.province + ' · ' + c.lon + '°E</span></button>';
+    }).join('');
+    cityList.classList.toggle('is-on', list.length > 0 && document.activeElement === cityInput);
+    cityList.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        cityInput.value = b.dataset.city;
+        cityList.classList.remove('is-on');
+        cityInput.blur();
+      });
+    });
+  }
+  cityInput.addEventListener('input', function () { renderCities(this.value.trim()); });
+  cityInput.addEventListener('focus', function () { renderCities(this.value.trim()); });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('#cityInput') && !e.target.closest('#cityList')) {
+      cityList.classList.remove('is-on');
+    }
+  });
+  cityInput.value = '北京市';
+
+  /* ---------- 排盘遮罩 ---------- */
+  var overlay = document.getElementById('overlay');
+  var labels = document.getElementById('compassLabels');
+  var ZHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  labels.innerHTML = ZHI.map(function (z, i) {
+    return '<span style="transform:translate(-50%,-50%) rotate(' + (i * 30) + 'deg) translateY(-68px)">' + z + '</span>';
+  }).join('');
+
+  document.getElementById('btnStart').addEventListener('click', function () {
+    overlay.classList.add('is-on');
+    setTimeout(function () {
+      overlay.classList.remove('is-on');
+      go('bazi');
+    }, 1000);
+  });
+
+  /* ---------- 横向滚动边缘提示 ---------- */
+  document.querySelectorAll('.hscroll').forEach(function (box) {
+    var wrap = box.parentElement;
+    function check() {
+      wrap.classList.toggle('is-end', box.scrollLeft + box.clientWidth >= box.scrollWidth - 6);
+    }
+    box.addEventListener('scroll', check);
+    setTimeout(check, 60);
+  });
+
+  /* ---------- AI 流式文本 ---------- */
+  var BAZI_TEXT =
+    '日主庚金生于巳月，火旺金相，得年柱庚午比肩相助，日坐辰土为印，属「身有根气」之局，不必急着补金。\n\n' +
+    '月干辛金为劫财，与年干比肩并透，主一生竞争与合作伙伴同时出现：机会多来自同辈，摩擦也多来自同辈。时干癸水伤官泄秀，是这盘的出口——表达、技术、作品，把庚金的锐气用在「做出来」上，比用在争论上更顺。\n\n' +
+    '当前行甲申大运（27–36 岁），甲木偏财透出，申为庚之禄地：财路开始具体化，宜在专业领域积累可复用的成果，而不是频繁换赛道。\n\n' +
+    '「以上为命盘层面的结构性解读，具体判断需结合你的问题与当下处境。」';
+
+  var ZIWEI_TEXT =
+    '命宫在戌，紫微天相同宫。紫微得地、天相得地，是「有主见也懂配合」的组合：既想拿主意，也不排斥被需要。\n\n' +
+    '三方会照中，财帛宫武曲化权、天府同宫，主对资源有掌控欲，赚钱方式偏「靠专业与执行力」，不宜投机。子女宫太阳化禄、太阴化忌同守，情感表达上容易「对外慷慨、对内压抑」，宜留意亲密关系中的期待落差。\n\n' +
+    '身宫落福德（子）七杀旺守，说明真正的驱动力来自内在标准，而非外界评价。当前大限走田宅（35–44 岁），是安顿居所、整理后方资源的十年。\n\n' +
+    '「以上为宫位结构的解读，不构成对具体事件的预测。」';
+
+  var timers = {};
+  function typeInto(id, text, key) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    clearInterval(timers[key]);
+    el.textContent = '';
+    var i = 0;
+    timers[key] = setInterval(function () {
+      i += 2;
+      el.textContent = text.slice(0, i);
+      if (i >= text.length) {
+        clearInterval(timers[key]);
+        el.textContent = text;
+      }
+    }, 22);
+  }
+
+  document.getElementById('btnReplay').addEventListener('click', function () {
+    document.getElementById('keyError').classList.remove('is-on');
+    typeInto('aiBody', BAZI_TEXT, 'bazi');
+  });
+  document.getElementById('btnReplay2').addEventListener('click', function () {
+    typeInto('aiBody2', ZIWEI_TEXT, 'ziwei');
+  });
+  document.getElementById('btnKeyErr').addEventListener('click', function () {
+    var box = document.getElementById('keyError');
+    var on = !box.classList.contains('is-on');
+    box.classList.toggle('is-on', on);
+    if (on) {
+      clearInterval(timers.bazi);
+      document.getElementById('aiBody').textContent = '';
+    } else {
+      typeInto('aiBody', BAZI_TEXT, 'bazi');
+    }
+  });
+
+  /* ---------- 紫微宫位详情 ---------- */
+  var PALACES = [
+    { name: '疾厄', branch: '巳', stem: '辛巳', age: '75–84', major: '天同（庙）· 化科', minor: '天使', hua: '科 · 天同' },
+    { name: '财帛', branch: '午', stem: '壬午', age: '85–94', major: '天府（旺）· 武曲（旺，化权）', minor: '地劫', hua: '权 · 武曲' },
+    { name: '子女', branch: '未', stem: '癸未', age: '95–104', major: '太阳（得地，化禄）· 太阴（不得地，化忌）', minor: '右弼 天钺 左辅 陀罗', hua: '禄 · 太阳 / 忌 · 太阴' },
+    { name: '夫妻', branch: '申', stem: '甲申', age: '105–114', major: '贪狼（平和）', minor: '天马 禄存 火星', hua: '—' },
+    { name: '迁移', branch: '辰', stem: '庚辰', age: '65–74', major: '破军（旺）', minor: '地空 天姚', hua: '—' },
+    { name: '兄弟', branch: '酉', stem: '乙酉', age: '115–124', major: '天机（旺）· 巨门（庙）', minor: '擎羊 红鸾', hua: '—' },
+    { name: '交友', branch: '卯', stem: '己卯', age: '55–64', major: '无主星（借对宫）', minor: '文昌 天喜 天伤', hua: '—' },
+    { name: '命宫', branch: '戌', stem: '丙戌', age: '5–14', major: '紫微（得地）· 天相（得地）', minor: '铃星', hua: '—' },
+    { name: '官禄', branch: '寅', stem: '戊寅', age: '45–54', major: '廉贞（庙）', minor: '—', hua: '—' },
+    { name: '田宅', branch: '丑', stem: '己丑', age: '35–44', major: '无主星（借对宫）', minor: '天魁', hua: '—' },
+    { name: '福德（身宫）', branch: '子', stem: '戊子', age: '25–34', major: '七杀（旺）', minor: '天刑 天哭 天虚', hua: '—' },
+    { name: '父母', branch: '亥', stem: '丁亥', age: '15–24', major: '天梁（落陷）', minor: '文曲', hua: '—' }
+  ];
+  var detail = document.getElementById('palaceDetail');
+  document.querySelectorAll('.palace').forEach(function (cell) {
+    cell.addEventListener('click', function () {
+      var p = PALACES[Number(cell.dataset.i)];
+      if (!p) return;
+      document.getElementById('dtTitle').innerHTML = p.name + ' <small>' + p.branch + ' · ' + p.stem + '</small>';
+      document.getElementById('dtAge').textContent = p.age + ' 岁';
+      document.getElementById('dtMajor').textContent = p.major;
+      document.getElementById('dtMinor').textContent = p.minor;
+      document.getElementById('dtHua').textContent = p.hua;
+      document.getElementById('dtDecade').textContent = p.age + ' 岁 · ' + p.stem;
+      detail.classList.add('is-on');
+      setTimeout(function () { detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 40);
+    });
+  });
+
+  /* ---------- 宫格 / 列表 ---------- */
+  document.querySelectorAll('.palace__minor').forEach(function (el) {
+    var names = el.textContent.trim().split(/\s+/).filter(Boolean);
+    if (!names.length) return;
+    el.innerHTML = names.map(function (n) { return '<span>' + n + '</span>'; }).join('');
+  });
+
+  var layoutBtn = document.getElementById('btnLayout');
+  var grid = document.getElementById('zwGrid');
+  layoutBtn.addEventListener('click', function () {
+    var isList = grid.classList.toggle('is-list');
+    layoutBtn.textContent = isList ? '切宫格' : '切列表';
+  });
+
+  // 便于单独预览某一屏：index.html?screen=ziwei（须在函数与文案定义之后执行）
+  var preset = new URLSearchParams(location.search).get('screen');
+  if (preset && screens[preset]) go(preset);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+/* ============================================================
+   玄机 · Design Tokens
+   东方玄学 × 现代极简
+   ------------------------------------------------------------
+   用法：
+     <link rel="stylesheet" href="./tokens.css">
+     深色：document.documentElement.dataset.theme = "dark"
+   只有变量，不含任何页面/组件样式。
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* ---------- 背景与表面 ---------- */
+  --color-bg: #f5f3ee;            /* 页面底色：宣纸 */
+  --color-bg-subtle: #efece4;     /* 分区/次级底 */
+  --color-surface: #ffffff;       /* 卡片 */
+  --color-surface-2: #faf8f4;     /* 卡内嵌套区 */
+  --color-surface-inverse: #1c1d18;
+  --color-overlay: rgba(24, 23, 19, 0.48);   /* 遮罩/弹层 */
+
+  /* ---------- 描边 ---------- */
+  --color-border: #e6e0d4;
+  --color-border-strong: #d2cabb;
+  --color-border-focus: #1e6b5e;
+
+  /* ---------- 文字 ---------- */
+  --color-text: #1f1d18;          /* 墨：主文字 */
+  --color-text-secondary: #5c564b;/* 次文字 */
+  --color-text-muted: #6f6a5e;    /* 弱提示、辅助标签 */
+  --color-text-inverse: #f7f5ef;
+  --color-text-on-primary: #ffffff;
+
+  /* ---------- 主色：玄青 ---------- */
+  --color-primary: #1e6b5e;
+  --color-primary-hover: #17554a;
+  --color-primary-active: #12453c;
+  --color-primary-soft: #e3efeb;
+  --color-primary-soft-2: #cfe3dd;
+  --color-primary-border: #a9cec4;
+
+  /* ---------- 辅色：朱砂 ---------- */
+  --color-accent: #b4402f;
+  --color-accent-soft: #fbeae6;
+  --color-accent-border: #eecec6;
+
+  /* ---------- 语义色 ---------- */
+  --color-success: #2a7049;
+  --color-success-soft: #e5f2ea;
+  --color-warning: #8a6113;
+  --color-warning-soft: #f8efdc;
+  --color-danger: #b4402f;
+  --color-danger-soft: #fbeae6;
+  --color-info: #35618f;
+  --color-info-soft: #e6eef8;
+
+  /* ---------- 五行 ---------- */
+  --color-mu: #3f7d5c;    --color-mu-soft: #e4f0e9;
+  --color-huo: #b4573d;   --color-huo-soft: #f8e8e2;
+  --color-tu: #97723a;    --color-tu-soft: #f4ede0;
+  --color-jin: #6f757f;   --color-jin-soft: #eceef1;
+  --color-shui: #39688a;  --color-shui-soft: #e4edf4;
+
+  /* ---------- 四化 ---------- */
+  --color-hua-lu: #2a7049;
+  --color-hua-quan: #65559a;
+  --color-hua-ke: #35618f;
+  --color-hua-ji: #b4402f;
+
+  /* ---------- 字体 ---------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+  --font-serif: "Songti SC", "Source Han Serif SC", "Noto Serif SC", "SimSun", Georgia, serif;
+  --font-mono: "SF Mono", ui-monospace, "Menlo", "Consolas", monospace;
+
+  /* ---------- 字号阶梯（移动优先，12px 为下限） ---------- */
+  --text-xs: 0.75rem;    /* 12px 标签、藏干 */
+  --text-sm: 0.8125rem;  /* 13px 辅助说明 */
+  --text-base: 0.9375rem;/* 15px 正文 */
+  --text-md: 1rem;       /* 16px 输入框（避免 iOS 缩放） */
+  --text-lg: 1.125rem;   /* 18px 小标题 */
+  --text-xl: 1.375rem;   /* 22px 卡片标题 */
+  --text-2xl: 1.625rem;  /* 26px 页面标题 */
+  --text-3xl: 2rem;      /* 32px 命盘大字 */
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.45;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* ---------- 间距（4px 基准） ---------- */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ---------- 圆角 ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ---------- 阴影（低对比、不外扩） ---------- */
+  --shadow-xs: 0 1px 2px rgba(31, 29, 24, 0.05);
+  --shadow-sm: 0 2px 6px rgba(31, 29, 24, 0.06);
+  --shadow-md: 0 8px 24px -14px rgba(31, 29, 24, 0.28);
+  --shadow-lg: 0 18px 44px -22px rgba(31, 29, 24, 0.36);
+  --shadow-inset: inset 0 0 0 1px rgba(31, 29, 24, 0.04);
+
+  /* ---------- 动效 ---------- */
+  --dur-instant: 80ms;
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 240ms;
+  --dur-slower: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* ---------- 层级 ---------- */
+  --z-base: 0;
+  --z-sticky: 20;
+  --z-header: 40;
+  --z-overlay: 60;
+  --z-toast: 80;
+
+  /* ---------- 尺寸 ---------- */
+  --touch-min: 44px;      /* 最小触控热区 */
+  --container-max: 480px; /* 内容最大宽度（平板/桌面居中） */
+  --header-h: 52px;
+  --tabbar-h: 58px;
+
+  /* ---------- 渐变（仅用于氛围，不铺满屏） ---------- */
+  --gradient-hero: radial-gradient(120% 90% at 0% 0%, #ffffff 0%, #f2efe7 55%, #ece7db 100%);
+  --gradient-veil: linear-gradient(180deg, rgba(245, 243, 238, 0) 0%, rgba(245, 243, 238, 0.92) 70%, #f5f3ee 100%);
+}
+
+/* ============ 深色：墨夜 ============ */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #121310;
+  --color-bg-subtle: #17190f;
+  --color-surface: #1a1c17;
+  --color-surface-2: #202319;
+  --color-surface-inverse: #f2efe7;
+  --color-overlay: rgba(4, 5, 4, 0.66);
+
+  --color-border: #2c2f26;
+  --color-border-strong: #3d4136;
+  --color-border-focus: #5fbfab;
+
+  --color-text: #ece9df;
+  --color-text-secondary: #b2ada0;
+  --color-text-muted: #8b8679;
+  --color-text-inverse: #1f1d18;
+  --color-text-on-primary: #06211c;
+
+  --color-primary: #5fbfab;
+  --color-primary-hover: #79cdbb;
+  --color-primary-active: #8fd8c9;
+  --color-primary-soft: #1b2f2a;
+  --color-primary-soft-2: #22403a;
+  --color-primary-border: #2f5a51;
+
+  --color-accent: #e0705c;
+  --color-accent-soft: #2e1d19;
+  --color-accent-border: #4a2a24;
+
+  --color-success: #5fb87f;
+  --color-success-soft: #16261c;
+  --color-warning: #d3a049;
+  --color-warning-soft: #2a2314;
+  --color-danger: #e0705c;
+  --color-danger-soft: #2e1d19;
+  --color-info: #7aa8d8;
+  --color-info-soft: #161f2b;
+
+  --color-mu: #6fbf92;    --color-mu-soft: #16261d;
+  --color-huo: #e08065;   --color-huo-soft: #2c1d18;
+  --color-tu: #cfaa6b;    --color-tu-soft: #262014;
+  --color-jin: #a8aeb8;   --color-jin-soft: #20231f;
+  --color-shui: #7aa6c9;  --color-shui-soft: #16202a;
+
+  --color-hua-lu: #5fb87f;
+  --color-hua-quan: #a99ad8;
+  --color-hua-ke: #7aa8d8;
+  --color-hua-ji: #e0705c;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 10px 28px -16px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 20px 48px -24px rgba(0, 0, 0, 0.8);
+  --shadow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+
+  --gradient-hero: radial-gradient(120% 90% at 0% 0%, #23261c 0%, #1a1c17 55%, #14150f 100%);
+  --gradient-veil: linear-gradient(180deg, rgba(18, 19, 16, 0) 0%, rgba(18, 19, 16, 0.9) 70%, #121310 100%);
+}
+
+/* 尊重系统减弱动效设置：由使用方在组件里读取此变量 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 1ms;
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+    --dur-slower: 1ms;
+  }
+}

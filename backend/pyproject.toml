@@ -1,0 +1,43 @@
+[project]
+name = "suanming"
+version = "0.1.0"
+description = "多体系命理排盘与 AI 解读服务"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "httpx>=0.27",
+    "lunar_python>=1.4.9",
+    "tyme4py>=1.5.1",
+    "ziwei==0.5.0",
+    "pyswisseph>=2.10.3.2",
+    "qimen-rs>=0.2.1",
+    "kinliuren>=0.1.2.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# 第三方原样引入的代码不做风格检查
+exclude = ["app/domains/bazi/_vendor_pai_pan.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

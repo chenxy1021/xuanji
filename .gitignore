@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+.env
+
+# Node
+node_modules/
+dist/
+.vite/
+*.local
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# 构建产物
+*.tsbuildinfo
+
+# 本机运行时配置（AI 密钥等）
+.local/

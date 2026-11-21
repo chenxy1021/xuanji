@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>玄机 · v2 深色工作台原型</title>
+<link rel="stylesheet" href="./tokens.css" />
+<style>
+  /* ============================================================
+     v2 · 深色数据工作台（默认深色，浅色为切换项）
+     ============================================================ */
+  :root {
+    --bg: #0b0d10;
+    --surface: #121417;
+    --surface-2: #171a1e;
+    --surface-3: #1d2126;
+    --line: #23272d;
+    --line-strong: #333941;
+    --text: #e9ebee;
+    --text-2: #a6adb8;
+    --text-3: #6d7480;
+    --blue: #4a7cff;
+    --blue-hover: #6b94ff;
+    --blue-soft: rgba(74, 124, 255, .12);
+    --blue-line: rgba(74, 124, 255, .38);
+    --risk: #e0705c;
+    --risk-soft: rgba(224, 112, 92, .10);
+    --ok: #4ec98a;
+    --ok-soft: rgba(78, 201, 138, .12);
+
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-pill: 999px;
+
+    --font-sans: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --font-serif: "Songti SC", "Source Han Serif SC", "Noto Serif SC", "SimSun", Georgia, serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    --h-header: 56px;
+    --gutter: 24px;
+  }
+  [data-theme="light"] {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface-2: #f4f4f1;
+    --surface-3: #ebebe6;
+    --line: #e4e4e0;
+    --line-strong: #d3d3cd;
+    --text: #17181a;
+    --text-2: #565a62;
+    --text-3: #7c8189;
+    --blue: #2f5fe0;
+    --blue-hover: #234fcc;
+    --blue-soft: rgba(47, 95, 224, .09);
+    --blue-line: rgba(47, 95, 224, .32);
+    --risk: #b4402f;
+    --risk-soft: rgba(180, 64, 47, .07);
+    --ok: #2a7049;
+    --ok-soft: rgba(42, 112, 73, .10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  html, body { min-height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font-family: inherit; color: inherit; }
+  button { cursor: pointer; }
+  svg { display: block; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  .shell { max-width: 1440px; margin: 0 auto; padding: 0 var(--gutter); }
+
+  /* ============ 顶栏 ============ */
+  .site-header {
+    position: sticky; top: 0; z-index: 40; height: var(--h-header);
+    background: var(--bg); border-bottom: 1px solid var(--line);
+  }
+  .header-inner { height: var(--h-header); display: flex; align-items: center; gap: 40px; }
+  .wordmark {
+    display: inline-flex; align-items: baseline; gap: 8px; flex: none;
+    font-family: var(--font-serif); font-size: 17px; letter-spacing: .18em;
+    color: var(--text); text-decoration: none;
+  }
+  .wordmark em {
+    font-style: normal; font-family: var(--font-sans); font-size: 9px;
+    letter-spacing: .24em; color: var(--text-3); text-transform: uppercase;
+  }
+  .mainnav { display: flex; gap: 26px; }
+  .mainnav button { border: 0; background: none; font-size: 13px; color: var(--text-2); padding: 6px 0; position: relative; }
+  .mainnav button:hover { color: var(--text); }
+  .mainnav button[aria-current="page"] { color: var(--text); }
+  .mainnav button[aria-current="page"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--blue); }
+  .utils { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .lang { display: flex; border: 1px solid var(--line-strong); border-radius: var(--radius-pill); padding: 2px; }
+  .lang button { border: 0; background: none; height: 22px; padding: 0 9px; border-radius: var(--radius-pill); font-size: 11px; color: var(--text-3); }
+  .lang button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+  .iconbtn { width: 32px; height: 32px; display: grid; place-items: center; border: 0; background: none; color: var(--text-2); border-radius: var(--radius-sm); }
+  .iconbtn:hover { background: var(--surface-2); color: var(--text); }
+  .user { display: flex; align-items: center; gap: 8px; padding-left: 4px; }
+  .user__avatar { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-3); border: 1px solid var(--line-strong); font-size: 11px; color: var(--text-2); }
+  .user__name { font-size: 12px; }
+  .user__plan { font-size: 10px; color: var(--text-3); }
+
+  /* ============ 视图 ============ */
+  .view { display: none; }
+  .view.is-active { display: block; animation: viewIn 160ms ease-out; }
+  @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); }
+
+  /* ============ 首页 ============ */
+  .hero { padding: 72px 0 56px; display: grid; grid-template-columns: 1fr 420px; gap: 56px; align-items: center; }
+  .eyebrow { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .18em; color: var(--text-3); text-transform: uppercase; }
+  .eyebrow::before { content: ""; width: 20px; height: 1px; background: var(--blue); }
+  .hero h1 { font-family: var(--font-serif); font-weight: 400; font-size: 52px; line-height: 1.15; letter-spacing: .01em; margin-top: 20px; white-space: pre-line; word-break: keep-all; }
+  .hero p { margin-top: 18px; max-width: 440px; font-size: 14px; line-height: 1.85; color: var(--text-2); text-wrap: balance; }
+  .hero-actions { margin-top: 28px; display: flex; align-items: center; gap: 22px; }
+  .btn-primary { height: 40px; padding: 0 20px; border: 1px solid var(--blue); border-radius: var(--radius-sm); background: var(--blue); color: #fff; font-size: 13px; letter-spacing: .02em; }
+  .btn-primary:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
+  .textlink { border: 0; background: none; font-size: 13px; color: var(--text-2); padding: 0 0 2px; border-bottom: 1px solid var(--line-strong); white-space: nowrap; }
+  .textlink:hover { color: var(--text); border-bottom-color: var(--text); }
+  .hero-meta { margin-top: 22px; font-size: 11px; color: var(--text-3); letter-spacing: .04em; }
+  .hero-art svg { width: 100%; height: auto; color: var(--text); }
+
+  .group { margin-top: 28px; }
+  .group-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
+  .group-head .idx { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
+  .group-head h2 { font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+  .group-head .count { margin-left: auto; font-size: 11px; color: var(--text-3); }
+  .grid-sys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .sys {
+    display: block; width: 100%; text-align: left; padding: 14px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+    color: inherit; transition: border-color 160ms, background 160ms;
+  }
+  .sys:hover { border-color: var(--line-strong); background: var(--surface-2); }
+  .sys .num { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--text-3); }
+  .sys .name { display: block; margin-top: 8px; font-size: 15px; letter-spacing: .01em; }
+  .sys .desc { display: block; margin-top: 4px; font-size: 12px; line-height: 1.6; color: var(--text-3); }
+  .home-foot { padding: 36px 0 48px; font-size: 11px; color: var(--text-3); display: flex; gap: 18px; }
+
+  /* ============ 起盘 ============ */
+  .page-head { padding: 28px 0 0; }
+  .crumb { font-size: 11px; color: var(--text-3); letter-spacing: .08em; }
+  .split { display: grid; grid-template-columns: 1fr 560px; gap: 56px; padding: 20px 0 64px; align-items: start; }
+  .split-left h1 { font-family: var(--font-serif); font-weight: 400; font-size: 34px; line-height: 1.25; margin-top: 14px; }
+  .split-left .tagline { margin-top: 12px; font-size: 13.5px; line-height: 1.85; color: var(--text-2); max-width: 420px; }
+  .method { margin-top: 32px; }
+  .method .row { display: flex; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .method .row:last-child { border-bottom: 1px solid var(--line); }
+  .method .n { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); padding-top: 3px; }
+  .method p { font-size: 12.5px; line-height: 1.7; color: var(--text-2); }
+  .note { margin-top: 20px; font-size: 11.5px; line-height: 1.8; color: var(--text-3); max-width: 420px; }
+
+  .form-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px; }
+  .fgroup + .fgroup { margin-top: 20px; }
+  .flabel { display: block; font-size: 11px; letter-spacing: .08em; color: var(--text-3); margin-bottom: 7px; }
+  .flabel .opt { color: var(--text-3); opacity: .8; margin-left: 6px; letter-spacing: 0; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .row3 { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
+  select.field, input.field {
+    width: 100%; height: 40px; padding: 0 12px; font-size: 13px;
+    background: var(--surface-2); color: var(--text);
+    border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+    appearance: none; -webkit-appearance: none;
+  }
+  select.field:focus, input.field:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-soft); }
+  .selwrap { position: relative; }
+  .selwrap::after {
+    content: ""; position: absolute; right: 12px; top: 50%; width: 5px; height: 5px;
+    border-right: 1px solid var(--text-3); border-bottom: 1px solid var(--text-3);
+    transform: translateY(-70%) rotate(45deg); pointer-events: none;
+  }
+  .seg2 { display: flex; gap: 2px; padding: 2px; background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+  .seg2 button { flex: 1; height: 32px; border: 0; background: none; border-radius: 3px; font-size: 12px; color: var(--text-2); }
+  .seg2 button.is-on { background: var(--surface-3); color: var(--text); box-shadow: 0 0 0 1px var(--line-strong) inset; }
+  .inline-hint { margin-top: 7px; font-size: 11.5px; color: var(--text-3); }
+  .switchrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .switchrow:last-child { border-bottom: 1px solid var(--line); }
+  .switchrow .t { font-size: 13px; }
+  .switchrow .d { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .toggle { width: 38px; height: 22px; flex: none; border: 1px solid var(--line-strong); background: var(--surface-2); border-radius: var(--radius-pill); position: relative; padding: 0; }
+  .toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text-3); transition: transform 160ms; }
+  .toggle[aria-checked="true"] { background: var(--blue); border-color: var(--blue); }
+  .toggle[aria-checked="true"]::after { transform: translateX(16px); background: #fff; }
+  .submit { width: 100%; margin-top: 20px; height: 42px; }
+
+  /* ============ 结果页 ============ */
+  .rtop { position: sticky; top: var(--h-header); z-index: 30; height: 56px; display: flex; align-items: center; gap: 14px; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .rtop__back { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--radius-sm); background: none; color: var(--text-2); }
+  .rtop__back:hover { border-color: var(--line-strong); color: var(--text); }
+  .rtop__sys { font-size: 14px; font-weight: 600; }
+  .rtop__date { font-size: 11.5px; color: var(--text-2); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 3px 10px; background: none; }
+  .periods { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: var(--radius-pill); }
+  .periods button { border: 0; background: none; border-radius: var(--radius-pill); height: 24px; padding: 0 12px; font-size: 11.5px; color: var(--text-2); }
+  .periods button.is-on { background: var(--blue-soft); color: var(--blue); }
+  .rtop__spacer { flex: 1; }
+  body.is-result .site-header .user { display: none; }
+
+  .workbench { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 20px; padding: 16px 0 40px; align-items: start; }
+
+  /* 左栏 */
+  .rail { position: sticky; top: calc(var(--h-header) + 72px); display: flex; flex-direction: column; gap: 10px; }
+  .rail__head { display: flex; align-items: center; gap: 8px; height: 20px; }
+  .rail__title { font-size: 12px; color: var(--text-2); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; height: 18px; padding: 0 7px; border-radius: var(--radius-pill); font-size: 10px; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--line); }
+  .chip .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--ok); }
+  .chartcard { padding: 12px; }
+  .pillars { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .pillars th { font-weight: 400; font-size: 10px; letter-spacing: .08em; color: var(--text-3); padding: 2px 0 8px; text-align: center; border-bottom: 1px solid var(--line); }
+  .pillars td { text-align: center; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .pillars tr:last-child td { border-bottom: 0; }
+  .pillars .ss { font-size: 10px; color: var(--text-3); }
+  .pillars .gz { font-family: var(--font-serif); font-size: 30px; line-height: 1.15; }
+  .pillars .cg { font-size: 10px; line-height: 1.6; color: var(--text-3); }
+  .pillars .is-day { background: rgba(74, 124, 255, .07); }
+  [data-theme="light"] .pillars .is-day { background: rgba(47, 95, 224, .06); }
+  .pillars th.is-day { color: var(--blue); }
+
+  .strip { padding: 10px 12px; }
+  .strip__head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .strip__head .label { font-size: 10px; }
+  .strip__head .hint { margin-left: auto; font-size: 10px; color: var(--text-3); }
+  .strip__scroll { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .strip__scroll::-webkit-scrollbar { display: none; }
+  .dy { flex: none; width: 46px; text-align: center; padding: 6px 0 5px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .dy .age { font-size: 9.5px; color: var(--text-3); font-family: var(--font-mono); }
+  .dy .gz { font-family: var(--font-serif); font-size: 14px; margin-top: 2px; }
+  .dy.is-now { border-color: var(--blue-line); background: var(--blue-soft); }
+  .dy.is-now .gz { color: var(--blue); }
+
+  .rail__actions { display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .ghost { height: 30px; padding: 0 10px; font-size: 11.5px; color: var(--text-2); background: none; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .ghost:hover { border-color: var(--line-strong); color: var(--text); }
+  .ghost:last-child { margin-left: auto; }
+  .rail__toggle { display: none; }
+
+  /* 右栏 */
+  .panel { min-width: 0; }
+  .mtabs { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: var(--radius-pill); }
+  .mtabs button { border: 0; background: none; height: 28px; padding: 0 14px; border-radius: var(--radius-pill); font-size: 12.5px; color: var(--text-2); }
+  .mtabs button.is-on { background: var(--surface-3); color: var(--text); }
+
+  .subtabs { display: flex; gap: 18px; overflow-x: auto; scrollbar-width: none; margin-top: 14px; border-bottom: 1px solid var(--line); }
+  .subtabs::-webkit-scrollbar { display: none; }
+  .subtabs button { flex: none; border: 0; background: none; padding: 0 0 9px; font-size: 12.5px; color: var(--text-3); position: relative; }
+  .subtabs button.is-on { color: var(--text); }
+  .subtabs button.is-on::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--blue); }
+
+  .lede { margin-top: 18px; }
+  .lede h1 { font-family: var(--font-serif); font-weight: 400; font-size: 28px; line-height: 1.35; letter-spacing: .01em; }
+  .lede p { margin-top: 6px; font-size: 12.5px; color: var(--text-2); }
+  .lede .tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+  .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .figure { padding: 14px; }
+  .figure__head { display: flex; align-items: baseline; gap: 8px; }
+  .figure__head .label { font-size: 10px; }
+  .figure__head .note { margin-left: auto; font-size: 10px; color: var(--text-3); }
+  .figure svg#radar { width: 100%; max-width: 330px; height: auto; margin: 6px auto 0; }
+  .figure .bars + .figure__foot { margin-top: 12px; }
+  .figure__foot { margin-top: 4px; font-size: 10.5px; color: var(--text-3); }
+
+  .bars { margin-top: 8px; }
+  .bar { display: grid; grid-template-columns: 52px 1fr 22px; align-items: center; gap: 8px; margin-top: 7px; }
+  .bar .k { font-size: 11.5px; color: var(--text-2); }
+  .bar .track { height: 4px; background: var(--surface-3); border-radius: 2px; overflow: hidden; }
+  .bar .track > i { display: block; height: 100%; background: var(--blue); border-radius: 2px; }
+  .bar .v { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3); text-align: right; }
+
+  .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+  .insight { padding: 14px; }
+  .insight__head { display: flex; align-items: center; gap: 7px; }
+  .insight__head svg { color: var(--text-3); }
+  .insight__k { font-size: 11px; color: var(--text-3); letter-spacing: .06em; }
+  .insight p { margin-top: 8px; font-size: 12.5px; line-height: 1.75; color: var(--text-2); }
+
+  .section-h { display: flex; align-items: center; gap: 10px; margin: 28px 0 10px; }
+  .section-h h2 { font-size: 14px; font-weight: 600; }
+  .section-h .line { flex: 1; height: 1px; background: var(--line); }
+  .section-h .more { font-size: 11px; color: var(--text-3); }
+
+  .essay { max-width: 760px; }
+  .essay p { font-size: 13.5px; line-height: 1.95; color: var(--text-2); }
+  .essay p + p { margin-top: 12px; }
+  .essay strong { color: var(--text); font-weight: 500; }
+
+  .pullquote { margin: 26px 0 0; padding-left: 16px; border-left: 2px solid var(--blue); font-family: var(--font-serif); font-size: 20px; line-height: 1.7; color: var(--text); max-width: 760px; }
+
+  .refs { margin-top: 14px; list-style: none; }
+  .refs li { font-size: 11px; line-height: 1.9; color: var(--text-3); padding-left: 10px; position: relative; }
+  .refs li::before { content: "·"; position: absolute; left: 0; }
+
+  .acc { border-top: 1px solid var(--line); }
+  .acc:last-of-type { border-bottom: 1px solid var(--line); }
+  .acc summary { list-style: none; cursor: pointer; height: 46px; display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-2); }
+  .acc summary::-webkit-details-marker { display: none; }
+  .acc summary:hover { color: var(--text); }
+  .acc summary .plus { margin-left: auto; color: var(--text-3); font-family: var(--font-mono); font-size: 13px; }
+  .acc[open] summary .plus { color: var(--blue); }
+  .acc .acc-body { padding: 0 0 14px; font-size: 12.5px; line-height: 1.9; color: var(--text-2); max-width: 720px; }
+
+  .risk { margin-top: 18px; padding: 12px 14px; border-left: 2px solid var(--risk); background: var(--risk-soft); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .risk .k { font-size: 10.5px; letter-spacing: .1em; color: var(--risk); }
+  .risk p { margin-top: 4px; font-size: 12px; line-height: 1.8; color: var(--text-2); }
+
+  /* AI 对话 */
+  .chat { display: none; margin-top: 14px; }
+  .chat.is-on { display: block; }
+  .chat__log { height: calc(100vh - 300px); min-height: 300px; overflow-y: auto; padding-right: 6px; }
+  .msg { margin-bottom: 18px; max-width: 720px; }
+  .msg--user { margin-left: auto; width: fit-content; max-width: 520px; }
+  .msg--user .bubble { background: var(--surface-3); border-radius: var(--radius-md); padding: 10px 12px; font-size: 12.5px; }
+  .msg--ai { border-left: 1px solid var(--blue-line); padding-left: 12px; }
+  .msg--ai .who { font-size: 10px; color: var(--text-3); letter-spacing: .1em; text-transform: uppercase; }
+  .msg--ai p { margin-top: 6px; font-size: 12.5px; line-height: 1.9; color: var(--text-2); }
+  .chat__input { display: flex; gap: 8px; margin-top: 8px; }
+  .chat__input input { flex: 1; height: 40px; padding: 0 12px; font-size: 12.5px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+  .chat__input button { height: 40px; padding: 0 16px; border: 0; border-radius: var(--radius-sm); background: var(--blue); color: #fff; font-size: 12.5px; }
+  .chat__note { margin-top: 6px; font-size: 10.5px; color: var(--text-3); }
+
+  /* ============ 记录 / 设置 ============ */
+  .table { width: 100%; border-collapse: collapse; }
+  .table th { font-weight: 400; font-size: 10px; letter-spacing: .1em; color: var(--text-3); text-align: left; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .table td { font-size: 12.5px; padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--text-2); }
+  .table td.name { color: var(--text); font-size: 13px; }
+  .table tbody tr:hover { background: var(--surface); }
+  .table td.act button { border: 0; background: none; color: var(--blue); font-size: 12px; }
+  .filters { display: flex; gap: 14px; margin: 20px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .filters button { border: 0; background: none; font-size: 12px; color: var(--text-3); padding: 0 0 2px; }
+  .filters button.is-on { color: var(--text); border-bottom: 1px solid var(--blue); }
+  .list-mobile { display: none; }
+
+  .settings-grid { display: grid; grid-template-columns: 180px 1fr; gap: 40px; padding: 20px 0 60px; align-items: start; }
+  .anchors { position: sticky; top: calc(var(--h-header) + 20px); display: flex; flex-direction: column; gap: 10px; }
+  .anchors a { font-size: 12px; color: var(--text-3); text-decoration: none; }
+  .anchors a:hover { color: var(--text); }
+  .set-block { padding-top: 16px; border-top: 1px solid var(--line); margin-bottom: 32px; }
+  .set-block h2 { font-size: 14px; font-weight: 600; }
+  .set-row { display: flex; align-items: center; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .set-row:last-child { border-bottom: 0; }
+  .set-row .l { flex: 1; }
+  .set-row .t { font-size: 13px; }
+  .set-row .d { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .set-input { width: 200px; }
+  .danger { color: var(--risk); }
+
+  .tabbar { display: none; }
+
+  /* ============ 响应式 ============ */
+  @media (max-width: 1279px) {
+    .grid-sys { grid-template-columns: repeat(3, 1fr); }
+    .hero { grid-template-columns: 1fr 300px; gap: 36px; }
+  }
+  @media (max-width: 1023px) {
+    :root { --gutter: 20px; }
+    .hero { grid-template-columns: 1fr; padding: 48px 0 32px; }
+    .hero-art { display: none; }
+    .hero h1 { font-size: 42px; }
+    .grid-sys { grid-template-columns: repeat(2, 1fr); }
+    .split { grid-template-columns: 1fr; gap: 28px; padding-bottom: 40px; }
+    .workbench { grid-template-columns: 1fr; }
+    .rail { position: static; max-width: 520px; }
+    .figs, .cards3 { grid-template-columns: 1fr; }
+    .settings-grid { grid-template-columns: 1fr; gap: 20px; }
+    .anchors { position: static; flex-direction: row; gap: 18px; }
+    .rtop { flex-wrap: wrap; height: auto; padding: 8px 0; }
+  }
+  @media (max-width: 767px) {
+    :root { --h-header: 48px; --gutter: 14px; }
+    body { font-size: 13px; padding-bottom: 64px; }
+    .header-inner { gap: 10px; }
+    .wordmark { font-size: 16px; letter-spacing: .16em; }
+    .wordmark em, .mainnav, .user__name, .user__plan { display: none; }
+    .hero h1 { font-size: 32px; }
+    .hero p { font-size: 13px; }
+    .grid-sys { gap: 8px; }
+    .sys { padding: 12px; }
+    .sys .desc { display: none; }
+    .group { margin-top: 22px; }
+    .home-foot { padding: 24px 0 12px; flex-wrap: wrap; gap: 10px; }
+
+    .rtop { padding: 6px 0 8px; gap: 8px; }
+    .rtop__date { display: none; }
+    .periods { order: 9; width: 100%; overflow-x: auto; }
+    .periods button { height: 26px; }
+
+    .workbench { padding: 10px 0 24px; gap: 14px; }
+    .rail { gap: 8px; max-width: none; }
+    .rail.is-collapsed .rail__more { display: none; }
+    .rail__toggle { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 32px; margin-top: 2px; font-size: 11.5px; color: var(--text-2); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+    .pillars .gz { font-size: 24px; }
+    .rail__actions { flex-wrap: wrap; }
+
+    .split { display: flex; flex-direction: column; gap: 0; }
+    .split-left { display: contents; }
+    .split-left .eyebrow { order: 1; }
+    .split-left h1 { order: 2; margin-top: 12px; }
+    .split-left .tagline { order: 3; margin-top: 10px; }
+    .split .form-card { order: 4; width: 100%; margin-top: 20px; }
+    .split-left .method { order: 5; margin-top: 26px; }
+    .split-left .note { order: 6; margin-top: 14px; }
+
+    .lede h1 { font-size: 22px; }
+    .lede p { font-size: 12px; }
+    .subtabs { gap: 14px; }
+    .figure { padding: 12px; }
+    .cards3 { gap: 8px; }
+    .chat__log { height: calc(100vh - 360px); }
+
+    .table { display: none; }
+    .list-mobile { display: block; }
+    .record { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+    .record .l { flex: 1; min-width: 0; }
+    .record .t { font-size: 13px; }
+    .record .s { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+    .record .d { font-size: 10px; color: var(--text-3); font-family: var(--font-mono); }
+
+    .tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; height: 52px; padding-bottom: env(safe-area-inset-bottom); background: var(--surface); border-top: 1px solid var(--line); }
+    .tabbar button { flex: 1; border: 0; background: none; color: var(--text-3); display: grid; place-items: center; gap: 2px; font-size: 10px; }
+    .tabbar button[aria-current="page"] { color: var(--blue); }
+  }
+
+  /* ============ 英文 ============ */
+  body.lang-en .hero h1,
+  body.lang-en .lede h1,
+  body.lang-en .split-left h1,
+  body.lang-en .pullquote,
+  body.lang-en .wordmark { font-family: Georgia, "Times New Roman", serif; letter-spacing: -.01em; }
+  body.lang-en .hero h1 { font-size: 48px; line-height: 1.1; }
+  body.lang-en .lede h1 { font-size: 24px; }
+  body.lang-en .pullquote { font-size: 19px; line-height: 1.5; }
+  @media (max-width: 1023px) { body.lang-en .hero h1 { font-size: 40px; } }
+  @media (max-width: 767px) { body.lang-en .hero h1 { font-size: 30px; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="wordmark" href="#" data-go="home">玄机<em>Xuanji</em></a>
+    <nav class="mainnav" aria-label="主导航">
+      <button data-go="home" aria-current="page" data-zh="首页" data-en="Home">首页</button>
+      <button data-go="chart" data-zh="起盘" data-en="Chart">起盘</button>
+      <button data-go="history" data-zh="记录" data-en="History">记录</button>
+      <button data-go="settings" data-zh="设置" data-en="Settings">设置</button>
+    </nav>
+    <div class="utils">
+      <div class="lang" role="group" aria-label="语言">
+        <button data-lang="zh" aria-pressed="true">中</button>
+        <button data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button class="iconbtn" id="themeBtn" aria-label="切换主题">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <circle cx="12" cy="12" r="7.2"/><path d="M12 4.8a7.2 7.2 0 0 1 0 14.4z" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+      <div class="user">
+        <span class="user__avatar">陈</span>
+        <span class="user__name">陈星宇</span>
+        <span class="user__plan">普通版</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= 首页 ================= -->
+  <section class="view is-active" id="view-home">
+    <div class="shell">
+      <div class="hero">
+        <div>
+          <div class="eyebrow" data-zh="命理排盘 · Divination" data-en="Divination platform">命理排盘 · Divination</div>
+          <h1 data-zh="把命盘，
+读成一段事实。" data-en="Read the chart
+as it is.">把命盘，
+读成一段事实。</h1>
+          <p data-zh="排盘交给代码，解读交给 AI。11 个体系，同一套生辰，不同的看法。"
+             data-en="Calculations by code, reading by AI. Eleven systems, one birth moment, different views.">
+            排盘交给代码，解读交给 AI。11 个体系，同一套生辰，不同的看法。
+          </p>
+          <div class="hero-actions">
+            <button class="btn-primary" data-go="chart" data-zh="开始排盘" data-en="Start a chart">开始排盘</button>
+            <button class="textlink" data-go="result" data-zh="查看示例结果" data-en="See a sample reading">查看示例结果</button>
+          </div>
+          <div class="hero-meta mono" data-zh="11 个体系 · 实时计算 · 结果可复核" data-en="11 systems · live calculation · auditable">11 个体系 · 实时计算 · 结果可复核</div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg viewBox="0 0 420 420" fill="none">
+            <g stroke="currentColor" stroke-opacity=".10">
+              <circle cx="210" cy="210" r="188"/><circle cx="210" cy="210" r="132" stroke-dasharray="2 7"/>
+              <path d="M210 22v376M22 210h376"/>
+            </g>
+            <g stroke="#4a7cff" stroke-opacity=".45">
+              <circle cx="210" cy="210" r="92"/>
+              <path d="M210 118l68 102-68 52-68-52z"/>
+            </g>
+            <g fill="#4a7cff">
+              <circle cx="210" cy="118" r="2.4"/><circle cx="278" cy="220" r="2.4"/>
+              <circle cx="210" cy="272" r="2.4"/><circle cx="142" cy="220" r="2.4"/>
+            </g>
+            <g fill="currentColor" fill-opacity=".35">
+              <circle cx="210" cy="40" r="1.4"/><circle cx="300" cy="92" r="1.8"/>
+              <circle cx="356" cy="196" r="1.4"/><circle cx="286" cy="330" r="1.6"/>
+              <circle cx="120" cy="300" r="1.4"/><circle cx="70" cy="170" r="1.6"/>
+            </g>
+            <g fill="currentColor" fill-opacity=".4" font-size="10" font-family="Songti SC, serif" text-anchor="middle">
+              <text x="210" y="34">子</text><text x="388" y="214">卯</text>
+              <text x="210" y="398">午</text><text x="32" y="214">酉</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <section class="group">
+        <div class="group-head"><span class="idx">01</span><h2 data-zh="命盘" data-en="Natal">命盘</h2><span class="count mono" data-zh="4 个" data-en="4">4 个</span></div>
+        <div class="grid-sys">
+          <button class="sys" data-go="result">
+            <span class="num">01</span><span class="name" data-zh="四柱八字" data-en="Four Pillars">四柱八字</span>
+            <span class="desc" data-zh="四柱十神 · 藏干神煞 · 大运流年" data-en="Ten gods, hidden stems, luck cycles">四柱十神 · 藏干神煞 · 大运流年</span>
+          </button>
+          <button class="sys" data-go="result">
+            <span class="num">02</span><span class="name" data-zh="紫微斗数" data-en="Zi Wei Dou Shu">紫微斗数</span>
+            <span class="desc" data-zh="十二宫 · 主辅星 · 四化大限" data-en="Twelve palaces, stars, transformations">十二宫 · 主辅星 · 四化大限</span>
+          </button>
+          <button class="sys" data-go="result">
+            <span class="num">03</span><span class="name" data-zh="西方占星" data-en="Western Astrology">西方占星</span>
+            <span class="desc" data-zh="日月升 · 行星落座 · 相位" data-en="Sun, moon, rising, aspects">日月升 · 行星落座 · 相位</span>
+          </button>
+          <button class="sys" data-go="result">
+            <span class="num">04</span><span class="name" data-zh="奇门终身局" data-en="Qi Men Life Chart">奇门终身局</span>
+            <span class="desc" data-zh="九宫 · 八门九星 · 终身格局" data-en="Nine palaces, gates, life pattern">九宫 · 八门九星 · 终身格局</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="group">
+        <div class="group-head"><span class="idx">02</span><h2 data-zh="合盘" data-en="Synastry">合盘</h2><span class="count mono" data-zh="2 个" data-en="2">2 个</span></div>
+        <div class="grid-sys">
+          <button class="sys" data-go="chart">
+            <span class="num">05</span><span class="name" data-zh="八字合盘" data-en="Bazi Synastry">八字合盘</span>
+            <span class="desc" data-zh="日主关系 · 夫妻宫 · 五行互补" data-en="Day masters, spouse palace, elements">日主关系 · 夫妻宫 · 五行互补</span>
+          </button>
+          <button class="sys" data-go="chart">
+            <span class="num">06</span><span class="name" data-zh="紫微合盘" data-en="Zi Wei Synastry">紫微合盘</span>
+            <span class="desc" data-zh="命宫互照 · 四化互动" data-en="Palace mirroring, transformations">命宫互照 · 四化互动</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="group">
+        <div class="group-head"><span class="idx">03</span><h2 data-zh="占卜" data-en="Divination">占卜</h2><span class="count mono" data-zh="4 个" data-en="4">4 个</span></div>
+        <div class="grid-sys">
+          <button class="sys" data-go="result">
+            <span class="num">07</span><span class="name" data-zh="六爻" data-en="Liu Yao">六爻</span>
+            <span class="desc" data-zh="世应六亲 · 动爻变卦" data-en="Six relatives, moving lines">世应六亲 · 动爻变卦</span>
+          </button>
+          <button class="sys" data-go="result">
+            <span class="num">08</span><span class="name" data-zh="塔罗" data-en="Tarot">塔罗</span>
+            <span class="desc" data-zh="牌阵 · 正逆位 · 牌义" data-en="Spreads, reversals, meanings">牌阵 · 正逆位 · 牌义</span>
+          </button>
+          <button class="sys" data-go="result">
+            <span class="num">09</span><span class="name" data-zh="梅花易数" data-en="Plum Blossom">梅花易数</span>
+            <span class="desc" data-zh="时间起卦 · 体用生克" data-en="Time hexagrams, body and use">时间起卦 · 体用生克</span>
+          </button>
+          <button class="sys" data-go="result">
+            <span class="num">10</span><span class="name" data-zh="孔明" data-en="Kong Ming">孔明</span>
+            <span class="desc" data-zh="占课 · 断事" data-en="Divination lots, judgement">占课 · 断事</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="group">
+        <div class="group-head"><span class="idx">04</span><h2 data-zh="趣味" data-en="Play">趣味</h2><span class="count mono" data-zh="1 个" data-en="1">1 个</span></div>
+        <div class="grid-sys">
+          <button class="sys" data-go="result">
+            <span class="num">11</span><span class="name" data-zh="MBTI" data-en="MBTI">MBTI</span>
+            <span class="desc" data-zh="12 题快速测评" data-en="A 12-question test">12 题快速测评</span>
+          </button>
+        </div>
+      </section>
+
+      <div class="home-foot">
+        <span data-zh="排盘引擎：八字 / 紫微 / 六爻 / 塔罗 / 占星" data-en="Engines: Bazi, Zi Wei, Liu Yao, Tarot, Astrology">排盘引擎：八字 / 紫微 / 六爻 / 塔罗 / 占星</span>
+        <span data-zh="全站结果可复核" data-en="Every chart is reproducible">全站结果可复核</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 起盘 ================= -->
+  <section class="view" id="view-chart">
+    <div class="shell">
+      <div class="page-head">
+        <div class="crumb" data-zh="起盘" data-en="Chart">起盘</div>
+      </div>
+      <div class="split">
+        <div class="split-left">
+          <div class="eyebrow" data-zh="Birth chart · 起盘" data-en="Birth chart">Birth chart · 起盘</div>
+          <h1 data-zh="四柱八字" data-en="Four Pillars">四柱八字</h1>
+          <p class="tagline" data-zh="以出生时刻定四柱。天干地支、十神藏干、神煞大运，一并呈现。"
+             data-en="Four pillars fixed by the hour of birth — stems, branches, ten gods, hidden stems, luck cycles.">
+            以出生时刻定四柱。天干地支、十神藏干、神煞大运，一并呈现。
+          </p>
+          <div class="method">
+            <div class="row"><span class="n">01</span><p data-zh="以节气定月柱，不按农历月份。" data-en="Month pillars follow solar terms, not lunar months.">以节气定月柱，不按农历月份。</p></div>
+            <div class="row"><span class="n">02</span><p data-zh="真太阳时按出生地经度与均时差校正。" data-en="True solar time corrected by longitude and equation of time.">真太阳时按出生地经度与均时差校正。</p></div>
+            <div class="row"><span class="n">03</span><p data-zh="子时换日采用晚子时归次日。" data-en="Late-zi hours roll over to the next day.">子时换日采用晚子时归次日。</p></div>
+          </div>
+          <p class="note" data-zh="注：节气交界前后 24 小时会给出提示，命盘仍按实际交节时刻计算。"
+             data-en="Note: charts near a solar-term boundary are flagged within 24 hours.">
+            注：节气交界前后 24 小时会给出提示，命盘仍按实际交节时刻计算。
+          </p>
+        </div>
+
+        <div class="form-card">
+          <div class="fgroup">
+            <span class="flabel" data-zh="历法" data-en="Calendar">历法</span>
+            <div class="seg2" id="calSeg">
+              <button class="is-on" data-zh="公历" data-en="Solar">公历</button>
+              <button data-zh="农历" data-en="Lunar">农历</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <span class="flabel" data-zh="出生日期" data-en="Date of birth">出生日期</span>
+            <div class="row3">
+              <div class="selwrap"><select class="field" aria-label="年"><option>1990</option><option>1991</option></select></div>
+              <div class="selwrap"><select class="field" aria-label="月"><option>05</option><option>06</option></select></div>
+              <div class="selwrap"><select class="field" aria-label="日"><option>15</option><option>16</option></select></div>
+            </div>
+          </div>
+          <div class="fgroup">
+            <span class="flabel"><span data-zh="出生时间" data-en="Time">出生时间</span><span class="opt" data-zh="可只选时辰" data-en="shichen is enough">可只选时辰</span></span>
+            <div class="row2">
+              <div class="selwrap"><select class="field" id="hourSel" aria-label="时"><option>14 时</option><option>13 时</option><option>15 时</option></select></div>
+              <div class="selwrap"><select class="field" aria-label="分"><option>30 分</option><option>00 分</option></select></div>
+            </div>
+            <div class="inline-hint" id="shichenHint">14:30 → 未时（13:00–15:00）</div>
+          </div>
+          <div class="fgroup">
+            <span class="flabel" data-zh="出生地" data-en="Place">出生地</span>
+            <div class="selwrap"><select class="field" aria-label="城市"><option>北京市 · 北京</option><option>上海市 · 上海</option><option>乌鲁木齐市 · 新疆</option></select></div>
+          </div>
+          <div class="fgroup">
+            <span class="flabel" data-zh="性别" data-en="Gender">性别</span>
+            <div class="seg2" id="genderSeg">
+              <button class="is-on" data-zh="男" data-en="Male">男</button>
+              <button data-zh="女" data-en="Female">女</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <div class="switchrow">
+              <div><div class="t" data-zh="真太阳时校正" data-en="True solar time">真太阳时校正</div><div class="d mono" data-zh="经度 116.407° · −10.6 分" data-en="116.407° E · −10.6 min">经度 116.407° · −10.6 分</div></div>
+              <button class="toggle" id="tstToggle" role="switch" aria-checked="true" aria-label="真太阳时校正"></button>
+            </div>
+            <div class="switchrow">
+              <div><div class="t" data-zh="不知道出生时间" data-en="Time unknown">不知道出生时间</div><div class="d" data-zh="按时辰未知处理" data-en="Treated as unknown">按时辰未知处理</div></div>
+              <button class="toggle" id="unknownToggle" role="switch" aria-checked="false" aria-label="不知道出生时间"></button>
+            </div>
+          </div>
+          <button class="btn-primary submit" id="btnStart" data-zh="开始排盘" data-en="Generate chart">开始排盘</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 结果 ================= -->
+  <section class="view" id="view-result">
+    <div class="shell">
+      <div class="rtop">
+        <button class="rtop__back" data-go="chart" aria-label="返回">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>
+        </button>
+        <span class="rtop__sys" data-zh="四柱八字" data-en="Four Pillars">四柱八字</span>
+        <button class="rtop__date mono">1990-05-15 14:30</button>
+        <div class="periods" id="periods">
+          <button class="is-on" data-zh="本命" data-en="Natal">本命</button>
+          <button data-zh="大运" data-en="Decade">大运</button>
+          <button data-zh="流年" data-en="Annual">流年</button>
+        </div>
+        <div class="rtop__spacer"></div>
+        <div class="user">
+          <span class="user__avatar">陈</span>
+          <span class="user__name">陈星宇</span>
+          <span class="user__plan">普通版</span>
+        </div>
+      </div>
+
+      <div class="workbench">
+        <!-- 左栏 -->
+        <aside class="rail" id="rail">
+          <div class="rail__head">
+            <span class="rail__title" data-zh="本命盘 · 男" data-en="Natal chart · Male">本命盘 · 男</span>
+            <span class="chip"><i class="dot"></i><span data-zh="真太阳时 14:19" data-en="True solar 14:19">真太阳时 14:19</span></span>
+          </div>
+
+          <div class="card chartcard">
+            <table class="pillars">
+              <thead>
+                <tr>
+                  <th data-zh="年" data-en="Y">年</th><th data-zh="月" data-en="M">月</th>
+                  <th class="is-day" data-zh="日" data-en="D">日</th><th data-zh="时" data-en="H">时</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ss" data-zh="比肩" data-en="Peer">比肩</td>
+                  <td class="ss" data-zh="劫财" data-en="Rob">劫财</td>
+                  <td class="ss" data-zh="日主" data-en="Self">日主</td>
+                  <td class="ss" data-zh="伤官" data-en="Hurting">伤官</td>
+                </tr>
+                <tr><td class="gz">庚</td><td class="gz">辛</td><td class="gz is-day">庚</td><td class="gz">癸</td></tr>
+                <tr><td class="gz">午</td><td class="gz">巳</td><td class="gz is-day">辰</td><td class="gz">未</td></tr>
+                <tr><td class="cg">丁己</td><td class="cg">丙庚戊</td><td class="cg is-day">戊乙癸</td><td class="cg">己丁乙</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="rail__more">
+            <div class="card strip">
+              <div class="strip__head">
+                <span class="label" data-zh="大运" data-en="Decades">大运</span>
+                <span class="hint" data-zh="7 岁 3 个月起运" data-en="from 7y3m">7 岁 3 个月起运</span>
+              </div>
+              <div class="strip__scroll">
+                <div class="dy"><div class="age">0–7</div><div class="gz">辛巳</div></div>
+                <div class="dy"><div class="age">7–16</div><div class="gz">壬午</div></div>
+                <div class="dy"><div class="age">17–26</div><div class="gz">癸未</div></div>
+                <div class="dy is-now"><div class="age">27–36</div><div class="gz">甲申</div></div>
+                <div class="dy"><div class="age">37–46</div><div class="gz">乙酉</div></div>
+                <div class="dy"><div class="age">47–56</div><div class="gz">丙戌</div></div>
+                <div class="dy"><div class="age">57–66</div><div class="gz">丁亥</div></div>
+                <div class="dy"><div class="age">67–76</div><div class="gz">戊子</div></div>
+              </div>
+            </div>
+
+            <div class="card strip" style="margin-top:8px">
+              <div class="strip__head">
+                <span class="label" data-zh="流年" data-en="Years">流年</span>
+                <span class="hint" data-zh="近 6 年" data-en="last 6">近 6 年</span>
+              </div>
+              <div class="strip__scroll">
+                <div class="dy"><div class="age">2024</div><div class="gz">甲辰</div></div>
+                <div class="dy"><div class="age">2025</div><div class="gz">乙巳</div></div>
+                <div class="dy is-now"><div class="age">2026</div><div class="gz">丙午</div></div>
+                <div class="dy"><div class="age">2027</div><div class="gz">丁未</div></div>
+                <div class="dy"><div class="age">2028</div><div class="gz">戊申</div></div>
+                <div class="dy"><div class="age">2029</div><div class="gz">己酉</div></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="rail__toggle" id="railToggle">
+            <span data-zh="展开盘面与大运" data-en="Show chart & cycles">展开盘面与大运</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+
+          <div class="rail__actions">
+            <button class="ghost" data-zh="修改生辰" data-en="Edit birth">修改生辰</button>
+            <button class="ghost" data-zh="隐藏生辰" data-en="Hide birth">隐藏生辰</button>
+            <button class="ghost" data-go="chart" data-zh="重新起盘" data-en="Restart">重新起盘</button>
+          </div>
+        </aside>
+
+        <!-- 右栏 -->
+        <div class="panel">
+          <div class="mtabs" id="mtabs">
+            <button class="is-on" data-panel="analysis" data-zh="命盘分析" data-en="Analysis">命盘分析</button>
+            <button data-panel="chat" data-zh="AI 对话" data-en="AI chat">AI 对话</button>
+          </div>
+
+          <div id="panel-analysis">
+            <div class="subtabs" id="subtabs">
+              <button class="is-on" data-zh="命格总览" data-en="Overview">命格总览</button>
+              <button data-zh="性格" data-en="Character">性格</button>
+              <button data-zh="事业" data-en="Career">事业</button>
+              <button data-zh="财运" data-en="Wealth">财运</button>
+              <button data-zh="感情" data-en="Relationships">感情</button>
+              <button data-zh="健康" data-en="Health">健康</button>
+            </div>
+
+            <div class="lede">
+              <h1 data-zh="稳中有进，厚积薄发" data-en="Steady progress, late bloom">稳中有进，厚积薄发</h1>
+              <p data-zh="庚金生于巳月，得辰土为印：适合把一门本事练精，不适合投机与急着求成。"
+                 data-en="Geng metal in the Si month, rooted in Chen earth: mastery of one craft suits you better than speculation.">
+                庚金生于巳月，得辰土为印：适合把一门本事练精，不适合投机与急着求成。
+              </p>
+              <div class="tags">
+                <span class="chip" data-zh="日主 庚金" data-en="Day master: Geng">日主 庚金</span>
+                <span class="chip mono" data-zh="身中和偏弱" data-en="Balanced, slightly weak">身中和偏弱</span>
+                <span class="chip" data-zh="用神 土金" data-en="Favours earth & metal">用神 土金</span>
+              </div>
+            </div>
+
+            <div class="figs">
+              <div class="card figure">
+                <div class="figure__head">
+                  <span class="label" data-zh="五行分布" data-en="Five elements">五行分布</span>
+                  <span class="note mono" data-zh="含藏干 · 共 11" data-en="incl. hidden · 11">含藏干 · 共 11</span>
+                </div>
+                <svg id="radar" viewBox="0 0 260 232" role="img" aria-label="五行分布雷达图"></svg>
+                <div class="figure__foot" data-zh="基于本盘数据（天干 + 藏干计数），不是打分。"
+                     data-en="Built from this chart (stems + hidden stems), not a score.">基于本盘数据（天干 + 藏干计数），不是打分。</div>
+              </div>
+
+              <div class="card figure">
+                <div class="figure__head">
+                  <span class="label" data-zh="十神分布" data-en="Ten gods">十神分布</span>
+                  <span class="note mono" data-zh="天干 4 + 藏干 10" data-en="4 stems + 10 hidden">天干 4 + 藏干 10</span>
+                </div>
+                <div class="bars" id="bars"></div>
+                <div class="figure__foot" data-zh="合计 14 处：比劫 3 · 官杀 3 · 印星 4 · 财 2 · 食伤 2。"
+                     data-en="14 occurrences: peers 3 · officers 3 · resource 4 · wealth 2 · output 2.">合计 14 处：比劫 3 · 官杀 3 · 印星 4 · 财 2 · 食伤 2。</div>
+              </div>
+            </div>
+
+            <div class="cards3">
+              <div class="card insight">
+                <div class="insight__head">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/></svg>
+                  <span class="insight__k" data-zh="核心优势" data-en="Strength">核心优势</span>
+                </div>
+                <p data-zh="日坐辰土为印，遇事沉得住；伤官在时，动手比空想快，作品比解释有说服力。"
+                   data-en="Chen earth beneath the day keeps you steady; the hurting officer at the hour favours making over explaining.">
+                  日坐辰土为印，遇事沉得住；伤官在时，动手比空想快，作品比解释有说服力。
+                </p>
+              </div>
+              <div class="card insight">
+                <div class="insight__head">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8.5" cy="9" r="2.6"/><circle cx="15.5" cy="9" r="2.6"/><path d="M3.5 19c0-2.6 2.2-4.4 5-4.4s5 1.8 5 4.4M13 19c0-2.6 2-4.4 4.5-4.4 1.2 0 2.2.5 2.9 1.3"/></svg>
+                  <span class="insight__k" data-zh="关系模式" data-en="Relating">关系模式</span>
+                </div>
+                <p data-zh="比肩与劫财并透：贵人与竞争者常是同一批人。适合先共事、再分利，一开始就谈条件反而容易散。"
+                   data-en="Peer and rob-wealth both appear: allies and rivals are often the same people. Work first, divide later.">
+                  比肩与劫财并透：贵人与竞争者常是同一批人。适合先共事、再分利，一开始就谈条件反而容易散。
+                </p>
+              </div>
+              <div class="card insight">
+                <div class="insight__head">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 19V9M10 19V5M16 19v-6M22 19H2"/></svg>
+                  <span class="insight__k" data-zh="成长课题" data-en="Growth">成长课题</span>
+                </div>
+                <p data-zh="劫财透干，容易在熟人局里让步过多。把分成、边界、时间提前说清楚，比事后补话更省力。"
+                   data-en="Rob-wealth at the stem can make you over-concede among friends. Set splits and boundaries early.">
+                  劫财透干，容易在熟人局里让步过多。把分成、边界、时间提前说清楚，比事后补话更省力。
+                </p>
+              </div>
+            </div>
+
+            <div class="section-h">
+              <h2 data-zh="命格总览" data-en="Chart overview">命格总览</h2>
+              <span class="line"></span>
+              <span class="more mono">1990-05-15 14:19</span>
+            </div>
+            <div class="essay">
+              <p data-zh="日主庚金生于巳月，火旺而金受炼，得年柱庚午比肩相助，日坐辰土为印——这是「有根有炼」的盘，不必急着补金，也不必急着出头。"
+                 data-en="Geng metal born in the Si month: fire is strong, metal is tempered, the year's Geng supports, and Chen earth sits beneath the day. Rooted and tempered — no need to rush either supplements or the spotlight.">
+                日主庚金生于巳月，火旺而金受炼，得年柱庚午比肩相助，日坐辰土为印——这是「有根有炼」的盘，不必急着补金，也不必急着出头。
+              </p>
+              <p data-zh="月干辛金为劫财，与年干比肩并透，主竞争与伙伴同源：机会多来自同辈，摩擦也多来自同辈。时干癸水伤官泄秀，是这盘的出口——表达、技术、作品。把庚金的锐气用在「做出来」上，比用在争论上顺得多。"
+                 data-en="Xin at the month stem is rob-wealth, level with the year's peer: rivals and partners come from the same circle. Gui water at the hour is the outlet — expression, craft, finished work. Spend the edge on making, not arguing.">
+                月干辛金为劫财，与年干比肩并透，主竞争与伙伴同源：机会多来自同辈，摩擦也多来自同辈。时干癸水伤官泄秀，是这盘的出口——表达、技术、作品。把庚金的锐气用在「做出来」上，比用在争论上顺得多。
+              </p>
+              <p data-zh="现行甲申大运：甲木偏财透出，申为庚之禄地，财路开始具体化。宜在专业内积累可复用的成果，而不是频繁换赛道。"
+                 data-en="Current Jia-Shen decade: indirect wealth appears and Shen roots Geng. Income becomes concrete — build reusable work inside one field rather than switching tracks.">
+                现行甲申大运：甲木偏财透出，申为庚之禄地，财路开始具体化。宜在专业内积累可复用的成果，而不是频繁换赛道。
+              </p>
+            </div>
+
+            <blockquote class="pullquote" data-zh="庚金的锐气不必外露：把事做扎实，钱和名声都会自己找上门。"
+              data-en="The edge of Geng metal need not show: do the work well, and money and reputation will find you.">
+              庚金的锐气不必外露：把事做扎实，钱和名声都会自己找上门。
+            </blockquote>
+
+            <div class="section-h">
+              <h2 data-zh="核心论断" data-en="Core reading">核心论断</h2>
+              <span class="line"></span>
+              <span class="more" data-zh="可回溯" data-en="Traceable">可回溯</span>
+            </div>
+            <div class="essay">
+              <p data-zh="判断强弱：庚金在巳月失令，但年干比肩、日支辰土、时支未中己土三处有根，判为「中和偏弱」。取用：以土生金、以金帮身，忌火过旺与木过度耗泄。"
+                 data-en="Strength: Geng loses season in Si, but the year stem, the Chen earth under the day and the hidden earth in Wei give three roots — balanced, slightly weak. Use earth to feed metal, metal to support; avoid excess fire or wood.">
+                判断强弱：庚金在巳月失令，但年干比肩、日支辰土、时支未中己土三处有根，判为「中和偏弱」。取用：以土生金、以金帮身，忌火过旺与木过度耗泄。
+              </p>
+              <p style="margin-top:14px"><strong data-zh="关键推导（可回溯）：" data-en="Derivation (traceable):">关键推导（可回溯）：</strong></p>
+              <ul class="refs">
+                <li data-zh="年柱 庚午：庚为比肩，午藏丁火（正官）、己土（正印）——印在年，早年受长辈之助。" data-en="Year 庚午: peer, with officer and resource hidden — early support from elders.">年柱 庚午：庚为比肩，午藏丁火（正官）、己土（正印）——印在年，早年受长辈之助。</li>
+                <li data-zh="日支 辰：戊土（偏印）、乙木（正财）、癸水（伤官）——印、财、伤同宫，做事与求财走同一条路。" data-en="Day branch 辰: resource, wealth and hurting officer in one palace — work and money share a path.">日支 辰：戊土（偏印）、乙木（正财）、癸水（伤官）——印、财、伤同宫，做事与求财走同一条路。</li>
+                <li data-zh="时柱 癸未：癸为伤官，未藏己土（正印）、丁火（正官）、乙木（正财）——晚运靠作品与专业立身。" data-en="Hour 癸未: hurting officer over resource, officer and wealth — later years stand on craft.">时柱 癸未：癸为伤官，未藏己土（正印）、丁火（正官）、乙木（正财）——晚运靠作品与专业立身。</li>
+              </ul>
+            </div>
+
+            <div class="section-h">
+              <h2 data-zh="展开细读" data-en="Go deeper">展开细读</h2>
+              <span class="line"></span>
+              <span class="more mono" data-zh="4 节" data-en="4 sections">4 节</span>
+            </div>
+            <details class="acc">
+              <summary><span data-zh="十神结构" data-en="Ten-god structure">十神结构</span><span class="plus">+</span></summary>
+              <div class="acc-body" data-zh="比肩、劫财同透，伤官在时，正官与正印各两见。结构上「比劫重、印有力、官不显」，适合以专业与作品立身，不太适合纯管理路径。"
+                data-en="Peers and rob-wealth both show; hurting officer at the hour; officer and resource twice each. Heavy peers, strong resource, weak officer: craft and output suit you better than pure management.">
+                比肩、劫财同透，伤官在时，正官与正印各两见。结构上「比劫重、印有力、官不显」，适合以专业与作品立身，不太适合纯管理路径。
+              </div>
+            </details>
+            <details class="acc">
+              <summary><span data-zh="大运路径" data-en="Decade path">大运路径</span><span class="plus">+</span></summary>
+              <div class="acc-body" data-zh="甲申（27–36）：偏财透出、禄地帮身，收入具体化。乙酉（37–46）：正财坐刃，收入更稳但节奏更紧，注意身体与团队管理。"
+                data-en="Jia-Shen (27–36): indirect wealth with a strong root. Yi-You (37–46): direct wealth on a blade — steadier income, tighter pace.">
+                甲申（27–36）：偏财透出、禄地帮身，收入具体化。乙酉（37–46）：正财坐刃，收入更稳但节奏更紧，注意身体与团队管理。
+              </div>
+            </details>
+            <details class="acc">
+              <summary><span data-zh="流年提示" data-en="Annual notes">流年提示</span><span class="plus">+</span></summary>
+              <div class="acc-body" data-zh="2026 丙午：七杀透出，压力与机会同时来，宜接明确目标的项目；2027 丁未：正官到位，适合把身份与职责定下来。"
+                data-en="2026 Bing-Wu: seven kills surface — pressure and opportunity together; take clearly scoped work. 2027 Ding-Wei: officer arrives; formalise role and duties.">
+                2026 丙午：七杀透出，压力与机会同时来，宜接明确目标的项目；2027 丁未：正官到位，适合把身份与职责定下来。
+              </div>
+            </details>
+            <details class="acc">
+              <summary><span data-zh="经典出处" data-en="Sources">经典出处</span><span class="plus">+</span></summary>
+              <div class="acc-body" data-zh="术语依《渊海子平》《三命通会》通行用法；不同流派对巳月庚金强弱判断略有差异，本盘取中和偏弱。"
+                data-en="Terminology follows Yuanhai Ziping and Sanming Tonghui. Schools differ on Geng in Si; this chart reads balanced and slightly weak.">
+                术语依《渊海子平》《三命通会》通行用法；不同流派对巳月庚金强弱判断略有差异，本盘取中和偏弱。
+              </div>
+            </details>
+
+            <div class="risk">
+              <div class="k" data-zh="风险提醒" data-en="RISK NOTE">风险提醒</div>
+              <p data-zh="劫财与伤官同透，最需留意「因言失和」与「因合伙破财」。合作前把分成写清楚，争执时先停一晚再回。"
+                 data-en="Rob-wealth with hurting officer: watch for words that cost relationships and partnerships that cost money. Write splits down; sleep on arguments.">
+                劫财与伤官同透，最需留意「因言失和」与「因合伙破财」。合作前把分成写清楚，争执时先停一晚再回。
+              </p>
+            </div>
+
+            <ul class="refs" style="margin-top:14px">
+              <li data-zh="以上为结构层解读，不涉及具体事件预测。" data-en="Structural reading only; no event prediction.">以上为结构层解读，不涉及具体事件预测。</li>
+            </ul>
+          </div>
+
+          <!-- AI 对话 -->
+          <div class="chat" id="panel-chat">
+            <div class="chat__log">
+              <div class="msg msg--user"><div class="bubble" data-zh="今年换工作合适吗？" data-en="Is this a good year to change jobs?">今年换工作合适吗？</div></div>
+              <div class="msg msg--ai">
+                <div class="who">玄机 · AI</div>
+                <p data-zh="从盘面看，2026 丙午年七杀透出，压力会明显上升，但也代表「被推到台前」。换工作本身不是问题，问题在于你是否已经有一件可复用的成果——伤官在时的盘，靠作品换位置比靠资历换更顺。"
+                   data-en="In 2026 the seven kills surface: pressure rises, but so does visibility. Changing jobs is not the issue — the question is whether you already have a reusable body of work. With the hurting officer at the hour, you move on output rather than seniority.">
+                  从盘面看，2026 丙午年七杀透出，压力会明显上升，但也代表「被推到台前」。换工作本身不是问题，问题在于你是否已经有一件可复用的成果——伤官在时的盘，靠作品换位置比靠资历换更顺。
+                </p>
+                <p data-zh="节奏上建议：上半年谈、下半年动。甲申大运的禄地在申，申月（立秋后）之后行动，比年初仓促决定更稳。"
+                   data-en="Timing: negotiate in the first half, move in the second. Shen is your strong root this decade — act after the Shen month, not in a rushed start of the year.">
+                  节奏上建议：上半年谈、下半年动。甲申大运的禄地在申，申月（立秋后）之后行动，比年初仓促决定更稳。
+                </p>
+              </div>
+            </div>
+            <div class="chat__input">
+              <input type="text" data-zh-ph="就这张命盘继续追问…" data-en-ph="Ask about this chart…" placeholder="就这张命盘继续追问…" />
+              <button data-zh="发送" data-en="Send">发送</button>
+            </div>
+            <div class="chat__note" data-zh="解读基于上方命盘，不改变排盘结果。" data-en="Grounded in the chart above; the chart is never rewritten.">解读基于上方命盘，不改变排盘结果。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 记录 ================= -->
+  <section class="view" id="view-history">
+    <div class="shell">
+      <div class="page-head">
+        <div class="crumb" data-zh="记录" data-en="History">记录</div>
+        <h1 style="font-family:var(--font-serif);font-weight:400;font-size:28px;margin-top:10px" data-zh="最近的排盘" data-en="Recent charts">最近的排盘</h1>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-3)" data-zh="最近 20 次，仅保存在本机。" data-en="Last 20 charts, stored on this device only.">最近 20 次，仅保存在本机。</p>
+      </div>
+      <div class="filters">
+        <button class="is-on" data-zh="全部" data-en="All">全部</button>
+        <button data-zh="八字" data-en="Bazi">八字</button>
+        <button data-zh="紫微" data-en="Zi Wei">紫微</button>
+        <button data-zh="占卜" data-en="Divination">占卜</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-3)" class="mono" data-zh="4 条" data-en="4 entries">4 条</span>
+      </div>
+      <table class="table">
+        <thead><tr><th data-zh="时间" data-en="When">时间</th><th data-zh="体系" data-en="System">体系</th><th data-zh="命盘" data-en="Chart">命盘</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2026-11-20 14:20</td><td class="name" data-zh="四柱八字" data-en="Four Pillars">四柱八字</td><td>庚午 · 辛巳 · 庚辰 · 癸未</td><td class="act"><button data-zh="查看" data-en="Open">查看</button></td></tr>
+          <tr><td class="mono">2026-11-19 09:02</td><td class="name" data-zh="紫微斗数" data-en="Zi Wei">紫微斗数</td><td data-zh="命宫戌 · 土五局 · 紫微天相" data-en="Ming in Xu · Earth 5">命宫戌 · 土五局 · 紫微天相</td><td class="act"><button data-zh="查看" data-en="Open">查看</button></td></tr>
+          <tr><td class="mono">2026-11-18 21:40</td><td class="name" data-zh="八字合盘" data-en="Bazi Synastry">八字合盘</td><td data-zh="男 1990 × 女 1992 · 契合 78" data-en="1990 M × 1992 F · 78">男 1990 × 女 1992 · 契合 78</td><td class="act"><button data-zh="查看" data-en="Open">查看</button></td></tr>
+          <tr><td class="mono">2026-11-17 08:15</td><td class="name" data-zh="梅花易数" data-en="Plum Blossom">梅花易数</td><td data-zh="坤为地 → 雷地豫" data-en="Kun → Yu">坤为地 → 雷地豫</td><td class="act"><button data-zh="查看" data-en="Open">查看</button></td></tr>
+        </tbody>
+      </table>
+
+      <div class="list-mobile">
+        <div class="record"><div class="l"><div class="t" data-zh="四柱八字" data-en="Four Pillars">四柱八字</div><div class="s">庚午 · 辛巳 · 庚辰 · 癸未</div></div><div class="d">11-20 14:20</div></div>
+        <div class="record"><div class="l"><div class="t" data-zh="紫微斗数" data-en="Zi Wei">紫微斗数</div><div class="s" data-zh="命宫戌 · 土五局" data-en="Ming in Xu · Earth 5">命宫戌 · 土五局</div></div><div class="d">11-19 09:02</div></div>
+        <div class="record"><div class="l"><div class="t" data-zh="八字合盘" data-en="Bazi Synastry">八字合盘</div><div class="s" data-zh="男 1990 × 女 1992 · 78" data-en="1990 M × 1992 F · 78">男 1990 × 女 1992 · 78</div></div><div class="d">11-18 21:40</div></div>
+        <div class="record"><div class="l"><div class="t" data-zh="梅花易数" data-en="Plum Blossom">梅花易数</div><div class="s" data-zh="坤为地 → 雷地豫" data-en="Kun → Yu">坤为地 → 雷地豫</div></div><div class="d">11-17 08:15</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 设置 ================= -->
+  <section class="view" id="view-settings">
+    <div class="shell">
+      <div class="page-head">
+        <div class="crumb" data-zh="设置" data-en="Settings">设置</div>
+        <h1 style="font-family:var(--font-serif);font-weight:400;font-size:28px;margin-top:10px" data-zh="偏好与数据" data-en="Preferences & data">偏好与数据</h1>
+      </div>
+      <div class="settings-grid">
+        <nav class="anchors">
+          <a href="#s-display" data-zh="显示" data-en="Display">显示</a>
+          <a href="#s-ai" data-zh="AI" data-en="AI">AI</a>
+          <a href="#s-data" data-zh="数据" data-en="Data">数据</a>
+        </nav>
+        <div>
+          <div class="set-block" id="s-display">
+            <h2 data-zh="显示" data-en="Display">显示</h2>
+            <div class="set-row">
+              <div class="l"><div class="t" data-zh="主题" data-en="Theme">主题</div><div class="d" data-zh="深色为默认，浅色可切换" data-en="Dark by default, light available">深色为默认，浅色可切换</div></div>
+              <div class="seg2" style="width:200px">
+                <button data-theme-set="dark" class="is-on" data-zh="深色" data-en="Dark">深色</button>
+                <button data-theme-set="light" data-zh="浅色" data-en="Light">浅色</button>
+              </div>
+            </div>
+            <div class="set-row">
+              <div class="l"><div class="t" data-zh="语言" data-en="Language">语言</div><div class="d" data-zh="标题字体随语言切换" data-en="Display type follows language">标题字体随语言切换</div></div>
+              <div class="seg2" style="width:200px">
+                <button class="is-on" data-lang-set="zh" data-zh="中文" data-en="Chinese">中文</button>
+                <button data-lang-set="en" data-zh="English" data-en="English">English</button>
+              </div>
+            </div>
+          </div>
+          <div class="set-block" id="s-ai">
+            <h2 data-zh="AI" data-en="AI">AI</h2>
+            <div class="set-row">
+              <div class="l"><div class="t" data-zh="模型" data-en="Model">模型</div><div class="d" data-zh="OpenAI 兼容接口" data-en="OpenAI-compatible">OpenAI 兼容接口</div></div>
+              <input class="field set-input" value="deepseek-chat" />
+            </div>
+            <div class="set-row">
+              <div class="l"><div class="t" data-zh="API Key" data-en="API key">API Key</div><div class="d" data-zh="未配置时降级为本地规则解读" data-en="Falls back to local rules">未配置时降级为本地规则解读</div></div>
+              <button class="textlink" data-zh="配置" data-en="Configure">配置</button>
+            </div>
+          </div>
+          <div class="set-block" id="s-data">
+            <h2 data-zh="数据" data-en="Data">数据</h2>
+            <div class="set-row">
+              <div class="l"><div class="t" data-zh="清除本机记录" data-en="Clear local history">清除本机记录</div><div class="d" data-zh="删除后不可恢复" data-en="Cannot be undone">删除后不可恢复</div></div>
+              <button class="textlink danger" data-zh="清除" data-en="Clear">清除</button>
+            </div>
+            <div class="set-row">
+              <div class="l"><div class="t" data-zh="导出 JSON" data-en="Export JSON">导出 JSON</div><div class="d" data-zh="含全部命盘与设置" data-en="Charts and settings">含全部命盘与设置</div></div>
+              <button class="textlink" data-zh="导出" data-en="Export">导出</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabbar" aria-label="底部导航">
+  <button data-go="home" aria-current="page">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 10.5L12 4l8 6.5V20H4z"/></svg>
+    <span data-zh="首页" data-en="Home">首页</span>
+  </button>
+  <button data-go="chart">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 4v16M10 4v16M15 4v16M20 4v16"/></svg>
+    <span data-zh="起盘" data-en="Chart">起盘</span>
+  </button>
+  <button data-go="history">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+    <span data-zh="记录" data-en="History">记录</span>
+  </button>
+  <button data-go="settings">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
+    <span data-zh="设置" data-en="Settings">设置</span>
+  </button>
+</nav>
+
+<script>
+(function () {
+  /* ---------------- 视图切换 ---------------- */
+  var views = {};
+  ['home', 'chart', 'result', 'history', 'settings'].forEach(function (k) {
+    views[k] = document.getElementById('view-' + k);
+  });
+  function go(name) {
+    if (!views[name]) return;
+    Object.keys(views).forEach(function (k) { views[k].classList.toggle('is-active', k === name); });
+    document.querySelectorAll('.mainnav button').forEach(function (b) {
+      b.setAttribute('aria-current', b.dataset.go === name ? 'page' : 'false');
+    });
+    document.querySelectorAll('.tabbar button').forEach(function (b) {
+      b.setAttribute('aria-current', b.dataset.go === name ? 'page' : 'false');
+    });
+    document.body.classList.toggle('is-result', name === 'result');
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('[data-go]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); go(el.dataset.go); });
+  });
+
+  /* ---------------- 主题 ---------------- */
+  var themeBtn = document.getElementById('themeBtn');
+  function applyTheme(mode) {
+    if (mode === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+    document.querySelectorAll('[data-theme-set]').forEach(function (b) {
+      b.classList.toggle('is-on', mode === 'light' ? b.dataset.themeSet === 'light' : b.dataset.themeSet === 'dark');
+    });
+  }
+  themeBtn.addEventListener('click', function () {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+  });
+  document.querySelectorAll('[data-theme-set]').forEach(function (b) {
+    b.addEventListener('click', function () { applyTheme(b.dataset.themeSet); });
+  });
+
+  /* ---------------- 语言 ---------------- */
+  function setLang(lang) {
+    var en = lang === 'en';
+    document.documentElement.lang = en ? 'en' : 'zh-CN';
+    document.body.classList.toggle('lang-en', en);
+    document.querySelectorAll('[data-zh]').forEach(function (el) {
+      var v = en ? el.dataset.en : el.dataset.zh;
+      if (typeof v === 'string') el.textContent = v;
+    });
+    document.querySelectorAll('[data-zh-ph]').forEach(function (el) {
+      el.placeholder = en ? el.dataset.enPh : el.dataset.zhPh;
+    });
+    document.querySelectorAll('[data-lang]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+    });
+    document.querySelectorAll('[data-lang-set]').forEach(function (b) {
+      b.classList.toggle('is-on', b.dataset.langSet === lang);
+    });
+    renderFigures();
+    updateHint();
+  }
+  document.querySelectorAll('[data-lang]').forEach(function (b) {
+    b.addEventListener('click', function () { setLang(b.dataset.lang); });
+  });
+  document.querySelectorAll('[data-lang-set]').forEach(function (b) {
+    b.addEventListener('click', function () { setLang(b.dataset.langSet); });
+  });
+
+  /* ---------------- 图表：五行雷达 + 十神分布 ---------------- */
+  var WUXING = [
+    { zh: '木', en: 'Wood', v: 2 },
+    { zh: '火', en: 'Fire', v: 3 },
+    { zh: '土', en: 'Earth', v: 3 },
+    { zh: '金', en: 'Metal', v: 2 },
+    { zh: '水', en: 'Water', v: 1 }
+  ];
+  var SHISHEN = [
+    { zh: '比肩', en: 'Peer', v: 2 },
+    { zh: '劫财', en: 'Rob', v: 1 },
+    { zh: '伤官', en: 'Hurting', v: 2 },
+    { zh: '正官', en: 'Officer', v: 2 },
+    { zh: '正印', en: 'Resource', v: 2 },
+    { zh: '七杀', en: '7 kills', v: 1 },
+    { zh: '偏印', en: 'Ind. res', v: 2 },
+    { zh: '正财', en: 'Wealth', v: 2 }
+  ];
+
+  function isEN() { return document.body.classList.contains('lang-en'); }
+
+  function renderFigures() {
+    var cx = 130, cy = 112, R = 78, MAX = 4;
+    var en = isEN();
+    var html = '<g>';
+
+    for (var k = 1; k <= MAX; k++) {
+      var pts = [];
+      for (var i = 0; i < 5; i++) {
+        var a = (-90 + i * 72) * Math.PI / 180;
+        var r = R * k / MAX;
+        pts.push((cx + Math.cos(a) * r).toFixed(1) + ',' + (cy + Math.sin(a) * r).toFixed(1));
+      }
+      html += '<polygon points="' + pts.join(' ') + '" fill="none" stroke="var(--line)" stroke-width="1"/>';
+    }
+
+    for (var j = 0; j < 5; j++) {
+      var ang = (-90 + j * 72) * Math.PI / 180;
+      var x2 = cx + Math.cos(ang) * R, y2 = cy + Math.sin(ang) * R;
+      html += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="var(--line)" stroke-width="1"/>';
+      var lx = cx + Math.cos(ang) * (R + 22), ly = cy + Math.sin(ang) * (R + 16);
+      html += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" fill="var(--text-2)" font-size="11" text-anchor="middle" dominant-baseline="middle">' + (en ? WUXING[j].en : WUXING[j].zh) + '</text>';
+      html += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 13).toFixed(1) + '" fill="var(--text-3)" font-size="10" text-anchor="middle" font-family="ui-monospace, monospace">' + WUXING[j].v + '</text>';
+    }
+
+    var dpts = [];
+    for (var m = 0; m < 5; m++) {
+      var a2 = (-90 + m * 72) * Math.PI / 180;
+      var r2 = R * WUXING[m].v / MAX;
+      dpts.push([cx + Math.cos(a2) * r2, cy + Math.sin(a2) * r2]);
+    }
+    html += '<polygon points="' + dpts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') +
+            '" fill="rgba(74,124,255,.18)" stroke="var(--blue)" stroke-width="1.5" stroke-linejoin="round"/>';
+    dpts.forEach(function (p) {
+      html += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.4" fill="var(--blue)"/>';
+    });
+    html += '</g>';
+    document.getElementById('radar').innerHTML = html;
+
+    var max = 2;
+    document.getElementById('bars').innerHTML = SHISHEN.map(function (s) {
+      return '<div class="bar"><span class="k">' + (en ? s.en : s.zh) + '</span>' +
+             '<span class="track"><i style="width:' + (s.v / max * 100) + '%"></i></span>' +
+             '<span class="v">' + s.v + '</span></div>';
+    }).join('');
+  }
+
+  /* ---------------- 起盘交互 ---------------- */
+  document.querySelectorAll('.seg2').forEach(function (seg) {
+    if (seg.querySelector('[data-theme-set]') || seg.querySelector('[data-lang-set]')) return;
+    seg.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        seg.querySelectorAll('button').forEach(function (x) { x.classList.remove('is-on'); });
+        b.classList.add('is-on');
+      });
+    });
+  });
+
+  var hourSel = document.getElementById('hourSel');
+  var hint = document.getElementById('shichenHint');
+  function updateHint() {
+    if (!hourSel || !hint) return;
+    var h = parseInt(hourSel.value, 10) || 14;
+    var map = [[23, 1, '子', 'Zi'], [1, 3, '丑', 'Chou'], [3, 5, '寅', 'Yin'], [5, 7, '卯', 'Mao'], [7, 9, '辰', 'Chen'], [9, 11, '巳', 'Si'],
+               [11, 13, '午', 'Wu'], [13, 15, '未', 'Wei'], [15, 17, '申', 'Shen'], [17, 19, '酉', 'You'], [19, 21, '戌', 'Xu'], [21, 23, '亥', 'Hai']];
+    var name = '子', en = 'Zi', range = '23:00–01:00';
+    map.forEach(function (m) {
+      var inRange = m[1] > m[0] ? (h >= m[0] && h < m[1]) : (h >= 23 || h < 1);
+      if (inRange) {
+        name = m[2]; en = m[3];
+        range = (m[0] < 10 ? '0' : '') + m[0] + ':00–' + (m[1] < 10 ? '0' : '') + m[1] + ':00';
+      }
+    });
+    hint.textContent = isEN()
+      ? h + ':30 → ' + en + ' hour (' + range + ')'
+      : h + ':30 → ' + name + '时（' + range + '）';
+  }
+  if (hourSel) hourSel.addEventListener('change', updateHint);
+
+  var unknownToggle = document.getElementById('unknownToggle');
+  if (unknownToggle) {
+    unknownToggle.addEventListener('click', function () {
+      var on = unknownToggle.getAttribute('aria-checked') !== 'true';
+      unknownToggle.setAttribute('aria-checked', String(on));
+      hourSel.disabled = on;
+      hint.textContent = on ? (isEN() ? 'Time unknown' : '时辰未知：按三柱排') : '';
+      if (!on) updateHint();
+    });
+  }
+  var tstToggle = document.getElementById('tstToggle');
+  if (tstToggle) {
+    tstToggle.addEventListener('click', function () {
+      tstToggle.setAttribute('aria-checked', String(tstToggle.getAttribute('aria-checked') !== 'true'));
+    });
+  }
+
+  document.getElementById('btnStart').addEventListener('click', function () { go('result'); });
+
+  /* ---------------- 结果页 Tab ---------------- */
+  var mtabs = document.querySelectorAll('#mtabs button');
+  mtabs.forEach(function (b) {
+    b.addEventListener('click', function () {
+      mtabs.forEach(function (x) { x.classList.toggle('is-on', x === b); });
+      var chat = b.dataset.panel === 'chat';
+      document.getElementById('panel-analysis').style.display = chat ? 'none' : 'block';
+      document.getElementById('panel-chat').classList.toggle('is-on', chat);
+    });
+  });
+
+  var subtabs = document.querySelectorAll('#subtabs button');
+  subtabs.forEach(function (b) {
+    b.addEventListener('click', function () {
+      subtabs.forEach(function (x) { x.classList.toggle('is-on', x === b); });
+    });
+  });
+
+  var periods = document.querySelectorAll('#periods button');
+  periods.forEach(function (b, i) {
+    b.addEventListener('click', function () {
+      periods.forEach(function (x) { x.classList.toggle('is-on', x === b); });
+      var strips = document.querySelectorAll('.rail__more .strip');
+      strips.forEach(function (s, idx) {
+        s.style.borderColor = (i === 1 && idx === 0) || (i === 2 && idx === 1) ? 'var(--blue-line)' : '';
+      });
+    });
+  });
+
+  /* ---------------- 移动端盘面折叠 ---------------- */
+  var railToggle = document.getElementById('railToggle');
+  var rail = document.getElementById('rail');
+  if (railToggle) {
+    railToggle.addEventListener('click', function () {
+      var collapsed = rail.classList.toggle('is-collapsed');
+      railToggle.querySelector('span').textContent = collapsed
+        ? (isEN() ? 'Show chart & cycles' : '展开盘面与大运')
+        : (isEN() ? 'Collapse chart' : '收起盘面与大运');
+      railToggle.querySelector('svg').style.transform = collapsed ? '' : 'rotate(180deg)';
+    });
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      rail.classList.add('is-collapsed');
+    }
+  }
+
+  /* ---------------- 直链 ---------------- */
+  var q = new URLSearchParams(location.search);
+  if (q.get('view')) go(q.get('view'));
+  if (q.get('lang') === 'en') setLang('en');
+  if (q.get('theme') === 'light') applyTheme('light');
+  renderFigures();
+  updateHint();
+})();
+</script>
+</body>
+</html>
