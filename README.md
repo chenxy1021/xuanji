@@ -141,7 +141,7 @@ SM_TUNNEL_HOLD_SECONDS=20 bash scripts/telegram-miniapp.sh --dry-run   # 20 秒�
 - **BotFather `/newapp` 和 Bot API 菜单按钮不是一回事**：`/newapp` 是给 bot 登记一个独立的 Web App 入口（有自己的短名字）；`setChatMenuButton` 改的是聊天输入框左下角的菜单按钮。两者可以并存，但在 quick tunnel 场景下建议只配菜单按钮，免得两处地址不一致。
 - 本轮**没有**做 Telegram 登录 / `initData` 校验：Mini App 里就是本站的账号密码登录，这个地址用普通浏览器也能直接打开（只是临时地址不公开、会很快失效）。
 
-前端适配点：`frontend/vite.config.ts` 已配 `server.allowedHosts: ['.trycloudflare.com']`（否则 dev server 会以 403 拦掉隧道域名）；`Telegram WebApp SDK` 已接入（`frontend/src/lib/telegram.ts`），在 Telegram 内调用 `ready()` / `expand()`，标题栏与背景跟随站内明暗主题，底部 TabBar 用 `safe-area-inset-bottom` 避开全面屏手势区；普通浏览器打开时这些逻辑自动跳过。
+前端适配点：`frontend/vite.config.ts` 已配 `server.allowedHosts: ['.trycloudflare.com']`（否则 dev server 会以 403 拦掉隧道域名）；`Telegram WebApp SDK` 已接入（`frontend/src/lib/telegram.ts`），在 Telegram 内调用 `ready()` / `expand()`，标题栏与背景跟随站内明暗主题；顶部按 `safeAreaInset + contentSafeAreaInset` 让开 Telegram 标题栏，底部 TabBar 让开 home indicator；普通浏览器打开时这些逻辑自动跳过。
 
 ## 目录
 

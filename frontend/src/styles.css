@@ -71,13 +71,35 @@ html[lang='en'] :is(h1, h2, .title-serif) {
   font-family: Georgia, 'Times New Roman', serif;
 }
 
-/* Telegram Mini App：底部 TabBar 不被 Telegram 底栏遮挡 */
+/* 站内顶栏默认让开刘海；Telegram 内改由 --tg-safe-top 统一处理 */
+.app-header {
+  padding-top: env(safe-area-inset-top);
+}
+.app-tabbar {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tg-miniapp .app-tabbar {
+  padding-bottom: var(--tg-safe-bottom, 0px);
+}
+
+/* Telegram Mini App：展开后 webview 会铺到 Telegram 顶栏下面，
+   --tg-safe-top / --tg-safe-bottom 由 lib/telegram.ts 写入（两层安全区相加） */
 .tg-miniapp body {
   overscroll-behavior-y: none;
 }
+.tg-miniapp #app > div {
+  padding-top: var(--tg-safe-top, 0px);
+}
+.tg-miniapp .app-header {
+  top: var(--tg-safe-top, 0px);
+  padding-top: 0;
+}
+.tg-miniapp .desk-nav {
+  top: var(--tg-safe-top, 0px);
+}
 @media (max-width: 1023px) {
   .tg-miniapp .wrap {
-    padding-bottom: max(9rem, calc(7rem + env(safe-area-inset-bottom)));
+    padding-bottom: max(9rem, calc(7rem + var(--tg-safe-bottom, env(safe-area-inset-bottom))));
   }
 }
 
@@ -365,7 +387,7 @@ html[lang='en'] .title-serif {
 /* 顶栏（仅 ≥1024） */
 .desk-nav {
   position: sticky;
-  top: 0;
+  top: var(--tg-safe-top, 0px);
   z-index: var(--z-header);
   display: none;
   height: var(--header-h);
@@ -548,8 +570,8 @@ html[lang='en'] .title-serif {
   }
   .result-side {
     position: sticky;
-    top: calc(var(--header-h) + 24px);
-    max-height: calc(100dvh - var(--header-h) - 48px);
+    top: calc(var(--tg-safe-top, 0px) + var(--header-h) + 24px);
+    max-height: calc(100dvh - var(--tg-safe-top, 0px) - var(--header-h) - 48px);
     overflow-y: auto;
     padding-right: 8px;
   }
@@ -608,7 +630,7 @@ html[lang='en'] .title-serif {
 
 .result-tabs {
   position: sticky;
-  top: calc(var(--header-h) + 8px);
+  top: calc(var(--tg-safe-top, 0px) + var(--header-h) + 8px);
   z-index: var(--z-sticky);
   display: flex;
   align-items: center;
@@ -991,6 +1013,6 @@ html[lang='en'] .title-serif {
   }
   .chart-aside {
     position: sticky;
-    top: calc(var(--header-h) + 32px);
+    top: calc(var(--tg-safe-top, 0px) + var(--header-h) + 32px);
   }
 }

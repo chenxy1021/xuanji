@@ -112,7 +112,7 @@
   - token 从 `backend/.local/telegram.json`（0600，字段 `bot_token` / `proxy`）或 `SM_TELEGRAM_BOT_TOKEN` 读，只在 python 进程内使用；失败只报 Telegram 的 `description` 或异常类型名，绝不打印含 token 的 URL
   - 参数：`--dry-run`（只起隧道 + 打印将发送的 payload）、`--no-menu`、`SM_MINIAPP_TEXT`（默认「玄机算命」）、`SM_TUNNEL_PORT`（默认 5173）、`SM_MINIAPP_API_PORT`（默认 8000）、`SM_TUNNEL_HOLD_SECONDS`（到点自动退出，便于自动化）
   - 前台常驻，`trap EXIT/INT/TERM` 结束 cloudflared 并删临时日志；实测 `--dry-run` 回访 `/` 与 `/api/v1/meta` 均 200，到时/Ctrl-C 退出后 `pgrep -fl cloudflared` 无残留
-- Mini App 适配点：`frontend/vite.config.ts` 已有 `server.allowedHosts: ['.trycloudflare.com']`（否则 Vite 的 host 校验会用 403 拦掉隧道域名）；`frontend/src/lib/telegram.ts` 接入 Telegram WebApp SDK，在 Telegram 内 `ready()` / `expand()`、标题栏与背景跟随站内明暗主题、`safe-area-inset-bottom` 避开全面屏手势区，普通浏览器打开时全部跳过
+- Mini App 适配点：`frontend/vite.config.ts` 已有 `server.allowedHosts: ['.trycloudflare.com']`（否则 Vite 的 host 校验会用 403 拦掉隧道域名）；`frontend/src/lib/telegram.ts` 接入 Telegram WebApp SDK，在 Telegram 内 `ready()` / `expand()`、标题栏与背景跟随站内明暗主题，并监听 `safeAreaChanged` / `contentSafeAreaChanged` / `viewportChanged` 把两层安全区写成 `--tg-safe-top` / `--tg-safe-bottom`（顶部相加，避开 Telegram 标题栏；底部让开 home indicator），普通浏览器打开时全部跳过
 - 本轮未做 Telegram 登录与 `initData` 校验：Mini App 内仍是本站账号密码登录，临时地址用普通浏览器也能直接访问
 
 ### 设计

@@ -8,10 +8,7 @@ const settings = useSettingsStore()
 </script>
 
 <template>
-  <header
-    class="sticky top-0 z-30 border-b border-line bg-bg lg:hidden"
-    style="padding-top: env(safe-area-inset-top)"
-  >
+  <header class="app-header sticky top-0 z-30 border-b border-line bg-bg lg:hidden">
     <div class="wrap flex h-[var(--header-h)] items-center justify-between">
       <RouterLink to="/" class="flex min-w-0 min-h-11 items-center gap-3">
         <span

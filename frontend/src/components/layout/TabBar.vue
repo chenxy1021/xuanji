@@ -36,10 +36,7 @@ const active = computed(() => tabs.findIndex((t) => t.match()))
 </script>
 
 <template>
-  <nav
-    class="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg md:hidden"
-    style="padding-bottom: env(safe-area-inset-bottom)"
-  >
+  <nav class="app-tabbar fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg md:hidden">
     <div class="mx-auto flex h-[var(--tabbar-h)] w-full max-w-[var(--container-max)] items-center justify-around px-2">
       <RouterLink
         v-for="(tab, i) in tabs"

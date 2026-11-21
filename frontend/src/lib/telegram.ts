@@ -1,9 +1,19 @@
+interface TgInset {
+  top?: number
+  bottom?: number
+  left?: number
+  right?: number
+}
+
 interface TgWebApp {
   headerColor?: string
   initData?: string
   colorScheme?: 'light' | 'dark'
   isExpanded?: boolean
   themeParams?: Record<string, string>
+  safeAreaInset?: TgInset
+  contentSafeAreaInset?: TgInset
+  viewportStableHeight?: number
   ready?(): void
   expand?(): void
   setHeaderColor?(color: string): void
@@ -38,6 +48,26 @@ export function syncTelegramTheme() {
   app.setBackgroundColor?.(bg)
 }
 
+/**
+ * 把 Telegram 的两层安全区写进 CSS 变量：
+ * - safeAreaInset：刘海 / 状态栏 / home indicator
+ * - contentSafeAreaInset：Telegram 自己的顶栏和底栏
+ * 两者是叠加关系，展开（expand）后页面会铺到 Telegram 顶栏下面，
+ * 必须把两者相加后再给页面留出顶部空间，否则站内 header 会被遮住。
+ */
+export function syncTelegramInsets() {
+  const app = wa()
+  if (!app) return
+  const safe = app.safeAreaInset
+  const content = app.contentSafeAreaInset
+  const top = Math.max(0, (safe?.top ?? 0) + (content?.top ?? 0))
+  const bottom = Math.max(0, (safe?.bottom ?? 0) + (content?.bottom ?? 0))
+  const root = document.documentElement
+  root.style.setProperty('--tg-safe-top', `${top}px`)
+  root.style.setProperty('--tg-safe-bottom', `${bottom}px`)
+  root.style.setProperty('--tg-viewport-stable-height', `${app.viewportStableHeight ?? window.innerHeight}px`)
+}
+
 export function initTelegram(): boolean {
   const app = wa()
   if (!app) return false
@@ -46,6 +76,12 @@ export function initTelegram(): boolean {
   app.expand?.()
   app.disableVerticalSwipes?.()
   syncTelegramTheme()
+  syncTelegramInsets()
   app.onEvent?.('themeChanged', syncTelegramTheme)
+  // 展开、旋转、进入全屏都会改变安全区，事件触发后重新写变量
+  for (const event of ['safeAreaChanged', 'contentSafeAreaChanged', 'viewportChanged', 'fullscreenChanged']) {
+    app.onEvent?.(event, syncTelegramInsets)
+  }
+  window.addEventListener('resize', syncTelegramInsets, { passive: true })
   return true
 }
