@@ -8,6 +8,7 @@ interface TgInset {
 interface TgWebApp {
   headerColor?: string
   initData?: string
+  platform?: string
   colorScheme?: 'light' | 'dark'
   isExpanded?: boolean
   themeParams?: Record<string, string>
@@ -24,6 +25,19 @@ interface TgWebApp {
 
 const wa = () => (window as unknown as { Telegram?: { WebApp?: TgWebApp } }).Telegram?.WebApp
 
+// telegram-web-app.js 在普通浏览器里也会定义 WebApp（platform=unknown），
+// 只有真正跑在 Telegram 容器里才返回它，避免普通网页被套上 Mini App 的样式。
+const activeApp = (): TgWebApp | null => {
+  const app = wa()
+  if (!app || !app.platform || app.platform === 'unknown') return null
+  return app
+}
+
+/** Telegram 明确声明的明暗；普通浏览器返回 null（此时跟系统走）。 */
+export function telegramColorScheme(): 'light' | 'dark' | null {
+  return activeApp()?.colorScheme ?? null
+}
+
 // 把 CSS 变量解析成 #rrggbb，Telegram 只认 hex / rgb
 function cssColorHex(name: string): string | null {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
@@ -39,9 +53,9 @@ function cssColorHex(name: string): string | null {
 }
 
 export function syncTelegramTheme() {
-  const app = wa()
+  const app = activeApp()
   if (!app) return
-  const fallback = app.colorScheme === 'dark' ? '#111418' : '#f5f3ee'
+  const fallback = app.colorScheme === 'dark' ? '#121210' : '#f8f6f1'
   const bg = cssColorHex('--color-bg') ?? fallback
   app.headerColor = bg
   app.setHeaderColor?.(bg)
@@ -56,7 +70,7 @@ export function syncTelegramTheme() {
  * 必须把两者相加后再给页面留出顶部空间，否则站内 header 会被遮住。
  */
 export function syncTelegramInsets() {
-  const app = wa()
+  const app = activeApp()
   if (!app) return
   const safe = app.safeAreaInset
   const content = app.contentSafeAreaInset
@@ -69,7 +83,7 @@ export function syncTelegramInsets() {
 }
 
 export function initTelegram(): boolean {
-  const app = wa()
+  const app = activeApp()
   if (!app) return false
   document.documentElement.classList.add('tg-miniapp')
   app.ready?.()
@@ -77,7 +91,13 @@ export function initTelegram(): boolean {
   app.disableVerticalSwipes?.()
   syncTelegramTheme()
   syncTelegramInsets()
-  app.onEvent?.('themeChanged', syncTelegramTheme)
+  // expand() 之后安全区可能晚一帧才更新；事件之外再兜一次
+  setTimeout(syncTelegramInsets, 300)
+  window.addEventListener('load', syncTelegramInsets, { once: true })
+  app.onEvent?.('themeChanged', () => {
+    window.dispatchEvent(new Event('tg-theme-changed'))
+    syncTelegramTheme()
+  })
   // 展开、旋转、进入全屏都会改变安全区，事件触发后重新写变量
   for (const event of ['safeAreaChanged', 'contentSafeAreaChanged', 'viewportChanged', 'fullscreenChanged']) {
     app.onEvent?.(event, syncTelegramInsets)

@@ -50,8 +50,8 @@ src/
 ## 说明
 
 - 所有请求走相对路径 `/api/v1/...`，由 Vite 代理；前端不写死后端地址。
-- 排盘结果与生辰都只存在 `localStorage`（历史最多 20 条），不上传第三方。
-- AI 解读依赖服务端 `SM_LLM_API_KEY`；未配置时接口返回 `llm_not_configured`，前端显示降级提示，排盘结果不受影响。
+- 未登录时排盘结果与生辰只存在 `localStorage`（历史最多 50 条），不上传第三方；登录后按账号存服务端。
+- AI 解读用个人配置（浏览器内）或本站默认 / `SM_LLM_API_KEY`；未配置时接口返回 `llm_not_configured`，前端显示降级提示，排盘结果不受影响。
 - 结果页按 chart 结构分派命盘组件（bazi / ziwei / tarot / liuyao / 合盘），都不匹配时回退为 JSON 展示；新体系接入只需加一个组件。
 - `requires_birth === false` 的体系不渲染出生表单：塔罗 → TarotForm，六爻 → LiuyaoForm（铜钱 / 时间 / 数字起卦）。
 - `requires_secondary === true` 的合盘体系在同一表单卡片内切换「甲方 / 乙方」两份生辰，提交时带 `birth` + `secondary`。

@@ -66,7 +66,7 @@ async function signOut() {
         @click.stop="toggle"
       >
         <span
-          class="flex size-7 shrink-0 items-center justify-center rounded-full border border-line-strong bg-bg-subtle text-[12px] leading-none text-ink"
+          class="flex size-7 shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-line-strong bg-transparent text-[12px] leading-none text-ink"
           aria-hidden="true"
         >
           {{ initial }}
@@ -95,7 +95,7 @@ async function signOut() {
       <div class="border-b border-line px-3 pb-2.5 pt-2">
         <div class="flex items-center gap-2">
           <span class="truncate text-[13px] text-ink">{{ auth.user.username }}</span>
-          <span v-if="auth.isAdmin" class="chip chip--primary !h-5 !px-1.5 !text-[10px]">{{ t('auth.admin') }}</span>
+          <span v-if="auth.isAdmin" class="chip !h-5 !px-1.5 !text-[12px]">{{ t('auth.admin') }}</span>
         </div>
       </div>
       <RouterLink

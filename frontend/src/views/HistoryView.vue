@@ -17,10 +17,10 @@ const busy = ref(false)
 async function load() {
   error.value = ''
   await auth.bootstrap()
-  if (!auth.isLoggedIn) return
   loading.value = true
   try {
-    await charts.loadFromServer()
+    if (auth.isLoggedIn) await charts.loadFromServer()
+    else charts.loadLocal()
   } catch (e) {
     error.value = e instanceof ApiError && e.status === 401 ? t('history.needLogin') : t('history.loadFailed')
   } finally {
@@ -76,17 +76,16 @@ const systemLabel = (rec: HistoryRecord) => systemNameById(rec.system) ?? rec.ti
 </script>
 
 <template>
-  <div>
+  <div class="history-page">
     <div class="flex items-end justify-between gap-4 border-b border-line pb-5">
       <div>
-        <p class="eyebrow">{{ t('tab.history') }} · HISTORY</p>
-        <h1 class="title-serif h-h1 mt-3">{{ t('history.title') }}</h1>
+        <h1 class="title-serif h-h1">{{ t('history.title') }}</h1>
         <p class="mt-2 text-xs text-muted">{{ auth.isLoggedIn ? t('history.onlineNote') : t('history.note') }}</p>
       </div>
       <button
-        v-if="charts.history.length && auth.isLoggedIn"
+        v-if="charts.history.length"
         type="button"
-        class="link-underline shrink-0 text-[13px] text-danger disabled:opacity-50"
+        class="btn-danger shrink-0"
         :disabled="busy"
         @click="clearAll"
       >
@@ -94,26 +93,19 @@ const systemLabel = (rec: HistoryRecord) => systemNameById(rec.system) ?? rec.ti
       </button>
     </div>
 
-    <p v-if="error" class="mt-4 flex gap-2 rounded-[var(--radius-sm)] bg-danger-soft p-3 text-xs leading-[1.6] text-danger" role="alert" data-history-error>
-      <span class="flex size-4 shrink-0 items-center justify-center rounded-full border border-danger text-[10px]" aria-hidden="true">!</span>
+    <p v-if="error" class="mt-4 border-l-2 border-danger pl-3 text-[13px] leading-[1.6] text-danger" role="alert" data-history-error>
       {{ error }}
     </p>
 
-    <!-- 未登录：不展示本机遗留的旧记录 -->
-    <div v-if="auth.ready && !auth.isLoggedIn" class="py-16 text-left" data-history-guest>
-      <p class="text-sm text-muted">{{ t('history.needLogin') }}</p>
-      <RouterLink to="/login?next=/history" class="btn-line mt-4 inline-flex">{{ t('common.login') }}</RouterLink>
-    </div>
+    <p v-if="loading && !charts.history.length" class="animate-pulse border-t border-line py-10 text-sm text-muted">{{ t('common.loading') }}</p>
 
-    <p v-else-if="loading && !charts.history.length" class="animate-pulse py-16 text-sm text-muted">{{ t('common.loading') }}</p>
-
-    <div v-else-if="!charts.history.length" class="py-16 text-left">
+    <div v-else-if="!charts.history.length" class="border-t border-line py-10">
       <p class="text-sm text-muted">{{ t('history.empty') }}</p>
-      <RouterLink to="/chart/bazi" class="link-underline mt-3 inline-block text-sm">{{ t('history.goChart') }}</RouterLink>
+      <RouterLink to="/chart/bazi" class="let-action mt-2">{{ t('history.goChart') }}</RouterLink>
     </div>
 
     <!-- 桌面：细线表格 -->
-    <table v-if="charts.history.length" class="dtable mt-2 hidden md:table">
+    <table v-if="charts.history.length" class="dtable hist-table">
       <thead>
         <tr>
           <th class="w-[16%]">{{ t('history.time') }}</th>
@@ -126,14 +118,14 @@ const systemLabel = (rec: HistoryRecord) => systemNameById(rec.system) ?? rec.ti
         <tr v-for="rec in charts.history" :key="rec.id">
           <td class="tabular text-muted whitespace-nowrap">{{ rec.createdAt ? fmt(rec.createdAt) : '' }}</td>
           <td>
-            <RouterLink :to="`/result?id=${rec.id}`" class="text-ink hover:underline" @click="open(rec.id)">{{ systemLabel(rec) }}</RouterLink>
+            <RouterLink :to="`/result?id=${rec.id}`" class="text-ink underline-offset-4 hover:underline" @click="open(rec.id)">{{ systemLabel(rec) }}</RouterLink>
           </td>
           <td class="text-ink-2">
             {{ boardSummary(rec) || '—' }}
           </td>
           <td class="text-right">
-            <RouterLink :to="`/result?id=${rec.id}`" class="link-underline text-[13px]" @click="open(rec.id)">{{ t('history.view') }}</RouterLink>
-            <button type="button" class="ml-4 text-[13px] text-muted hover:text-danger" :aria-label="t('history.delete')" :disabled="busy" @click="removeRecord(rec.id)">
+            <RouterLink :to="`/result?id=${rec.id}`" class="let-action text-[13px] !min-h-0" @click="open(rec.id)">{{ t('history.view') }}</RouterLink>
+            <button type="button" class="let-action ml-2 text-[13px] !min-h-0 hover:text-danger" :aria-label="t('history.delete')" :disabled="busy" @click="removeRecord(rec.id)">
               {{ t('history.delete') }}
             </button>
           </td>
@@ -142,7 +134,7 @@ const systemLabel = (rec: HistoryRecord) => systemNameById(rec.system) ?? rec.ti
     </table>
 
     <!-- 手机：两行式列表 -->
-    <ul v-if="charts.history.length" class="md:hidden">
+    <ul v-if="charts.history.length" class="hist-list">
       <li
         v-for="rec in charts.history"
         :key="rec.id"
@@ -153,14 +145,11 @@ const systemLabel = (rec: HistoryRecord) => systemNameById(rec.system) ?? rec.ti
             <span class="truncate text-[15px] font-medium">{{ systemLabel(rec) }}</span>
             <span class="shrink-0 text-xs text-muted tabular">{{ fmt(rec.createdAt) }}</span>
           </p>
-          <p class="mt-0.5 text-xs text-muted">
-            <template v-if="chartSubtitle(rec.chart)">{{ chartSubtitle(rec.chart) }}</template>
-            <template v-else>{{ systemLabel(rec) }}</template>
-          </p>
+          <p v-if="chartSubtitle(rec.chart)" class="mt-0.5 text-xs text-muted">{{ chartSubtitle(rec.chart) }}</p>
         </RouterLink>
         <button
           type="button"
-          class="min-h-11 shrink-0 px-2 text-[13px] text-muted hover:text-danger"
+          class="let-action shrink-0 text-[13px] hover:text-danger"
           :aria-label="t('history.delete')"
           :disabled="busy"
           @click="removeRecord(rec.id)"

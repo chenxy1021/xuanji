@@ -63,7 +63,7 @@ const relation = computed(() => {
 
 const relationClass = computed(() => {
   const r = relation.value?.result ?? ''
-  return r.includes('凶') ? 'text-accent' : r.includes('吉') ? 'text-primary' : 'text-ink'
+  return r.includes('凶') ? 'text-accent' : r.includes('吉') ? 'text-success' : 'text-ink'
 })
 
 function lineClass(block: { moving: boolean }, index: number) {
@@ -73,7 +73,7 @@ function lineClass(block: { moving: boolean }, index: number) {
 
 <template>
   <div class="space-y-3">
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface p-4">
+    <section class="border-t border-line-strong pt-3">
       <p class="text-xs text-muted">
         {{ chart.method_name || (chart.method === 'time' ? '时间起卦' : '数字起卦') }}
         <span v-if="castText"> · {{ castText }}</span>
@@ -94,9 +94,9 @@ function lineClass(block: { moving: boolean }, index: number) {
           { label: '变卦', gua: bian, lines: bianLines, moving: false },
         ]"
         :key="block.label"
-        class="rounded-[var(--radius-lg)] border border-line bg-surface p-2 text-center"
+        class="border-t border-line px-2 pb-2 pt-3 text-center"
       >
-        <p class="text-[11px] text-muted">{{ block.label }}</p>
+        <p class="text-[13px] text-muted">{{ block.label }}</p>
         <div class="mx-auto mt-2 flex h-[72px] w-[52px] flex-col-reverse justify-between">
           <template v-if="block.lines">
             <div
@@ -112,13 +112,13 @@ function lineClass(block: { moving: boolean }, index: number) {
               </template>
             </div>
           </template>
-          <p v-else class="text-[11px] text-muted">—</p>
+          <p v-else class="text-[13px] text-muted">—</p>
         </div>
         <p class="mt-2 font-serif text-[13px] leading-tight">{{ block.gua?.name || '—' }}</p>
       </article>
     </section>
 
-    <section v-if="tiYongText || relation || chart.judgement" class="space-y-2 rounded-[var(--radius-lg)] border border-line bg-surface p-4">
+    <section v-if="tiYongText || relation || chart.judgement" class="space-y-2 border-l-2 border-line-strong py-1 pl-3">
       <p v-if="tiYongText" class="text-[13px]"><span class="text-muted">体用：</span>{{ tiYongText }}</p>
       <p v-if="relation" class="text-[13px] leading-[1.6]">
         <span class="text-muted">生克：</span>
@@ -128,7 +128,7 @@ function lineClass(block: { moving: boolean }, index: number) {
       <p v-if="chart.judgement" class="font-serif text-[15px] leading-[1.7]">{{ chart.judgement }}</p>
     </section>
 
-    <p class="px-1 text-[11px] leading-[1.6] text-muted">
+    <p class="px-1 text-[13px] leading-[1.6] text-muted">
       梅花易数重在体用生克与动爻；卦名只是索引，具体吉凶要结合所问之事。
     </p>
   </div>

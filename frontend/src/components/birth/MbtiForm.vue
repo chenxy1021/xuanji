@@ -65,16 +65,16 @@ function submit() {
   <div v-if="quiz" class="space-y-4">
     <div>
       <div class="flex items-baseline justify-between">
-        <p class="text-[13px] text-ink-2">{{ t('mbti.progress', { i: index + 1, n: total }) }}</p>
+        <p class="form-label mb-0">{{ t('mbti.progress', { i: index + 1, n: total }) }}</p>
         <p class="tabular text-xs text-muted">{{ t('mbti.answered', { n: answered }) }}</p>
       </div>
-      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-subtle" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" :aria-label="t('mbti.progressAria')">
-        <div class="h-full rounded-full bg-primary transition-[width] duration-200" :style="{ width: `${progress}%` }" />
+      <div class="progress mt-2" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" :aria-label="t('mbti.progressAria')">
+        <span :style="{ width: `${progress}%` }" />
       </div>
     </div>
 
     <p v-if="zhQuestions" class="text-xs leading-[1.6] text-muted">{{ t('mbti.zhFallback') }}</p>
-    <p class="min-h-[72px] rounded-[var(--radius-md)] bg-surface-2 p-4 font-serif text-[19px] leading-[1.5]">
+    <p class="min-h-[72px] border-l-2 border-line-strong bg-surface-2 px-4 py-3 font-serif text-[19px] leading-[1.5]">
       {{ current?.text }}
     </p>
 
@@ -85,11 +85,11 @@ function submit() {
         type="button"
         role="radio"
         :aria-checked="answers[index] === i + (quiz.scale.min ?? 1)"
-        class="min-h-12 rounded-[var(--radius-md)] border px-4 text-left text-[15px] transition-colors"
+        class="choice min-h-12 px-4 text-left text-[15px]"
         :class="
           answers[index] === i + (quiz.scale.min ?? 1)
-            ? 'border-primary bg-primary-soft font-medium text-primary'
-            : 'border-line-strong bg-surface text-ink-2 active:bg-surface-2'
+            ? 'is-on font-medium'
+            : 'text-ink-2 active:bg-surface-2'
         "
         @click="pick(i + (quiz.scale.min ?? 1))"
       >
@@ -102,8 +102,8 @@ function submit() {
       <button type="button" class="btn-secondary flex-1" :disabled="index >= total - 1" @click="step(1)">{{ t('mbti.next') }}</button>
     </div>
 
-    <p v-if="error" class="flex items-center gap-1.5 text-xs text-danger">
-      <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[10px]" aria-hidden="true">!</span>
+    <p v-if="error" class="flex items-center gap-1.5 border border-danger px-3 py-2 text-xs text-danger">
+      <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[12px]" aria-hidden="true">!</span>
       {{ error }}
     </p>
 
@@ -111,8 +111,8 @@ function submit() {
       {{ props.submitting ? t('mbti.submitting') : allAnswered ? t('mbti.view') : t('mbti.remaining', { n: total - answered }) }}
     </button>
   </div>
-  <p v-else-if="error" class="flex items-center gap-1.5 text-xs text-danger">
-    <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[10px]" aria-hidden="true">!</span>
+  <p v-else-if="error" class="flex items-center gap-1.5 border border-danger px-3 py-2 text-xs text-danger">
+    <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[12px]" aria-hidden="true">!</span>
     {{ error }}
   </p>
   <p v-else class="animate-pulse text-sm text-muted">{{ t('mbti.loading') }}</p>

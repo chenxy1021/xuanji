@@ -173,12 +173,22 @@ export const createChart = (system: string, body: ChartBody) =>
     body: JSON.stringify(body),
   })
 
+export interface InterpretLlm {
+  base_url: string
+  model: string
+  api_key: string
+}
+
 export interface InterpretParams {
   system: string
   chart: unknown
   question: string
   style: 'concise' | 'detailed'
   focus?: string[]
+  /** 界面语言；用户用英文提问时后端会以提问语言为准 */
+  lang?: 'zh' | 'en'
+  /** 用户自己的浏览器配置；不带则用本站默认 */
+  llm?: InterpretLlm
 }
 
 /** 解析 SSE 流，逐段回调解析出的事件。 */

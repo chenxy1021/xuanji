@@ -748,7 +748,7 @@ async function noOverflow(page, label) {
   return m
 }
 
-/** 浅色主题下的文字对比度探针（WCAG）：正文 ≥4.5:1，大字/次要 ≥3:1。 */
+/** 当前主题下的文字对比度探针（WCAG）：正文 ≥4.5:1，大字/次要 ≥3:1。 */
 const CONTRAST_PROBE = `(() => {
   const parseColor = (value) => {
     const nums = String(value).match(/[\\d.]+/g)
@@ -1446,7 +1446,7 @@ async function main() {
       if (!pane.visible) throw new Error('盘面要点卡高度异常')
 
       // 右栏双 Tab
-      await clickButton(page, 'AI 对话')
+      await clickButton(page, 'AI 解读')
       await page.waitFor(`document.querySelectorAll('[data-focus-id]').length >= 5`, {
         label: 'AI 解读方向标签',
       })
@@ -1479,7 +1479,7 @@ async function main() {
         `(() => {
           const text = document.body.innerText
           const pressed = [...document.querySelectorAll('button[aria-pressed]')]
-            .filter((b) => (b.innerText || '').trim() === 'AI 对话')
+            .filter((b) => (b.innerText || '').trim() === 'AI 解读')
             .every((b) => b.getAttribute('aria-pressed') === 'true')
           const start = [...document.querySelectorAll('button')].find((b) =>
             ['开始解读', 'AI 解读不可用'].includes((b.innerText || '').trim()),
@@ -1490,9 +1490,9 @@ async function main() {
             ? { pressed, hasFriendly, hasError, startDisabled: start ? start.disabled : null }
             : null
         })()`,
-        { timeout: 15000, label: 'AI 对话面板' },
+        { timeout: 15000, label: 'AI 解读面板' },
       )
-      if (!chat.pressed) throw new Error('点「AI 对话」后 aria-pressed 未切换')
+      if (!chat.pressed) throw new Error('点「AI 解读」后 aria-pressed 未切换')
       if (chat.hasError) throw new Error('AI 未配 key 时页面出现「解读失败」错误态')
       if (chat.startDisabled !== true) throw new Error('AI 未配 key 时「开始解读」未置灰')
       await page.screenshot('desktop-1440-result-ai-tab')
@@ -1619,36 +1619,53 @@ async function main() {
       return `盘面「${closedLabel}」↔「${opened.label}」切换正常；main padding-bottom ${cover.paddingBottom}px ≥ TabBar ${cover.barHeight}px`
     })
 
-    // 19. 主题：深色默认 + 浅色持久化 + 浅色对比度
-    await run('19. 主题：深色默认、切浅色刷新保持、浅色下对比度达标', async () => {
+    // 19. 主题：浅色默认 + 深色夜读 + 明暗持久化与对比度
+    await run('19. 主题：浅色默认、切深色刷新保持、明暗对比度达标', async () => {
       await page.goto(`${base}/`)
       const initial = await page.evaluate(`({
         theme: document.documentElement.dataset.theme || null,
         injected: !!document.querySelector('style[data-theme-injected]'),
       })`)
-      if (initial.theme !== null) throw new Error(`默认应无 data-theme（深色），实际 ${initial.theme}`)
-      const darkBg = await page.evaluate(`getComputedStyle(document.documentElement).backgroundColor`)
-      await clickVisibleByAria(page, '切换到亮色主题')
-      const light = await page.evaluate(`({
+      if (initial.theme !== null) throw new Error(`默认应无 data-theme（浅色），实际 ${initial.theme}`)
+      const lightBg = await page.evaluate(`getComputedStyle(document.documentElement).backgroundColor`)
+      const lightContrast = await page.evaluate(CONTRAST_PROBE)
+      const weakLight = lightContrast.filter((item) => item.ratio < item.threshold)
+      if (weakLight.length) {
+        throw new Error(
+          `浅色对比度不足：${weakLight.map((w) => `${w.label} ${w.ratio}:1（需 ≥${w.threshold}，色值 ${w.color}）`).join('；')}`,
+        )
+      }
+      await page.screenshot('theme-light-home')
+
+      await clickVisibleByAria(page, '切换到暗色主题')
+      const dark = await page.evaluate(`({
         theme: document.documentElement.dataset.theme || null,
         bg: getComputedStyle(document.documentElement).backgroundColor,
         lang: document.documentElement.lang,
       })`)
-      if (light.theme !== 'light') throw new Error(`切浅色后 data-theme 应为 light，实际 ${light.theme}`)
-      if (light.bg === darkBg) throw new Error(`切浅色后 body 背景未变（仍是 ${light.bg}）`)
-      await page.screenshot('theme-light-home')
+      if (dark.theme !== 'dark') throw new Error(`切深色后 data-theme 应为 dark，实际 ${dark.theme}`)
+      if (dark.bg === lightBg) throw new Error(`切深色后 body 背景未变（仍是 ${dark.bg}）`)
+      await page.screenshot('theme-dark-home')
 
       await page.goto(`${base}/`)
-      const persisted = await page.evaluate(`document.documentElement.dataset.theme || null`)
-      if (persisted !== 'light') throw new Error(`刷新后浅色未保持，实际 ${persisted}`)
+      const persistedDark = await page.evaluate(`document.documentElement.dataset.theme || null`)
+      if (persistedDark !== 'dark') throw new Error(`刷新后深色未保持，实际 ${persistedDark}`)
 
-      const contrast = await page.evaluate(CONTRAST_PROBE)
-      const weak = contrast.filter((item) => item.ratio < item.threshold)
-      if (weak.length) {
+      const darkContrast = await page.evaluate(CONTRAST_PROBE)
+      const weakDark = darkContrast.filter((item) => item.ratio < item.threshold)
+      if (weakDark.length) {
         throw new Error(
-          `浅色对比度不足：${weak.map((w) => `${w.label} ${w.ratio}:1（需 ≥${w.threshold}，色值 ${w.color}）`).join('；')}`,
+          `深色对比度不足：${weakDark.map((w) => `${w.label} ${w.ratio}:1（需 ≥${w.threshold}，色值 ${w.color}）`).join('；')}`,
         )
       }
+
+      await clickVisibleByAria(page, '切换到亮色主题')
+      const backToLight = await page.evaluate(`document.documentElement.dataset.theme || null`)
+      if (backToLight !== null) throw new Error(`切回浅色后应无 data-theme，实际 ${backToLight}`)
+      await page.goto(`${base}/`)
+      const lightPersisted = await page.evaluate(`document.documentElement.dataset.theme || null`)
+      if (lightPersisted !== null) throw new Error(`刷新后浅色未保持，实际 ${lightPersisted}`)
+
       await page.goto(`${base}/settings`)
       const settingsContrast = await page.evaluate(CONTRAST_PROBE)
       const weakSettings = settingsContrast.filter((item) => item.ratio < item.threshold)
@@ -1674,7 +1691,7 @@ async function main() {
         },
       )
       const lightResult = await page.evaluate(`document.documentElement.dataset.theme || null`)
-      if (lightResult !== 'light') throw new Error(`结果页没有沿用浅色：${lightResult}`)
+      if (lightResult !== null) throw new Error(`结果页没有沿用浅色：${lightResult}`)
       const resultContrast = await page.evaluate(CONTRAST_PROBE)
       const weakResult = resultContrast.filter((item) => item.ratio < item.threshold)
       if (weakResult.length) {
@@ -1682,12 +1699,7 @@ async function main() {
       }
       await page.screenshot('theme-light-result-bazi')
 
-      // 切回深色，别影响后续用例
-      await page.goto(`${base}/`)
-      await clickVisibleByAria(page, '切换到暗色主题')
-      await page.waitFor(`!document.documentElement.dataset.theme`, { label: '切回深色' })
-      const backToDark = await page.evaluate(`document.documentElement.dataset.theme || 'dark'`)
-      return `深色默认 → 浅色 ${light.theme}（bg ${light.bg}）刷新保持 → 对比度最低 ${Math.min(...contrast.map((c) => c.ratio))}:1 → 已切回 ${backToDark}（含设置页）`
+      return `浅色默认（对比度最低 ${Math.min(...lightContrast.map((c) => c.ratio))}:1）→ 深色 ${dark.theme}（bg ${dark.bg}）刷新保持（对比度最低 ${Math.min(...darkContrast.map((c) => c.ratio))}:1）→ 切回浅色 ${lightPersisted ?? 'default'}（含设置页与结果页）`
     })
 
     // 20. 英文矩阵：体系名/表单/MBTI 走英文，且不残留中文 UI 文案
@@ -1803,11 +1815,11 @@ async function main() {
         },
       )
       const resultText = await page.evaluate(`document.body.innerText`)
-      const leaks = ['命盘分析', 'AI 对话', '隐藏生辰', '修改生辰', '重新起盘', '生辰已隐藏'].filter((w) =>
+      const leaks = ['命盘分析', 'AI 解读', '隐藏生辰', '修改生辰', '重新起盘', '生辰已隐藏'].filter((w) =>
         resultText.includes(w),
       )
       if (leaks.length) throw new Error(`英文结果页仍有中文 UI 文案：${leaks.join('、')}`)
-      for (const want of ['Chart analysis', 'AI chat', 'Hide birth date']) {
+      for (const want of ['Chart analysis', 'AI reading', 'Hide birth date']) {
         if (!resultText.includes(want)) throw new Error(`英文结果页缺少「${want}」`)
       }
       const resultHeading = await page.evaluate(`(() => {
@@ -1945,90 +1957,111 @@ async function main() {
       return `11 个体系桌面结果页均无溢出、左栏 380 sticky、摘要非空；打码按钮只出现在生辰体系；768 单列非 sticky；${seen.join('；')}`
     })
 
-    // 22. 设置页：AI 接口 / 模型 / 密钥的保存、掩码与清除
-    await run('22. 设置页：AI 接口/模型/密钥可保存、只回显尾号、可清除', async () => {
-      // 会 DELETE/PUT /settings/llm：只允许在隔离配置（临时库 / 临时 LLM 配置文件）下执行
+    // 22. 设置页：个人模型配置的保存、掩码、刷新恢复与清除
+    await run('22. 设置页：个人模型配置可保存、只回显尾号、刷新恢复、可清除', async () => {
+      // 个人配置写 localStorage、不写服务端；仍然只在隔离环境下跑，避免误碰真实浏览器/真实默认配置
       if (!process.env.SMOKE_DB && !process.env.SM_LLM_CONFIG_PATH) {
-        return SKIP('AI 配置未隔离，为避免清掉真实密钥已跳过；跑 bash scripts/smoke-isolated.sh 可执行本用例')
+        return SKIP('AI 配置未隔离，已跳过；跑 bash scripts/smoke-isolated.sh 可执行本用例')
       }
-      const reset = () => fetch(`${api}/api/v1/settings/llm`, { method: 'DELETE' })
-      await reset()
-      try {
-        await page.setViewport(1440, 1000)
-        await page.goto(`${base}/settings`)
-        await page.waitFor(`document.querySelector('[data-llm-settings]')`, { label: '设置页 AI 表单' })
-        const initial = await page.evaluate(`(() => {
-          const box = document.querySelector('[data-llm-settings]')
-          return {
-            status: (document.querySelector('[data-llm-status]')?.innerText || '').trim(),
-            url: box.querySelector('input[type=url]')?.value || '',
-            model: box.querySelector('input[type=text]')?.value || '',
-            keyType: box.querySelector('input[type=password]')?.type || '',
-          }
-        })()`)
-        if (!initial.status.includes('未配置')) throw new Error(`初始状态应未配置：${initial.status}`)
-        if (!initial.url.startsWith('http')) throw new Error(`接口地址未回填：${initial.url}`)
-        if (!initial.model) throw new Error('模型名未回填')
-        if (initial.keyType !== 'password') throw new Error('密钥输入框不是 password 类型')
+      await page.setViewport(1440, 1000)
+      await page.goto(`${base}/settings`)
+      await page.waitFor(`document.querySelector('[data-llm-settings]')`, { label: '设置页 AI 表单' })
+      await page.evaluate(`localStorage.removeItem('sm_llm_personal')`)
+      await page.goto(`${base}/settings`)
+      await page.waitFor(`document.querySelector('[data-llm-settings]')`, { label: '设置页 AI 表单' })
 
-        await page.evaluate(`(() => {
-          const box = document.querySelector('[data-llm-settings]')
-          const set = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })) }
-          set(box.querySelector('input[type=url]'), 'http://127.0.0.1:9999/v1')
-          set(box.querySelector('input[type=text]'), 'smoke-model')
-          set(box.querySelector('input[type=password]'), 'sk-smoke-1234')
-        })()`)
-        await page.evaluate(`(() => {
-          const b = [...document.querySelectorAll('button')].find((x) => (x.innerText || '').trim() === '保存设置')
-          b && b.click()
-        })()`)
-        const saved = await page.waitFor(
-          `(() => {
-            const status = (document.querySelector('[data-llm-status]')?.innerText || '').trim()
-            return status.includes('已配置')
-              ? {
-                  status,
-                  hint: document.body.innerText.includes('••••1234'),
-                  leaked: document.body.innerHTML.includes('sk-smoke-1234'),
-                }
-              : null
-          })()`,
-          { timeout: 10000, label: '保存 AI 设置' },
-        )
-        if (!saved.hint) throw new Error('保存后没有显示密钥尾号')
-        if (saved.leaked) throw new Error('密钥明文出现在页面 HTML 中')
-        const info = await page.evaluate(`fetch('/api/v1/settings/llm').then((r) => r.json())`)
-        if (!info.configured || info.key_hint !== '••••1234' || 'api_key' in info) {
-          throw new Error(`接口回显不符合预期：${JSON.stringify(info)}`)
+      const initial = await page.evaluate(`(() => {
+        const box = document.querySelector('[data-llm-settings]')
+        return {
+          status: (document.querySelector('[data-llm-status]')?.innerText || '').trim(),
+          url: box.querySelector('input[type=url]')?.value || '',
+          model: box.querySelector('input[type=text]')?.value || '',
+          keyType: box.querySelector('input[type=password]')?.type || '',
+          stores: localStorage.getItem('sm_llm_personal'),
         }
-        await page.screenshot('settings-ai-configured')
+      })()`)
+      if (initial.status.includes('已配置')) throw new Error(`清空个人配置后不应是已配置：${initial.status}`)
+      if (!initial.url.startsWith('http')) throw new Error(`接口地址未回填：${initial.url}`)
+      if (!initial.model) throw new Error('模型名未回填')
+      if (initial.keyType !== 'password') throw new Error('密钥输入框不是 password 类型')
+      if (initial.stores) throw new Error('个人配置应已从 localStorage 清除')
 
-        await page.evaluate(`(() => {
-          const b = [...document.querySelectorAll('button')].find((x) => (x.innerText || '').trim() === '清除密钥')
-          b && b.click()
-        })()`)
-        await page.waitFor(
-          `(document.querySelector('[data-llm-status]')?.innerText || '').includes('未配置')`,
-          { timeout: 10000, label: '清除密钥' },
-        )
-        const cleared = await page.evaluate(`fetch('/api/v1/settings/llm').then((r) => r.json())`)
-        if (cleared.configured) throw new Error('清除后接口仍显示已配置')
-        return '保存后只回显 ••••1234、页面无明文密钥；清除后回到未配置，接口地址与模型保留'
-      } finally {
-        await reset()
+      await page.evaluate(`(() => {
+        const box = document.querySelector('[data-llm-settings]')
+        const set = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })) }
+        set(box.querySelector('input[type=url]'), 'http://127.0.0.1:9999/v1')
+        set(box.querySelector('input[type=text]'), 'smoke-model')
+        set(box.querySelector('input[type=password]'), 'sk-smoke-1234')
+      })()`)
+      await page.evaluate(`(() => {
+        const b = [...document.querySelectorAll('button')].find((x) => (x.innerText || '').trim() === '保存设置')
+        b && b.click()
+      })()`)
+      const saved = await page.waitFor(
+        `(() => {
+          const status = (document.querySelector('[data-llm-status]')?.innerText || '').trim()
+          return status.includes('已配置')
+            ? {
+                status,
+                hint: document.body.innerText.includes('••••1234'),
+                leaked: document.body.innerHTML.includes('sk-smoke-1234'),
+              }
+            : null
+        })()`,
+        { timeout: 10000, label: '保存个人模型配置' },
+      )
+      if (!saved.hint) throw new Error('保存后没有显示密钥尾号')
+      if (saved.leaked) throw new Error('密钥明文出现在页面 HTML 中')
+      const stored = await page.evaluate(`JSON.parse(localStorage.getItem('sm_llm_personal') || 'null')`)
+      if (
+        !stored ||
+        stored.base_url !== 'http://127.0.0.1:9999/v1' ||
+        stored.model !== 'smoke-model' ||
+        stored.api_key !== 'sk-smoke-1234'
+      ) {
+        throw new Error(`localStorage 个人配置不符合预期：${JSON.stringify(stored)}`)
       }
+      await page.screenshot('settings-ai-configured')
+
+      // 重新进入后仍从本浏览器恢复
+      await page.goto(`${base}/settings`)
+      await page.waitFor(`document.querySelector('[data-llm-settings]')`, { label: '刷新后的设置页' })
+      const restored = await page.evaluate(`(() => {
+        const box = document.querySelector('[data-llm-settings]')
+        return {
+          status: (document.querySelector('[data-llm-status]')?.innerText || '').trim(),
+          url: box.querySelector('input[type=url]')?.value || '',
+          model: box.querySelector('input[type=text]')?.value || '',
+        }
+      })()`)
+      if (!restored.status.includes('已配置')) throw new Error(`刷新后个人配置丢失：${restored.status}`)
+      if (restored.url !== 'http://127.0.0.1:9999/v1' || restored.model !== 'smoke-model') {
+        throw new Error(`刷新后接口/模型未恢复：${JSON.stringify(restored)}`)
+      }
+
+      await page.evaluate(`(() => {
+        const b = [...document.querySelectorAll('button')].find((x) => (x.innerText || '').trim() === '清除个人配置')
+        b && b.click()
+      })()`)
+      await page.waitFor(
+        `(document.querySelector('[data-llm-status]')?.innerText || '').includes('未配置')`,
+        { timeout: 10000, label: '清除个人配置' },
+      )
+      const cleared = await page.evaluate(`localStorage.getItem('sm_llm_personal')`)
+      if (cleared) throw new Error('清除后 localStorage 仍有个人配置')
+      return '个人配置写入 localStorage、页面只回显 ••••1234、刷新后恢复、清除后回到未配置'
     })
 
     // ---------------------------------------------------------------------
     // 23–26：AI 解读持久化 / 方向全选 / 手动画坐标 / 国外城市
     // ---------------------------------------------------------------------
 
-    /** 结果页切到「AI 对话」并等面板出现 */
+    /** 结果页切到「AI 解读」并等面板出现 */
     async function openAiTab() {
-      await page.waitFor(`[...document.querySelectorAll('button')].some((b) => b.innerText.trim() === 'AI 对话')`, {
-        label: '结果页出现「AI 对话」Tab',
+      await page.waitFor(`[...document.querySelectorAll('button')].some((b) => b.innerText.trim() === 'AI 解读')`, {
+        label: '结果页出现「AI 解读」Tab',
       })
-      await clickButton(page, 'AI 对话')
+      await clickButton(page, 'AI 解读')
       return page.waitFor(`!!document.querySelector('[data-ai-panel]')`, { label: 'AI 面板出现' })
     }
 
@@ -2339,27 +2372,63 @@ async function main() {
           label: '退出后显示登录入口',
         })
         await page.goto(`${base}/history`)
-        await page.waitFor(`!!document.querySelector('[data-history-guest]')`, { label: '未登录 /history 提示' })
+        // 清掉之前用例可能留下的游客缓存，保证从空状态开始
+        await page.evaluate(`localStorage.removeItem('sm_guest_records'); localStorage.removeItem('sm_guest_readings')`)
+        await page.goto(`${base}/history`)
+        await page.waitFor(
+          `document.body.innerText.includes('未登录：记录只保存在当前浏览器')`,
+          { label: '未登录 /history 提示' },
+        )
         const guest = await page.evaluate(`({
-          text: document.querySelector('[data-history-guest]').innerText,
           links: [...document.querySelectorAll('a[href^="/result?id="]')].length,
+          guestStore: localStorage.getItem('sm_guest_records'),
         })`)
-        if (!guest.text.includes('登录后才能保存和查看记录')) throw new Error('未登录 /history 缺少登录提示')
         if (guest.links) throw new Error(`未登录 /history 仍出现记录链接 ${guest.links} 条`)
         const logoutCookie = await page.cdp.send('Network.getCookies', { urls: [`${base}/`] }, page.sessionId)
         if ((logoutCookie.cookies || []).some((c) => c.name === 'sm_session')) {
           throw new Error('UI 退出后浏览器仍带着 sm_session Cookie')
         }
+
+        // 未登录也能打开设置页、看到个人模型表单（管理员「本站默认」区块不出现）
+        await page.goto(`${base}/settings`)
+        await page.waitFor(`!!document.querySelector('[data-llm-settings]')`, { label: '未登录设置页 AI 表单' })
+        const anonForm = await page.evaluate(`({
+          form: !!document.querySelector('[data-llm-settings]'),
+          key: !!document.querySelector('[data-llm-settings] input[type=password]'),
+          serverDefault: !!document.querySelector('[data-llm-default]'),
+        })`)
+        if (!anonForm.form || !anonForm.key) throw new Error('未登录设置页缺少个人模型配置表单')
+        if (anonForm.serverDefault) throw new Error('未登录设置页不应出现管理员的本站默认区块')
+
         await page.goto(`${base}/result?id=${users.A.recordId}`)
         await page.waitFor(`!!document.querySelector('[data-result-missing]')`, { label: '未登录直链被拒' })
         if (!(await page.evaluate(`document.querySelector('[data-result-missing]').innerText`)).includes('记录不存在或无权查看')) {
           throw new Error('未登录直链 A 记录时缺少「记录不存在或无权查看」')
         }
 
+        // 未登录起盘：记录只进 localStorage，历史页刷新后仍在，服务端仍是 401
+        const guestId = await chartBazi(page, base)
+        if (!guestId) throw new Error('未登录起盘没有生成记录 id')
+        await page.goto(`${base}/history`)
+        await page.waitFor(`!!document.querySelector('a[href^="/result?id="]')`, { label: '游客历史出现记录' })
+        const guestLinks = await historyLinks()
+        if (guestLinks.length !== 1 || guestLinks[0] !== guestId) {
+          throw new Error(`游客 /history 应只有本机 1 条 ${guestId}，实际 ${JSON.stringify(guestLinks)}`)
+        }
+        await page.goto(`${base}/history`)
+        await page.waitFor(`!!document.querySelector('a[href^="/result?id="]')`, { label: '游客历史刷新后恢复' })
+        const guestAfterReload = await historyLinks()
+        if (guestAfterReload.length !== 1 || guestAfterReload[0] !== guestId) {
+          throw new Error(`游客历史刷新后丢失：${JSON.stringify(guestAfterReload)}`)
+        }
+        if (!(await page.evaluate(`!!localStorage.getItem('sm_guest_records')`))) {
+          throw new Error('游客记录没有写 localStorage')
+        }
+
         // 5) B 登录：历史为空，直链 A 仍空态；B 起一卦后只有自己 1 条
         await loginCookie(page, base, users.B)
         await page.goto(`${base}/history`)
-        await page.waitFor(`document.querySelector('[data-history-guest]') === null`, { label: 'B 进入记录页' })
+        await page.waitFor(`document.body.innerText.includes('按账号保存在服务端')`, { label: 'B 进入记录页' })
         await page.waitFor(
           `document.body.innerText.includes('还没有排盘记录') || !!document.querySelector('a[href^="/result?id="]')`,
           { label: 'B 记录页渲染完成' },
@@ -2387,7 +2456,7 @@ async function main() {
         }
         const aList2 = await apiJson('/api/v1/records', users.A.cookie)
         if (idsOf(aList2.body).includes(users.B.recordId)) throw new Error('A 的 API 记录列表出现了 B 的记录')
-        return `A(${users.A.username}) 与 B(${users.B.username})：A 列表含自己 id、B 列表不含，B 直查 A→404 record_not_found，未登录→401；UI 退出后无 sm_session，未登录 /history 提示登录且无链接、直链 A 空态；B 历史空→起卦后 1 条（A 不可见），A 回来只见自己；API 与 UI 双层一致`
+        return `A(${users.A.username}) 与 B(${users.B.username})：A 列表含自己 id、B 列表不含，B 直查 A→404 record_not_found，未登录→401；UI 退出后无 sm_session，未登录 /history 只读本机缓存、/settings 可用个人模型表单、直链 A 空态；游客起盘只进 localStorage、刷新仍在；B 历史空→起卦后 1 条（A 不可见），A 回来只见自己；API 与 UI 双层一致`
       } finally {
         // 7) 清理：删掉 A/B 的记录与解读存档，浏览器退出登录，并把套件账号换回去
         for (const u of Object.values(users)) {
@@ -2396,6 +2465,9 @@ async function main() {
           await fetch(`${api}/api/v1/records/${u.recordId}`, { method: 'DELETE', headers: { Cookie: u.cookie } })
           await fetch(`${api}/api/v1/auth/logout`, { method: 'POST', headers: { Cookie: u.cookie } })
         }
+        await page.evaluate(
+          `localStorage.removeItem('sm_guest_records'); localStorage.removeItem('sm_guest_readings'); localStorage.removeItem('sm_llm_personal')`,
+        )
         await setBrowserSession(page, base, null)
         Object.assign(session, original)
         if (session.cookie) await loginCookie(page, base, { username: session.username })

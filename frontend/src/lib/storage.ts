@@ -14,3 +14,11 @@ export function saveJSON(key: string, value: unknown) {
     /* 隐私模式/配额满时静默降级 */
   }
 }
+
+export function removeJSON(key: string) {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    /* 隐私模式下同样静默 */
+  }
+}

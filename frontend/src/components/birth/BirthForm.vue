@@ -86,7 +86,7 @@ function onMinuteChange(e: Event) {
 
 <template>
   <form class="space-y-4" @submit.prevent="emit('submit')">
-    <div class="seg seg-equal" role="group" :aria-label="t('birth.calendar')">
+    <div class="seg seg-equal seg-wide" role="group" :aria-label="t('birth.calendar')">
       <button
         v-for="c in [{ id: 'solar', label: t('birth.solar') }, { id: 'lunar', label: t('birth.lunar') }] as const"
         :key="c.id"
@@ -100,7 +100,7 @@ function onMinuteChange(e: Event) {
     </div>
 
     <div>
-      <div class="mb-2 text-[13px] text-ink-2">
+      <div class="form-label">
         {{ t('birth.date') }} <span class="text-xs text-muted">{{ model.calendar === 'solar' ? t('birth.solar') : t('birth.lunar') }}</span>
       </div>
       <div class="grid grid-cols-[1.25fr_1fr_1fr] gap-2">
@@ -117,13 +117,13 @@ function onMinuteChange(e: Event) {
         </select>
       </div>
       <label v-if="model.calendar === 'lunar'" class="mt-2 flex min-h-11 items-center gap-2 text-[13px] text-ink-2">
-        <input v-model="model.is_leap_month" type="checkbox" class="size-[18px] accent-[var(--color-primary)]" />
+        <input v-model="model.is_leap_month" type="checkbox" class="check" />
         {{ t('birth.leap') }}
       </label>
     </div>
 
     <div>
-      <div class="mb-2 text-[13px] text-ink-2">{{ t('birth.time') }} <span class="text-xs text-muted">{{ t('birth.timeOnlyHint') }}</span></div>
+      <div class="form-label">{{ t('birth.time') }} <span class="text-xs text-muted">{{ t('birth.timeOnlyHint') }}</span></div>
       <template v-if="!unknownTime">
         <div class="grid grid-cols-2 gap-2">
           <select :value="model.hour ?? ''" class="field" :aria-label="t('birth.hour')" @change="onHourChange">
@@ -133,20 +133,20 @@ function onMinuteChange(e: Event) {
             <option v-for="m in minutes" :key="m" :value="m">{{ pad(m) }} {{ t('birth.minute') }}</option>
           </select>
         </div>
-        <p v-if="timeHint" class="mt-2 rounded-[var(--radius-sm)] bg-primary-soft px-2.5 py-2 text-xs text-primary">
+        <p v-if="timeHint" class="mt-2 border-l-2 border-line-strong px-2.5 py-1 text-xs text-ink-2">
           {{ timeHint }}
         </p>
         <p class="mt-2 text-xs text-muted">{{ t('birth.pickShichen') }}</p>
-        <div class="-mx-1 mt-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+        <div class="scroll-x mt-1 flex gap-1.5 pb-1">
           <button
             v-for="s in shichenOptions"
             :key="s.zhi"
             type="button"
-            class="min-h-9 shrink-0 rounded-full border px-3 text-[13px]"
+            class="shichen-chip"
             :class="
               model.shichen === s.zhi
-                ? 'border-primary bg-primary-soft text-primary'
-                : 'border-line-strong text-ink-2'
+                ? 'is-on'
+                : ''
             "
             :aria-pressed="model.shichen === s.zhi"
             @click="pickShichen(model.shichen === s.zhi ? null : s.zhi)"
@@ -155,7 +155,7 @@ function onMinuteChange(e: Event) {
           </button>
         </div>
       </template>
-      <p v-else class="rounded-[var(--radius-sm)] bg-bg-subtle px-2.5 py-2 text-xs leading-[1.6] text-muted">
+      <p v-else class="border-l-2 border-line-strong bg-bg-subtle px-2.5 py-2 text-xs leading-[1.6] text-muted">
         {{ t('birth.unknownTimeNote') }}
       </p>
       <label class="switch-row mt-2">
@@ -168,13 +168,13 @@ function onMinuteChange(e: Event) {
     </div>
 
     <div>
-      <div class="mb-2 text-[13px] text-ink-2">{{ t('birth.place') }} <span class="text-xs text-muted">{{ t('birth.placeHint') }}</span></div>
+      <div class="form-label">{{ t('birth.place') }} <span class="text-xs text-muted">{{ t('birth.placeHint') }}</span></div>
       <PlacePicker v-model="model.place" />
     </div>
 
     <div>
-      <div class="mb-2 text-[13px] text-ink-2">{{ t('birth.gender') }}</div>
-      <div class="seg seg-equal" role="group" :aria-label="t('birth.gender')">
+      <div class="form-label">{{ t('birth.gender') }}</div>
+      <div class="seg seg-equal seg-wide" role="group" :aria-label="t('birth.gender')">
         <button
           v-for="g in [{ id: 'male', label: t('birth.male') }, { id: 'female', label: t('birth.female') }] as { id: Gender; label: string }[]"
           :key="g.id"

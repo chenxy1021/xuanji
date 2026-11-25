@@ -136,9 +136,14 @@ def as_dicts(system: str) -> list[dict[str, str]]:
     return [asdict(topic) for topic in topics_for(system)]
 
 
-def labels_for(system: str, ids: list[str] | None) -> list[str]:
+def labels_for(system: str, ids: list[str] | None, lang: str = "zh") -> list[str]:
     """按目录顺序返回选中方向的标签；未知 id 直接忽略。"""
     if not ids:
         return []
     wanted = set(ids)
-    return [topic.label for topic in topics_for(system) if topic.id in wanted]
+    use_en = lang == "en"
+    return [
+        (topic.label_en if use_en else topic.label)
+        for topic in topics_for(system)
+        if topic.id in wanted
+    ]

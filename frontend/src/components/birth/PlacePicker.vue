@@ -226,7 +226,7 @@ watch(model, (p) => {
         <p v-if="!model && !query" class="text-xs text-muted">{{ t('place.optional') }}</p>
         <button
           type="button"
-          class="-mx-2 ml-auto flex min-h-11 items-center gap-1.5 px-2 text-xs text-primary"
+          class="link-underline -mx-2 ml-auto flex min-h-11 items-center gap-1.5 px-2 text-xs text-ink-2"
           @click="openManual"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
@@ -239,17 +239,17 @@ watch(model, (p) => {
       </div>
 
       <p v-if="error" class="mt-2 flex items-center gap-1.5 text-xs text-danger">
-        <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[10px]" aria-hidden="true">!</span>
+        <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[12px]" aria-hidden="true">!</span>
         {{ error }}
       </p>
 
       <ul
         v-if="open && (results.length || loading)"
         @mousedown.prevent
-        class="absolute inset-x-0 z-20 mt-1.5 overflow-hidden rounded-[var(--radius-md)] border border-line bg-surface shadow-[var(--shadow-md)]"
+        class="absolute inset-x-0 z-20 mt-6 overflow-hidden rounded-[var(--radius-sm)] border border-line-strong bg-surface shadow-[var(--shadow-md)]"
       >
         <li v-if="loading" class="px-3 py-3 text-sm text-muted">{{ t('place.loading') }}</li>
-        <li v-for="p in results" :key="p.name + p.province" class="border-t border-line first:border-t-0">
+        <li v-for="(p, i) in results" :key="p.name + p.province" :class="i ? 'border-t border-line' : ''">
           <button
             type="button"
             class="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm active:bg-surface-2"
@@ -263,12 +263,12 @@ watch(model, (p) => {
     </template>
 
     <!-- 手动坐标模式 -->
-    <div v-else class="rounded-[var(--radius-md)] border border-line bg-surface-2 p-3">
+    <div v-else class="border border-line-strong bg-surface-2 p-3">
       <div class="mb-2 flex items-center justify-between gap-2">
         <span class="text-[13px] text-ink">{{ t('place.manualTitle') }}</span>
         <button
           type="button"
-          class="-my-2 -mr-1 flex min-h-11 items-center px-1 text-xs text-primary"
+          class="link-underline -my-2 -mr-1 flex min-h-11 items-center px-1 text-xs text-ink-2"
           @click="closeManual"
         >
           {{ t('place.back') }}
@@ -289,7 +289,7 @@ watch(model, (p) => {
             @input="mErrors.lon = ''"
             @keydown.enter.prevent="confirmManual"
           />
-          <span v-if="mErrors.lon" class="mt-1 block text-[11px] leading-[1.45] text-danger">! {{ mErrors.lon }}</span>
+          <span v-if="mErrors.lon" class="mt-1 block text-[13px] leading-[1.45] text-danger">! {{ mErrors.lon }}</span>
         </label>
         <label class="block">
           <span class="mb-1 block text-xs text-ink-2">{{ t('place.lat') }}</span>
@@ -304,7 +304,7 @@ watch(model, (p) => {
             @input="mErrors.lat = ''"
             @keydown.enter.prevent="confirmManual"
           />
-          <span v-if="mErrors.lat" class="mt-1 block text-[11px] leading-[1.45] text-danger">! {{ mErrors.lat }}</span>
+          <span v-if="mErrors.lat" class="mt-1 block text-[13px] leading-[1.45] text-danger">! {{ mErrors.lat }}</span>
         </label>
       </div>
 
@@ -322,7 +322,7 @@ watch(model, (p) => {
             @input="mErrors.tz = ''"
             @keydown.enter.prevent="confirmManual"
           />
-          <span v-if="mErrors.tz" class="mt-1 block text-[11px] leading-[1.45] text-danger">! {{ mErrors.tz }}</span>
+          <span v-if="mErrors.tz" class="mt-1 block text-[13px] leading-[1.45] text-danger">! {{ mErrors.tz }}</span>
         </label>
         <label class="block">
           <span class="mb-1 block text-xs text-ink-2">{{ t('place.name') }}</span>

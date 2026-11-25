@@ -60,18 +60,18 @@ function submit() {
 <template>
   <form class="space-y-4" @submit.prevent="submit">
     <div>
-      <div class="mb-2 text-[13px] text-ink-2">{{ t('liuyao.method') }}</div>
-      <div class="grid gap-2 sm:grid-cols-3">
+      <div class="form-label">{{ t('liuyao.method') }}</div>
+      <div class="choice-grid choice-grid--3">
         <button
           v-for="m in methods"
           :key="m.id"
           type="button"
-          class="rounded-[var(--radius-md)] border p-3 text-left"
-          :class="method === m.id ? 'border-primary bg-primary-soft' : 'border-line-strong bg-surface'"
+          class="choice"
+          :class="{ 'is-on': method === m.id }"
           :aria-pressed="method === m.id"
           @click="method = m.id"
         >
-          <span class="block text-sm font-medium" :class="method === m.id ? 'text-primary' : ''">{{ m.name }}</span>
+          <span class="block text-sm font-medium">{{ m.name }}</span>
           <span class="mt-1 block text-xs leading-[1.45] text-muted">{{ m.description }}</span>
         </button>
       </div>
@@ -79,7 +79,7 @@ function submit() {
 
     <div v-if="method === 'coins'">
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-[13px] text-ink-2">{{ t('liuyao.lines') }} <span class="text-xs text-muted">{{ t('liuyao.bottomUp') }}</span></span>
+        <span class="form-label mb-0">{{ t('liuyao.lines') }} <span class="text-xs text-muted">{{ t('liuyao.bottomUp') }}</span></span>
         <button type="button" class="btn-ghost" @click="shake">{{ t('liuyao.shake') }}</button>
       </div>
       <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -103,17 +103,17 @@ function submit() {
       </label>
     </div>
 
-    <p v-else class="rounded-[var(--radius-sm)] bg-bg-subtle px-2.5 py-2 text-xs leading-[1.6] text-muted">
+    <p v-else class="border-l-2 border-line-strong bg-bg-subtle px-2.5 py-2 text-xs leading-[1.6] text-muted">
       {{ t('liuyao.timeNote') }}
     </p>
 
     <div>
-      <div class="mb-2 text-[13px] text-ink-2">{{ t('liuyao.question') }}</div>
+      <div class="form-label">{{ t('liuyao.question') }}</div>
       <textarea v-model="question" class="field resize-none" rows="2" maxlength="200" :placeholder="t('liuyao.placeholder')" />
     </div>
 
-    <p v-if="error" class="flex items-center gap-1.5 text-xs text-danger">
-      <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[10px]" aria-hidden="true">!</span>
+    <p v-if="error" class="flex items-center gap-1.5 border border-danger px-3 py-2 text-xs text-danger">
+      <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[12px]" aria-hidden="true">!</span>
       {{ error }}
     </p>
 

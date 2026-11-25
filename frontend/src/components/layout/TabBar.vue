@@ -13,12 +13,6 @@ const tabs: { to: string; key: MsgKey; match: () => boolean; path: string }[] = 
     path: 'M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1z',
   },
   {
-    to: '/chart/bazi',
-    key: 'tab.chart',
-    match: () => route.path.startsWith('/chart') || route.path === '/result',
-    path: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17Zm0 4a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z',
-  },
-  {
     to: '/history',
     key: 'tab.history',
     match: () => route.path === '/history',
@@ -36,14 +30,14 @@ const active = computed(() => tabs.findIndex((t) => t.match()))
 </script>
 
 <template>
-  <nav class="app-tabbar fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg md:hidden">
+  <nav class="app-tabbar fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg">
     <div class="mx-auto flex h-[var(--tabbar-h)] w-full max-w-[var(--container-max)] items-center justify-around px-2">
       <RouterLink
         v-for="(tab, i) in tabs"
         :key="tab.to"
         :to="tab.to"
-        class="flex min-h-11 min-w-16 flex-col items-center justify-center gap-0.5 text-[11px] leading-tight"
-        :class="i === active ? 'text-ink' : 'text-muted'"
+        class="flex min-h-11 min-w-16 flex-col items-center justify-center gap-0.5 text-[13px] leading-tight"
+        :class="i === active ? 'tab-on' : 'text-muted'"
         :aria-current="i === active ? 'page' : undefined"
       >
         <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">

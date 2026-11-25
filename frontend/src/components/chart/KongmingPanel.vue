@@ -16,7 +16,7 @@ const toneClass = computed(() => {
 
 <template>
   <div class="space-y-3">
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface p-4">
+    <section class="border-t border-line-strong pt-3">
       <div class="flex items-baseline justify-between gap-2">
         <p class="font-serif text-[20px]">第 {{ chart.lot.number }} 签</p>
         <span class="chip shrink-0" :class="toneClass">{{ chart.lot.fortune }}</span>
@@ -30,14 +30,14 @@ const toneClass = computed(() => {
       </p>
     </section>
 
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface px-4 py-5">
-      <p class="text-[11px] text-muted">签文</p>
+    <section class="border-y border-line px-4 py-5">
+      <p class="text-[13px] text-muted">签文</p>
       <div class="mt-2 space-y-1 text-center font-serif text-[18px] leading-[1.9] tracking-[0.06em]">
         <p v-for="(line, i) in poemLines" :key="i">{{ line }}</p>
       </div>
     </section>
 
-    <section class="space-y-2 rounded-[var(--radius-lg)] border border-line bg-surface p-4">
+    <section class="space-y-2 border-l-2 border-line-strong py-1 pl-3">
       <div class="flex flex-wrap items-center gap-1.5">
         <span class="text-[13px]">基调 · {{ chart.reading.tone }}</span>
         <span v-for="k in chart.reading.keywords" :key="k" class="chip">{{ k }}</span>
@@ -45,11 +45,11 @@ const toneClass = computed(() => {
       <p class="text-[13px] leading-[1.7] text-ink-2">{{ chart.reading.advice }}</p>
     </section>
 
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface p-3">
-      <p class="text-[11px] text-muted">取签过程</p>
+    <section class="border-t border-line pt-3">
+      <p class="text-[13px] text-muted">取签过程</p>
       <p class="mt-1 text-[12px] leading-[1.7]">{{ chart.calculation.detail }}</p>
     </section>
 
-    <p class="px-1 text-[11px] leading-[1.6] text-muted">{{ chart.disclaimer }}</p>
+    <p class="px-1 text-[13px] leading-[1.6] text-muted">{{ chart.disclaimer }}</p>
   </div>
 </template>

@@ -194,37 +194,37 @@ function signClass(sign?: string) {
     :data-ascendant="chart.rising?.sign ?? ''"
     :data-aspects="chart.aspects.length"
   >
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface p-4">
+    <section class="border-t border-line-strong pt-3">
       <div class="flex items-baseline justify-between gap-2">
         <p class="font-serif text-[20px]">{{ chart.rising ? `${chart.rising.sign}上升` : '本命盘' }}</p>
         <span class="chip shrink-0">{{ chart.zodiac }}</span>
       </div>
-      <p class="mt-2 text-[11px] leading-[1.6] text-muted">
+      <p class="mt-2 text-[13px] leading-[1.6] text-muted">
         {{ chart.local_time }} 出生<template v-if="chart.place"><span class="mx-1">·</span>{{ chart.place }}</template>
         <br />
         UTC {{ chart.utc_time }}<span class="mx-1">·</span>{{ chart.house_system }}分宫制
       </p>
-      <p v-if="!hasAngles" class="mt-1.5 text-[11px] leading-[1.6] text-warning">
+      <p v-if="!hasAngles" class="mt-1.5 text-[13px] leading-[1.6] text-warning">
         本次未算出上升与宫位（缺出生地/时刻，或出生地纬度过高），行星落座与相位仍可参考。
       </p>
     </section>
 
-    <section class="grid grid-cols-2 gap-2">
+    <section class="grid grid-cols-2 gap-x-4">
       <article
         v-for="item in bigThree"
         :key="item.label"
-        class="rounded-[var(--radius-lg)] border border-line bg-surface px-3 py-2.5"
+        class="border-t border-line py-2.5"
       >
-        <p class="text-[11px] text-muted">{{ item.label }}</p>
+        <p class="text-[13px] text-muted">{{ item.label }}</p>
         <p class="mt-0.5 font-serif text-[19px] leading-tight" :class="signClass(item.sign)">
           {{ item.sign || '—' }}
-          <span class="tabular text-[11px] text-muted">{{ fmtDegree(item.degree) }}</span>
+          <span class="tabular text-[13px] text-muted">{{ fmtDegree(item.degree) }}</span>
         </p>
-        <p v-if="item.note" class="mt-1 text-[10px] text-muted">{{ item.note }}</p>
+        <p v-if="item.note" class="mt-1 text-[12px] text-muted">{{ item.note }}</p>
       </article>
     </section>
 
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface p-3">
+    <section class="border-t border-line pt-3">
       <svg viewBox="0 0 320 320" class="mx-auto block w-full max-w-[320px]" role="img" aria-label="本命盘示意图">
         <circle :cx="CX" :cy="CY" :r="R_OUTER" fill="none" :style="{ stroke: 'var(--color-border-strong)' }" stroke-width="1" />
         <circle :cx="CX" :cy="CY" :r="R_INNER" fill="none" :style="{ stroke: 'var(--color-border)' }" stroke-width="1" />
@@ -279,7 +279,7 @@ function signClass(sign?: string) {
             text-anchor="middle"
             dominant-baseline="middle"
             font-size="7.5"
-            font-weight="600"
+            font-weight="500"
             :style="{ fill: 'var(--color-accent)' }"
           >
             ASC
@@ -310,22 +310,22 @@ function signClass(sign?: string) {
           </text>
         </g>
       </svg>
-      <div class="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-muted">
+      <div class="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[12px] text-muted">
         <span>· 日 月 水 金 火 木 土 天 海 冥</span>
         <span v-if="hasAngles" class="text-accent">— 上升</span>
-        <span v-if="chart.mc" class="text-primary">-- 天顶</span>
+        <span v-if="chart.mc" class="text-ink-2">-- 天顶</span>
         <span v-if="!hasAngles">未定上升，盘面以白羊 0° 起排</span>
       </div>
     </section>
 
-    <section class="overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface">
-      <div class="grid grid-cols-[1.1fr_1fr_1fr_0.6fr_0.5fr] gap-2 border-b border-line px-3 py-2 text-[10px] text-muted">
+    <section class="overflow-hidden border-t border-line-strong">
+      <div class="grid grid-cols-[1.1fr_1fr_1fr_0.6fr_0.5fr] gap-2 border-b border-line px-1 py-2 text-[12px] text-muted">
         <span>行星</span><span>星座</span><span class="text-right">度数</span><span class="text-center">宫位</span><span class="text-right">逆行</span>
       </div>
       <div
         v-for="p in chart.planets"
         :key="p.name"
-        class="grid grid-cols-[1.1fr_1fr_1fr_0.6fr_0.5fr] items-center gap-2 border-b border-line/60 px-3 py-1.5 text-[12px] last:border-b-0"
+        class="grid grid-cols-[1.1fr_1fr_1fr_0.6fr_0.5fr] items-center gap-2 border-b border-line px-1 py-1.5 text-[12px] last:border-b-0"
         :data-planet="p.name"
         :data-sign="p.sign"
         :data-house="p.house ?? ''"
@@ -339,8 +339,8 @@ function signClass(sign?: string) {
       </div>
     </section>
 
-    <section v-if="chart.aspects.length" class="rounded-[var(--radius-lg)] border border-line bg-surface p-3">
-      <p class="mb-1.5 text-[11px] text-muted">主要相位（容许度 ≤ 3°）</p>
+    <section v-if="chart.aspects.length" class="border-t border-line-strong pt-3">
+      <p class="mb-1.5 text-[13px] text-muted">主要相位（容许度 ≤ 3°）</p>
       <ul class="space-y-1">
         <li
           v-for="a in chart.aspects.filter((x) => (x.orb ?? 9) <= 3).slice(0, 12)"
@@ -350,37 +350,37 @@ function signClass(sign?: string) {
           <span class="min-w-0">
             {{ a.a }}<span class="mx-1 text-muted">{{ a.type }}</span>{{ a.b }}
           </span>
-          <span class="tabular shrink-0 text-[11px] text-muted">{{ Number(a.orb.toFixed(2)) }}°</span>
+          <span class="tabular shrink-0 text-[13px] text-muted">{{ Number(a.orb.toFixed(2)) }}°</span>
         </li>
       </ul>
       <p v-if="chart.aspects.every((x) => (x.orb ?? 9) > 3)" class="text-[12px] text-muted">暂无紧密相位，放宽容许度可看到更多组合。</p>
     </section>
 
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface p-3">
-      <p class="mb-2 text-[11px] text-muted">元素平衡（日月与内行星）</p>
+    <section class="border-t border-line-strong pt-3">
+      <p class="mb-2 text-[13px] text-muted">元素平衡（日月与内行星）</p>
       <div class="space-y-1.5">
-        <div v-for="e in elements" :key="e.key" class="flex items-center gap-2 text-[11px]">
+        <div v-for="e in elements" :key="e.key" class="flex items-center gap-2 text-[13px]">
           <span class="w-3 shrink-0" :class="ELEMENT_CLASS[e.key]">{{ e.key }}</span>
-          <div class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-bg-subtle">
-            <div class="h-full rounded-full" :style="{ width: `${e.pct}%`, background: ELEMENT_FILL[e.key] }" />
+          <div class="h-1.5 min-w-0 flex-1 overflow-hidden bg-surface-2">
+            <div class="h-full" :style="{ width: `${e.pct}%`, background: ELEMENT_FILL[e.key] }" />
           </div>
           <span class="tabular w-6 shrink-0 text-right text-muted">{{ e.count }}</span>
         </div>
       </div>
 
-      <p class="mb-2 mt-3 text-[11px] text-muted">模式平衡</p>
+      <p class="mb-2 mt-3 text-[13px] text-muted">模式平衡</p>
       <div class="space-y-1.5">
-        <div v-for="m in modes" :key="m.key" class="flex items-center gap-2 text-[11px]">
+        <div v-for="m in modes" :key="m.key" class="flex items-center gap-2 text-[13px]">
           <span class="w-6 shrink-0 text-ink-2">{{ m.key }}</span>
-          <div class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-bg-subtle">
-            <div class="h-full rounded-full bg-primary" :style="{ width: `${m.pct}%` }" />
+          <div class="h-1.5 min-w-0 flex-1 overflow-hidden bg-surface-2">
+            <div class="h-full bg-ink" :style="{ width: `${m.pct}%` }" />
           </div>
           <span class="tabular w-6 shrink-0 text-right text-muted">{{ m.count }}</span>
         </div>
       </div>
     </section>
 
-    <p class="px-1 text-[11px] leading-[1.6] text-muted">
+    <p class="px-1 text-[13px] leading-[1.6] text-muted">
       <template v-if="hasAngles">盘面以上升点定在左侧，行星按黄道经度逆时针排列；相位线仅画容许度 3° 以内的组合。</template>
       <template v-else>未算出上升与宫位，盘面按黄道经度排列，不标上升；宫位一栏显示为「—」。</template>
     </p>

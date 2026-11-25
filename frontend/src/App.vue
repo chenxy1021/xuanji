@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import DeskNav from '@/components/layout/DeskNav.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import TabBar from '@/components/layout/TabBar.vue'
@@ -13,20 +12,20 @@ import { syncTelegramTheme } from '@/lib/telegram'
 // 启动时拉一次登录态；失败按未登录处理
 const auth = useAuthStore()
 const charts = useChartsStore()
-const route = useRoute()
-const router = useRouter()
 auth.bootstrap()
 
-// Telegram 标题栏/背景色跟随站内主题切换
-watch(() => useSettingsStore().isDark, syncTelegramTheme, { flush: 'post' })
+// Telegram 标题栏/背景色跟随站内主题切换；immediate 补首次挂载时的同步
+watch(() => useSettingsStore().isDark, syncTelegramTheme, { flush: 'post', immediate: true })
 
-// 换账号就换一套记录：登录后拉自己的，登出清空并离开依赖记录的页面
+// 换账号就换一套记录：登录后拉自己的，未登录只读本浏览器缓存。
+// 等 /auth/me 返回后再决定读哪一边，避免已登录用户先闪一眼游客记录。
 watch(
-  () => auth.user?.id ?? null,
-  (id, prev) => {
+  () => [auth.ready, auth.user?.id ?? null] as const,
+  ([ready, id]) => {
+    if (!ready) return
     if (id === null) {
       charts.reset()
-      if (prev !== undefined && ['history', 'result'].includes(String(route.name))) router.replace('/')
+      charts.loadLocal()
       return
     }
     charts.loadFromServer().catch(() => {
@@ -41,14 +40,16 @@ watch(
   <div class="min-h-dvh bg-bg text-ink">
     <DeskNav />
     <AppHeader />
-    <main class="wrap pb-28 pt-6 md:pb-10 lg:pt-14">
+    <main class="wrap app-main pb-28 pt-6 md:pb-10 lg:pt-14">
       <RouterView v-slot="{ Component }">
         <component :is="Component" />
       </RouterView>
     </main>
     <TabBar />
-    <footer v-if="t('footer.note')" class="wrap pb-24 pt-2 text-center text-[11px] leading-[1.6] text-muted md:pb-10">
-      {{ t('footer.note') }}
+    <footer v-if="t('footer.note')" class="app-footer">
+      <div class="wrap">
+        <p class="border-t border-line pt-4 text-xs leading-[1.7] text-muted">{{ t('footer.note') }}</p>
+      </div>
     </footer>
   </div>
 </template>

@@ -11,7 +11,6 @@ const settings = useSettingsStore()
 
 const items: { to: string; key: MsgKey; match: () => boolean }[] = [
   { to: '/', key: 'tab.home', match: () => route.path === '/' },
-  { to: '/chart/bazi', key: 'tab.chart', match: () => route.path.startsWith('/chart') || route.path === '/result' },
   { to: '/history', key: 'tab.history', match: () => route.path === '/history' },
   { to: '/settings', key: 'tab.settings', match: () => route.path === '/settings' },
 ]
@@ -21,9 +20,8 @@ const active = computed(() => items.find((i) => i.match())?.to)
 <template>
   <header class="desk-nav">
     <div class="wrap flex h-full items-center justify-between gap-8">
-      <RouterLink to="/" class="flex shrink-0 items-baseline gap-2.5">
+      <RouterLink to="/" class="flex shrink-0 items-baseline">
         <span class="title-serif text-[22px] leading-none tracking-[0.22em]">{{ t('brand.name') }}</span>
-        <span class="eyebrow leading-none">XUANJI</span>
       </RouterLink>
       <nav class="flex h-full items-center gap-9" :aria-label="t('nav.aria')">
         <RouterLink

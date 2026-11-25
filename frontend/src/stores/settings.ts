@@ -1,27 +1,36 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { loadJSON, saveJSON } from '@/lib/storage'
+import { telegramColorScheme } from '@/lib/telegram'
 import { setLocaleFrom, useLocale, type Locale } from '@/i18n'
 
 export type ThemeMode = 'system' | 'light' | 'dark'
 
-const systemDark = () => matchMedia('(prefers-color-scheme: dark)').matches
-
 export const useSettingsStore = defineStore('settings', () => {
   const saved = loadJSON<{ mode?: ThemeMode; theme?: 'light' | 'dark' } | null>('sm_theme', null)
-  const mode = ref<ThemeMode>(saved?.mode ?? saved?.theme ?? 'dark')
+  const mode = ref<ThemeMode>(saved?.mode ?? saved?.theme ?? 'system')
+  const media = matchMedia('(prefers-color-scheme: dark)')
+  const systemIsDark = ref(media.matches)
+  const tgScheme = ref(telegramColorScheme())
+  const isDark = computed(
+    () =>
+      mode.value === 'dark' ||
+      (mode.value === 'system' && (tgScheme.value ? tgScheme.value === 'dark' : systemIsDark.value)),
+  )
 
-  // 主题统一写 data-theme，与 tokens.css 对齐
+  // 浅色是默认；深色只通过 data-theme="dark" 覆盖，和 tokens-v2.css 对齐
   const apply = () => {
-    // v2 深色为默认：只有显式选了 light，或 system 且系统为浅色，才走浅色
-    const dark = mode.value === 'dark' || (mode.value === 'system' && systemDark())
-    if (dark) delete document.documentElement.dataset.theme
-    else document.documentElement.dataset.theme = 'light'
+    if (isDark.value) document.documentElement.dataset.theme = 'dark'
+    else delete document.documentElement.dataset.theme
   }
   apply()
 
-  const media = matchMedia('(prefers-color-scheme: dark)')
-  media.addEventListener('change', () => {
+  media.addEventListener('change', (e) => {
+    systemIsDark.value = e.matches
+    if (mode.value === 'system') apply()
+  })
+  window.addEventListener('tg-theme-changed', () => {
+    tgScheme.value = telegramColorScheme()
     if (mode.value === 'system') apply()
   })
 
@@ -30,9 +39,6 @@ export const useSettingsStore = defineStore('settings', () => {
     saveJSON('sm_theme', { mode: mode.value })
   })
 
-  const isDark = computed(
-    () => mode.value === 'dark' || (mode.value === 'system' && media.matches),
-  )
   const toggleTheme = () => (mode.value = isDark.value ? 'light' : 'dark')
   const setMode = (m: ThemeMode) => (mode.value = m)
 

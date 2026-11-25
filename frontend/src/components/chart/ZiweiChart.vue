@@ -100,20 +100,20 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
       v-if="mode === 'grid'"
       role="grid"
       aria-label="紫微十二宫"
-      class="grid grid-cols-4 grid-rows-4 gap-px overflow-hidden rounded-[var(--radius-lg)] border border-line bg-line [grid-auto-rows:minmax(118px,1fr)] sm:[grid-auto-rows:minmax(138px,1fr)]"
+      class="grid grid-cols-4 grid-rows-4 gap-px overflow-hidden border border-line-strong bg-line [grid-auto-rows:minmax(118px,1fr)] sm:[grid-auto-rows:minmax(138px,1fr)]"
     >
       <button
         v-for="(p, i) in ring"
         :key="p.branch"
         type="button"
         role="gridcell"
-        class="relative flex min-w-0 flex-col gap-[3px] p-2 pb-5 text-left transition-[background-color,opacity] duration-150 active:bg-surface-2"
+        class="relative flex min-w-0 flex-col gap-[3px] p-2 pb-5 text-left transition-[background-color,box-shadow,opacity] duration-150 active:bg-surface-2"
         :class="[
-          p.is_ming ? 'bg-primary-soft' : 'bg-surface',
+          p.is_ming ? 'bg-accent-soft' : 'bg-surface',
           selected?.branch === p.branch
-            ? 'z-10 ring-2 ring-inset ring-primary'
+            ? 'z-10 shadow-[inset_0_0_0_2px_var(--color-text)]'
             : relatedBranches.has(p.branch)
-              ? 'bg-primary-soft ring-1 ring-inset ring-primary-border'
+              ? 'bg-surface-2 shadow-[inset_0_0_0_1px_var(--color-text-muted)]'
               : selected
                 ? 'opacity-55'
                 : '',
@@ -126,7 +126,7 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
         @click="toggle(p)"
       >
         <span class="flex items-start justify-between gap-1">
-          <span class="truncate font-serif text-[13px] leading-tight text-ink-2" :class="p.is_ming ? 'font-semibold text-primary' : ''">
+          <span class="truncate font-serif text-[13px] leading-tight text-ink-2" :class="p.is_ming ? 'font-medium text-accent' : ''">
             {{ p.name }}
           </span>
           <span v-if="p.is_shen" class="mt-1 size-[5px] shrink-0 rounded-full bg-accent" title="身宫" />
@@ -140,24 +140,24 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
             >
               {{ s.name }}<sup
                 v-if="s.brightness && SHOW_BRIGHTNESS.includes(s.brightness)"
-                class="ml-px font-sans text-[10px] text-muted"
+                class="ml-px font-sans text-[12px] text-muted"
               >{{ s.brightness }}</sup><i
                 v-if="s.sihua"
-                class="ml-px inline-block rounded-[3px] border px-[2px] align-[2px] font-sans text-[11px] not-italic leading-[1.3]"
+                class="ml-px inline-block rounded-[3px] border px-[2px] align-[2px] font-sans text-[13px] not-italic leading-[1.3]"
                 :class="HUA_STYLE[s.sihua]"
               >{{ s.sihua }}</i>
             </span>
           </template>
           <span v-else class="font-serif text-[13px] text-muted">无主星</span>
         </span>
-        <span class="flex min-w-0 flex-wrap gap-x-1 text-[11px] leading-[1.4] text-muted">
+        <span class="flex min-w-0 flex-wrap gap-x-1 text-[13px] leading-[1.4] text-muted">
           <span v-for="s in minorOf(p).slice(0, 3)" :key="s.name" class="whitespace-nowrap" :class="KIND_STYLE[s.kind]">{{ s.name }}</span>
           <span v-if="minorOf(p).length > 3" class="whitespace-nowrap">+{{ minorOf(p).length - 3 }}</span>
         </span>
-        <span class="tabular absolute bottom-[3px] left-[6px] text-[11px] text-muted">
+        <span class="tabular absolute bottom-[3px] left-[6px] text-[13px] text-muted">
           {{ decadeOf(p) ? `${decadeOf(p)!.start_age}–${decadeOf(p)!.end_age}` : '' }}
         </span>
-        <span class="absolute right-[6px] bottom-[3px] text-[11px] text-muted opacity-80">{{ p.branch }}</span>
+        <span class="absolute right-[6px] bottom-[3px] text-[13px] text-muted opacity-80">{{ p.branch }}</span>
       </button>
 
       <!-- 中心 2×2 -->
@@ -167,9 +167,9 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
       >
         <p class="text-center font-serif text-[15px] leading-tight">
           紫微在{{ chart.ming_gong }}
-          <span class="mt-0.5 block font-sans text-[11px] tracking-[0.1em] text-muted">身宫 · {{ chart.shen_gong }}</span>
+          <span class="mt-0.5 block font-sans text-[13px] text-muted">身宫 · {{ chart.shen_gong }}</span>
         </p>
-        <dl class="space-y-1 text-[11px] text-muted">
+        <dl class="space-y-1 text-[13px] text-muted">
           <div class="flex items-baseline justify-between gap-2">
             <dt>性别</dt>
             <dd class="text-[13px] font-medium text-ink">{{ chart.gender }}</dd>
@@ -180,7 +180,7 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
           </div>
           <div v-for="(pair, idx) in [sihuaPairs.slice(0, 2), sihuaPairs.slice(2, 4)]" :key="idx" class="flex justify-between gap-2">
             <dt>{{ idx === 0 ? '四化' : '' }}</dt>
-            <dd class="text-right text-[11px] text-ink">
+            <dd class="text-right text-[13px] text-ink">
               <span v-for="[hua, star] in pair" :key="hua" class="ml-1">{{ hua }}{{ star }}</span>
             </dd>
           </div>
@@ -189,32 +189,32 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
     </div>
 
     <!-- 列表模式 -->
-    <ul v-else class="overflow-hidden rounded-xl border border-line bg-line">
+    <ul v-else class="overflow-hidden border border-line-strong bg-line">
       <li v-for="p in ring" :key="p.branch">
         <button
           type="button"
           class="flex min-h-[52px] w-full items-center gap-3 bg-surface px-3 py-2 text-left active:bg-surface-2"
-          :class="p.is_ming ? 'bg-primary-soft' : ''"
+          :class="p.is_ming ? 'bg-accent-soft' : ''"
           @click="toggle(p)"
         >
-          <span class="w-14 shrink-0 text-[13px]" :class="p.is_ming ? 'font-semibold text-primary' : 'text-ink-2'">
+          <span class="w-14 shrink-0 text-[13px]" :class="p.is_ming ? 'font-medium text-accent' : 'text-ink-2'">
             {{ p.name }}
           </span>
           <span class="flex min-w-0 flex-1 flex-wrap gap-x-2">
             <span v-for="s in p.stars" :key="s.name" class="whitespace-nowrap text-[14px]" :class="KIND_STYLE[s.kind]">
-              {{ s.name }}<i v-if="s.sihua" class="ml-0.5 text-[11px] not-italic" :class="HUA_STYLE[s.sihua]">{{ s.sihua }}</i>
+              {{ s.name }}<i v-if="s.sihua" class="ml-0.5 text-[13px] not-italic" :class="HUA_STYLE[s.sihua]">{{ s.sihua }}</i>
             </span>
           </span>
-          <span class="tabular shrink-0 text-[11px] text-muted">
+          <span class="tabular shrink-0 text-[13px] text-muted">
             {{ decadeOf(p) ? `${decadeOf(p)!.start_age}-${decadeOf(p)!.end_age}` : '' }}
           </span>
-          <span class="w-4 shrink-0 text-[11px] text-muted">{{ p.branch }}</span>
+          <span class="w-4 shrink-0 text-[13px] text-muted">{{ p.branch }}</span>
         </button>
       </li>
     </ul>
 
     <!-- 图例 -->
-    <ul class="flex flex-wrap gap-x-2.5 gap-y-1 text-[11px] text-muted">
+    <ul class="flex flex-wrap gap-x-2.5 gap-y-1 text-[13px] text-muted">
       <li v-for="[hua, star] in sihuaPairs" :key="hua" class="inline-flex items-center gap-1">
         <span class="inline-block rounded-[3px] border px-[2px] leading-[1.2]" :class="HUA_STYLE[hua]">{{ hua }}</span>
         化{{ hua }}
@@ -226,13 +226,13 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
     <!-- 宫位详情 -->
     <section
       v-if="selected"
-      class="rounded-[var(--radius-md)] border border-primary-border bg-surface p-3"
+      class="border-t border-line-strong pt-3"
       data-ziwei-detail="on"
     >
       <div class="mb-2 flex items-baseline justify-between">
-        <p class="text-[14px] font-semibold">
+        <p class="text-[14px] font-medium">
           {{ selected.name }}
-          <small class="ml-1.5 text-[11px] font-normal text-muted">{{ selected.stem }}{{ selected.branch }}</small>
+          <small class="ml-1.5 text-[13px] font-normal text-muted">{{ selected.stem }}{{ selected.branch }}</small>
         </p>
         <button type="button" class="btn-ghost" @click="selected = null">收起</button>
       </div>
@@ -267,15 +267,15 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
     </section>
 
     <!-- 大限列表 -->
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface p-4">
-      <h3 class="mb-3 text-[13px] font-semibold text-ink-2">大限</h3>
+    <section class="border-t border-line-strong pt-4">
+      <h3 class="form-label">大限</h3>
       <div class="scroll-x">
         <table class="w-full text-center text-[13px]">
           <thead>
-            <tr class="text-xs text-muted">
-              <th scope="col" class="bg-surface-2 px-2 py-1.5 font-medium">宫位</th>
-              <th scope="col" class="bg-surface-2 px-2 py-1.5 font-medium">地支</th>
-              <th scope="col" class="bg-surface-2 px-2 py-1.5 font-medium">年龄段</th>
+            <tr class="border-b border-line-strong text-xs text-muted">
+              <th scope="col" class="px-2 py-1.5 font-medium">宫位</th>
+              <th scope="col" class="px-2 py-1.5 font-medium">地支</th>
+              <th scope="col" class="px-2 py-1.5 font-medium">年龄段</th>
             </tr>
           </thead>
           <tbody>
@@ -283,7 +283,7 @@ const sihuaPairs = computed(() => Object.entries(props.chart.sihua))
               v-for="d in chart.decades"
               :key="d.branch"
               class="border-t border-line"
-              :class="chart.current_decade?.branch === d.branch ? 'bg-primary-soft text-primary' : ''"
+              :class="chart.current_decade?.branch === d.branch ? 'text-accent' : ''"
             >
               <td class="px-2 py-2">{{ d.palace }}</td>
               <td class="px-2 py-2">{{ d.branch }}</td>

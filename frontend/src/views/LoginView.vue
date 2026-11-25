@@ -114,106 +114,102 @@ async function submit() {
     <h1 class="title-serif text-[28px] leading-tight lg:text-[32px]">{{ title }}</h1>
     <p class="mt-2 text-[13px] leading-[1.7] text-muted">{{ intro }}</p>
 
-    <div class="mt-6 rounded-[var(--radius-lg)] border border-line bg-surface p-5 lg:p-6">
-      <div class="grid grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-line p-1" role="group" :aria-label="t('auth.tabs')">
-        <button
-          v-for="m in [{ id: 'login', label: t('auth.login') }, { id: 'register', label: t('auth.register') }] as const"
-          :key="m.id"
-          type="button"
-          class="min-h-10 rounded-[var(--radius-sm)] text-[13px] transition-colors"
-          :class="mode === m.id ? 'bg-surface-2 font-medium text-ink' : 'text-ink-2 hover:text-ink'"
-          :aria-pressed="mode === m.id"
-          @click="setMode(m.id)"
-        >
-          {{ m.label }}
-        </button>
-      </div>
-
-      <form class="mt-5 space-y-4" novalidate @submit.prevent="submit">
-        <div>
-          <label for="auth-username" class="mb-1.5 block text-[13px] text-ink-2">{{ t('auth.username') }}</label>
-          <input
-            id="auth-username"
-            v-model="username"
-            class="field"
-            type="text"
-            autocomplete="username"
-            autocapitalize="none"
-            spellcheck="false"
-            :aria-invalid="!!fieldErrors.username"
-            :aria-describedby="fieldErrors.username ? 'auth-username-err' : undefined"
-            @input="fieldErrors.username = ''"
-          />
-          <p v-if="fieldErrors.username" id="auth-username-err" class="mt-1.5 text-xs text-danger">
-            {{ fieldErrors.username }}
-          </p>
-        </div>
-
-        <div>
-          <label for="auth-password" class="mb-1.5 block text-[13px] text-ink-2">{{ t('auth.password') }}</label>
-          <input
-            id="auth-password"
-            v-model="password"
-            class="field"
-            type="password"
-            :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
-            :aria-invalid="!!fieldErrors.password"
-            :aria-describedby="fieldErrors.password ? 'auth-password-err' : undefined"
-            @input="fieldErrors.password = ''"
-          />
-          <p v-if="fieldErrors.password" id="auth-password-err" class="mt-1.5 text-xs text-danger">
-            {{ fieldErrors.password }}
-          </p>
-        </div>
-
-        <div v-if="mode === 'register'">
-          <label for="auth-confirm" class="mb-1.5 block text-[13px] text-ink-2">{{ t('auth.confirm') }}</label>
-          <input
-            id="auth-confirm"
-            v-model="confirm"
-            class="field"
-            type="password"
-            autocomplete="new-password"
-            :aria-invalid="!!fieldErrors.confirm"
-            :aria-describedby="fieldErrors.confirm ? 'auth-confirm-err' : undefined"
-            @input="fieldErrors.confirm = ''"
-          />
-          <p v-if="fieldErrors.confirm" id="auth-confirm-err" class="mt-1.5 text-xs text-danger">
-            {{ fieldErrors.confirm }}
-          </p>
-        </div>
-
-        <div
-          v-if="serverError"
-          role="alert"
-          class="flex items-start gap-2 rounded-[var(--radius-sm)] border border-line bg-bg-subtle px-3 py-2 text-[12.5px] leading-[1.6] text-danger"
-        >
-          <span class="mt-[1px] flex size-4 shrink-0 items-center justify-center rounded-full border border-danger text-[10px]" aria-hidden="true">!</span>
-          <span>{{ serverError }}</span>
-        </div>
-
-        <button type="submit" class="btn-ink w-full" :disabled="busy" :aria-busy="busy">
-          <svg
-            v-if="busy"
-            viewBox="0 0 24 24"
-            class="size-4 animate-spin"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            aria-hidden="true"
-          >
-            <path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round" />
-          </svg>
-          {{ submitLabel }}
-        </button>
-      </form>
+    <div class="seg seg-equal seg-wide mt-7" role="group" :aria-label="t('auth.tabs')">
+      <button
+        v-for="m in [{ id: 'login', label: t('auth.login') }, { id: 'register', label: t('auth.register') }] as const"
+        :key="m.id"
+        type="button"
+        :class="{ 'is-on': mode === m.id }"
+        :aria-pressed="mode === m.id"
+        @click="setMode(m.id)"
+      >
+        {{ m.label }}
+      </button>
     </div>
 
-    <p class="mt-4 text-center text-[13px] text-muted">
+    <form class="mt-6 space-y-4" novalidate @submit.prevent="submit">
+      <div>
+        <label for="auth-username" class="form-label">{{ t('auth.username') }}</label>
+        <input
+          id="auth-username"
+          v-model="username"
+          class="field"
+          type="text"
+          autocomplete="username"
+          autocapitalize="none"
+          spellcheck="false"
+          :aria-invalid="!!fieldErrors.username"
+          :aria-describedby="fieldErrors.username ? 'auth-username-err' : undefined"
+          @input="fieldErrors.username = ''"
+        />
+        <p v-if="fieldErrors.username" id="auth-username-err" class="mt-1.5 text-xs text-danger">
+          {{ fieldErrors.username }}
+        </p>
+      </div>
+
+      <div>
+        <label for="auth-password" class="form-label">{{ t('auth.password') }}</label>
+        <input
+          id="auth-password"
+          v-model="password"
+          class="field"
+          type="password"
+          :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
+          :aria-invalid="!!fieldErrors.password"
+          :aria-describedby="fieldErrors.password ? 'auth-password-err' : undefined"
+          @input="fieldErrors.password = ''"
+        />
+        <p v-if="fieldErrors.password" id="auth-password-err" class="mt-1.5 text-xs text-danger">
+          {{ fieldErrors.password }}
+        </p>
+      </div>
+
+      <div v-if="mode === 'register'">
+        <label for="auth-confirm" class="form-label">{{ t('auth.confirm') }}</label>
+        <input
+          id="auth-confirm"
+          v-model="confirm"
+          class="field"
+          type="password"
+          autocomplete="new-password"
+          :aria-invalid="!!fieldErrors.confirm"
+          :aria-describedby="fieldErrors.confirm ? 'auth-confirm-err' : undefined"
+          @input="fieldErrors.confirm = ''"
+        />
+        <p v-if="fieldErrors.confirm" id="auth-confirm-err" class="mt-1.5 text-xs text-danger">
+          {{ fieldErrors.confirm }}
+        </p>
+      </div>
+
+      <p
+        v-if="serverError"
+        role="alert"
+        class="border-l-2 border-danger pl-3 text-[12.5px] leading-[1.6] text-danger"
+      >
+        {{ serverError }}
+      </p>
+
+      <button type="submit" class="btn-primary w-full" :disabled="busy" :aria-busy="busy">
+        <svg
+          v-if="busy"
+          viewBox="0 0 24 24"
+          class="size-4 animate-spin"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          aria-hidden="true"
+        >
+          <path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round" />
+        </svg>
+        {{ submitLabel }}
+      </button>
+    </form>
+
+    <p class="mt-5 border-t border-line pt-4 text-[13px] text-muted">
       {{ t(mode === 'login' ? 'auth.noAccount' : 'auth.haveAccount') }}
       <button
         type="button"
-        class="ml-1 inline-flex min-h-11 items-center align-middle text-primary underline-offset-4 hover:underline"
+        class="let-action text-[13px]"
         @click="setMode(mode === 'login' ? 'register' : 'login')"
       >
         {{ t(mode === 'login' ? 'auth.toRegister' : 'auth.toLogin') }}

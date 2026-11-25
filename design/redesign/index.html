@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>玄机 · 界面重设计（样稿）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   玄机 · 界面重设计样稿
+   纸 · 墨 · 朱砂；编辑式排版；一屏只留一处朱砂
+   说明：本文件是静态视觉稿，盘面为示例数据。
+   ============================================================ */
+:root{
+  --paper:#f6f3ec;
+  --paper-2:#ece7db;
+  --surface:#fffdf8;
+  --ink:#23211b;
+  --ink-2:#555048;
+  --muted:#676154;
+  --rule:rgba(35,33,27,.14);
+  --rule-strong:rgba(35,33,27,.30);
+  --coral:#b4402f;
+  --coral-soft:rgba(180,64,47,.07);
+  --sage:#4f7a57;
+  --serif:"Noto Serif SC","Songti SC","Source Han Serif SC",Georgia,serif;
+  --sans:"Geist","Noto Sans SC","PingFang SC",system-ui,sans-serif;
+  --mono:"Geist Mono","SF Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:#e7e1d4;color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+p{margin:0}
+h1,h2,h3{margin:0;font-weight:400}
+ul,ol{margin:0;padding:0;list-style:none}
+table{border-collapse:collapse;width:100%}
+::selection{background:var(--coral-soft)}
+
+/* ---------- 样稿画板 ---------- */
+.board{max-width:1360px;margin:0 auto;padding:56px 24px 104px}
+.board-head{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;border-bottom:1px solid var(--rule-strong);padding-bottom:26px}
+.board-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.board-title{font-family:var(--serif);font-size:46px;line-height:1.2;margin-top:14px}
+.board-sub{margin-top:12px;font-size:14px;color:var(--ink-2);max-width:52ch}
+.board-meta{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--muted);text-align:right;line-height:2.1;white-space:nowrap}
+
+.spec{display:grid;grid-template-columns:1fr .9fr 1.3fr;gap:56px;padding:30px 0 40px;border-bottom:1px solid var(--rule)}
+.spec h2{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.swatches{display:flex;gap:0;border:1px solid var(--rule);width:100%}
+.swatch{flex:1 1 0;min-width:0}
+.swatch i{display:block;height:56px}
+.swatch span{display:block;font-family:var(--mono);font-size:11px;line-height:1.45;color:var(--muted);padding:7px 8px;border-top:1px solid var(--rule);letter-spacing:.02em}
+.type-row{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:9px 0;border-bottom:1px solid var(--rule)}
+.type-row:first-of-type{border-top:1px solid var(--rule)}
+.type-sample-serif{font-family:var(--serif);font-size:26px;line-height:1.2}
+.type-sample-sans{font-size:14px;color:var(--ink-2)}
+.type-sample-mono{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.type-role{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.principles li{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);font-size:13px;color:var(--ink-2)}
+.principles li:first-child{border-top:1px solid var(--rule)}
+.principles b{font-family:var(--mono);font-weight:400;font-size:11px;color:var(--muted);padding-top:3px}
+
+/* ---------- 屏 ---------- */
+.screen{margin-top:72px}
+.screen-head{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding-bottom:14px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.screen-head b{font-weight:500;color:var(--ink)}
+.screen-body{background:var(--paper);border:1px solid var(--rule);padding:0 40px 44px;overflow:hidden}
+.screen-note{margin-top:12px;font-size:12px;color:var(--muted)}
+
+/* ---------- 通用零件 ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.rule-t{border-top:1px solid var(--rule)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:44px;padding:0 22px;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;transition:background .15s}
+.btn:hover{background:#000}
+.btn-line{display:inline-flex;align-items:center;justify-content:center;height:38px;padding:0 16px;border:1px solid var(--rule-strong);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;transition:border-color .15s,color .15s}
+.btn-line:hover{border-color:var(--ink);color:var(--ink)}
+.link-u{border-bottom:1px solid var(--rule-strong);padding-bottom:1px}
+.link-u:hover{border-color:var(--ink)}
+.arrow{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+.seg{display:inline-flex;border:1px solid var(--rule-strong)}
+.seg button{height:34px;padding:0 16px;font-size:12px;color:var(--muted);transition:background .15s,color .15s}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button.is-on{background:var(--ink);color:var(--paper)}
+
+.field{width:100%;height:44px;border:1px solid var(--rule);background:var(--surface);padding:0 12px;font-size:14px;color:var(--ink);border-radius:0;transition:border-color .15s}
+.field:focus{outline:none;border-color:var(--ink)}
+.field::placeholder{color:#6f695b}
+select.field{appearance:none;background-image:linear-gradient(45deg,transparent 49%,var(--muted) 50%),linear-gradient(-45deg,transparent 49%,var(--muted) 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+
+.switch{position:relative;display:inline-block;width:36px;height:20px;border:1px solid var(--rule-strong);border-radius:999px;background:transparent}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:left .15s,background .15s}
+.switch.is-on{background:var(--ink);border-color:var(--ink)}
+.switch.is-on::after{left:18px;background:var(--paper)}
+
+/* ---------- 应用外壳 ---------- */
+.app-header{display:flex;align-items:center;gap:56px;height:68px;border-bottom:1px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-family:var(--serif);font-weight:400;font-size:22px;letter-spacing:.04em}
+.brand span{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--muted)}
+.app-nav{display:flex;gap:30px;font-size:14px;color:var(--ink-2)}
+.app-nav a{position:relative;padding:23px 0;transition:color .15s}
+.app-nav a:hover{color:var(--ink)}
+.app-nav a.is-on{color:var(--ink)}
+.app-nav a.is-on::after{content:"";position:absolute;left:0;right:0;bottom:17px;height:1.5px;background:var(--coral)}
+.app-right{margin-left:auto;display:flex;align-items:center;gap:22px;font-size:12px;color:var(--muted)}
+.app-right .lang{display:flex;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.08em}
+.app-right .lang .is-on{color:var(--ink)}
+.app-right .login{color:var(--ink);font-size:13px}
+.app-footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;gap:24px;font-size:12px;color:var(--muted)}
+
+/* ---------- 01 首页 ---------- */
+.hero{display:grid;grid-template-columns:1.05fr .72fr;gap:72px;align-items:center;padding:64px 0 52px}
+.hero h1{font-family:var(--serif);font-size:56px;line-height:1.3;letter-spacing:.01em;margin-top:0}
+.hero-sub{margin-top:26px;max-width:46ch;font-size:14.5px;line-height:1.9;color:var(--ink-2)}
+.hero-meta{margin-top:22px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.hero-actions{display:flex;align-items:center;gap:28px;margin-top:32px}
+.hero-note{font-size:12px;color:var(--muted)}
+.plate{width:100%;max-width:420px;justify-self:end;background:var(--surface);border:1px solid var(--rule);padding:16px}
+.plate svg{display:block;width:100%;height:auto}
+.plate-cap{display:flex;justify-content:space-between;gap:12px;padding-top:12px;font-size:12px;color:var(--muted)}
+
+.system-group{margin-top:44px}
+.group-head{display:flex;align-items:baseline;justify-content:space-between;padding:24px 0 12px;border-top:1px solid var(--rule-strong)}
+.group-head .idx{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em}
+.group-head h2{font-family:var(--serif);font-size:21px}
+.group-head .count{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em}
+.sys-row{display:grid;grid-template-columns:40px minmax(0,1fr) auto 20px;align-items:center;gap:20px;padding:16px 0;border-top:1px solid var(--rule);transition:color .15s}
+.sys-row:last-child{border-bottom:1px solid var(--rule)}
+.sys-row .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.sys-row .name{display:block;font-family:var(--serif);font-size:19px;line-height:1.4;transition:color .15s}
+.sys-row .desc{display:block;margin-top:2px;font-size:12.5px;line-height:1.6;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sys-row .tags{display:flex;gap:6px}
+.sys-row .tags i{font-family:var(--mono);font-size:11px;font-style:normal;letter-spacing:.08em;color:var(--muted);border:1px solid var(--rule);padding:4px 8px}
+.sys-row .go{font-family:var(--mono);color:var(--muted);transition:transform .15s,color .15s}
+.sys-row:hover .name{color:var(--coral)}
+.sys-row:hover .go{transform:translateX(3px);color:var(--ink)}
+
+/* ---------- 02 起盘 ---------- */
+.page-head{padding:52px 0 34px;border-bottom:1px solid var(--rule-strong);display:flex;align-items:flex-end;justify-content:space-between;gap:32px}
+.page-head h1{font-family:var(--serif);font-size:42px;line-height:1.25;margin-top:14px}
+.back{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.back:hover{color:var(--ink)}
+.chart-grid{display:grid;grid-template-columns:.86fr 1.14fr;gap:80px;padding-top:44px;align-items:start}
+.aside h1{font-family:var(--serif);font-size:40px;line-height:1.25;margin-top:0}
+.aside .tagline{margin-top:18px;max-width:44ch;font-size:14px;line-height:1.9;color:var(--ink-2)}
+.method{margin-top:36px;border-top:1px solid var(--rule);padding-top:18px}
+.method ol{margin-top:14px;display:grid;gap:10px}
+.method li{display:grid;grid-template-columns:24px 1fr;gap:10px;font-size:12.5px;line-height:1.7;color:var(--muted)}
+.method li b{font-family:var(--mono);font-weight:400;font-size:11px;color:var(--muted);padding-top:3px}
+.method-note{margin-top:16px;font-size:12px;line-height:1.8;color:var(--muted);max-width:44ch}
+.form-card{border:1px solid var(--rule);background:var(--surface);padding:26px 28px 28px}
+.form-card .fc-head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--rule);padding-bottom:14px;margin-bottom:20px}
+.form-card .fc-head h2{font-family:var(--serif);font-size:19px}
+.form-row{margin-bottom:18px}
+.form-row>label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.form-grid.two{grid-template-columns:1fr 1fr}
+.form-hint{margin-top:7px;font-size:12px;color:var(--muted)}
+.checkline{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-top:1px solid var(--rule);margin-top:6px}
+.checkline i{flex:none;width:14px;height:14px;border:1px solid var(--ink);margin-top:4px;position:relative}
+.checkline i::after{content:"";position:absolute;left:3px;top:0.5px;width:5px;height:8px;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(42deg)}
+.checkline p{font-size:12.5px;color:var(--ink-2)}
+.checkline span{display:block;font-size:12px;color:var(--muted)}
+.form-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px}
+.form-note{font-size:12px;color:var(--muted)}
+
+/* ---------- 03 结果 ---------- */
+.result-top{display:flex;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid var(--rule)}
+.result-top .crumb{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.result-top .ver{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.result-grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:56px;padding-top:36px;align-items:start}
+.board-card{border:1px solid var(--rule);background:var(--surface);padding:20px}
+.board-card .bc-head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--rule);padding-bottom:10px}
+.board-card .bc-head span{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:16px}
+.pillar{background:var(--surface);text-align:center;padding:12px 4px 10px}
+.pillar .gh{font-family:var(--serif);font-size:28px;line-height:1.25}
+.pillar .zhi{font-family:var(--serif);font-size:28px;line-height:1.25;color:var(--ink-2)}
+.pillar .lb{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--muted);margin-top:6px}
+.board-meta{margin-top:14px;display:grid;gap:6px;font-size:12px;color:var(--muted)}
+.board-meta div{display:flex;justify-content:space-between;gap:12px}
+.board-meta b{font-weight:400;color:var(--ink-2)}
+.board-actions{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--rule);margin-top:16px;padding-top:16px}
+
+.result-main h1{font-family:var(--serif);font-size:40px;line-height:1.25;margin-top:0}
+.result-hero{position:relative;border-bottom:1px solid var(--rule-strong);padding-bottom:22px}
+.seal{position:absolute;right:0;top:6px;width:46px;height:46px;border:1.5px solid var(--coral);color:var(--coral);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:22px}
+.summary{margin-top:14px;max-width:62ch;font-size:13px;line-height:1.85;color:var(--ink-2)}
+.born{margin-top:6px;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.03em}
+.result-tabs{display:flex;align-items:center;gap:28px;border-bottom:1px solid var(--rule);margin-top:0;padding:16px 0 0}
+.result-tabs button{position:relative;padding:0 0 12px;font-size:13px;color:var(--muted)}
+.result-tabs button.is-on{color:var(--ink)}
+.result-tabs button.is-on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1.5px;background:var(--ink)}
+.result-tabs .hint{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:24px}
+.fact{background:var(--surface);padding:14px 14px 12px}
+.fact .lb{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.fact .val{font-family:var(--serif);font-size:22px;margin-top:8px}
+.fact .hint{font-size:12px;color:var(--muted);margin-top:2px}
+.pull{margin:28px 0 0;padding:6px 0 6px 20px;border-left:2px solid var(--coral);font-family:var(--serif);font-style:italic;font-size:20px;line-height:1.7;color:var(--ink)}
+.section{margin-top:34px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:1px solid var(--rule);padding-bottom:10px}
+.section-head h2{font-family:var(--serif);font-size:19px}
+.bars{margin-top:16px;display:grid;gap:11px}
+.bar-row{display:grid;grid-template-columns:28px 1fr 70px;align-items:center;gap:14px}
+.bar-row .ch{font-family:var(--serif);font-size:16px}
+.bar-row .track{height:5px;background:var(--paper-2);position:relative;overflow:hidden}
+.bar-row .track i{position:absolute;inset:0 auto 0 0;background:var(--ink)}
+.bar-row .num{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;letter-spacing:.03em}
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:16px}
+.tl{background:var(--surface);padding:12px 10px}
+.tl .y{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tl .gz{font-family:var(--serif);font-size:17px;margin-top:4px}
+.tl .age{font-size:12px;color:var(--muted);margin-top:2px}
+.ai-card{margin-top:30px;border:1px solid var(--rule-strong);background:var(--surface);padding:22px 24px}
+.ai-card .ac-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:1px solid var(--rule);padding-bottom:12px}
+.ai-card h2{font-family:var(--serif);font-size:19px}
+.ai-card .ac-head span{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{font-size:12px;border:1px solid var(--rule);padding:5px 11px;color:var(--ink-2)}
+.chip.is-on{border-color:var(--ink);color:var(--ink);background:var(--paper-2)}
+.ai-input{margin-top:14px;height:64px;border:1px solid var(--rule);background:var(--paper);padding:10px 12px;font-size:12.5px;color:var(--muted)}
+.ai-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px}
+.ai-foot span{font-size:12px;color:var(--muted)}
+
+/* ---------- 04 记录 ---------- */
+.hist-head{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding:48px 0 22px;border-bottom:1px solid var(--rule-strong)}
+.hist-head h1{font-family:var(--serif);font-size:42px;margin-top:12px}
+.hist-head p.note{margin-top:8px;font-size:12px;color:var(--muted)}
+.dtable{margin-top:0}
+.dtable th{text-align:left;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:16px 8px 10px;border-bottom:1px solid var(--rule)}
+.dtable th:first-child,.dtable td:first-child{padding-left:0}
+.dtable th:last-child,.dtable td:last-child{padding-right:0;text-align:right}
+.dtable td{padding:15px 8px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--ink-2);vertical-align:middle}
+.dtable tr:hover td{background:rgba(35,33,27,.025)}
+.dtable .sys{font-family:var(--serif);font-size:16px;color:var(--ink)}
+.dtable .time{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.dtable .board-sum{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-2)}
+.dtable .acts{white-space:nowrap}
+.dtable .acts a{margin-left:16px;font-size:12px;color:var(--ink-2);border-bottom:1px solid transparent}
+.dtable .acts a:hover{color:var(--ink);border-color:var(--rule-strong)}
+.dtable .acts a.del:hover{color:var(--coral);border-color:var(--coral)}
+.hist-foot{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:18px;font-size:12px;color:var(--muted)}
+
+/* ---------- 05 设置 ---------- */
+.settings-grid{display:grid;grid-template-columns:180px minmax(0,640px);gap:72px;padding-top:40px;align-items:start}
+.settings-nav li{padding:7px 0;font-size:13px}
+.settings-nav a{color:var(--ink-2);display:inline-flex;align-items:center;gap:10px}
+.settings-nav a::before{content:"";width:14px;height:1px;background:var(--rule-strong)}
+.settings-nav a.is-on{color:var(--ink)}
+.settings-nav a.is-on::before{background:var(--coral);width:20px}
+.set-sec{margin-bottom:38px}
+.set-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+.set-head h2{font-family:var(--serif);font-size:19px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.set-row .t{font-size:14px}
+.set-row .h{font-size:12px;color:var(--muted);margin-top:1px}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.status i{width:6px;height:6px;border-radius:50%;background:var(--sage)}
+.pills{display:flex;gap:0;border:1px solid var(--rule);width:max-content;margin-top:4px}
+.pills button{height:32px;padding:0 14px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted)}
+.pills button+button{border-left:1px solid var(--rule)}
+.pills button.is-on{background:var(--ink);color:var(--paper)}
+.set-field{margin-top:16px}
+.set-field .lb{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.set-field .hint{margin-top:6px;font-size:12px;color:var(--muted)}
+.set-actions{display:flex;align-items:center;gap:10px;margin-top:20px}
+.set-note{margin-top:16px;padding-top:12px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+.about p{font-size:12.5px;line-height:1.9;color:var(--muted);margin-top:10px}
+.about code{font-family:var(--mono);font-size:12px;border:1px solid var(--rule);padding:1px 5px;color:var(--ink-2)}
+
+/* ---------- 06 移动端 ---------- */
+.mobile-wrap{display:flex;gap:72px;align-items:flex-start}
+.phone{width:390px;flex:none;background:var(--paper);border:1px solid var(--rule-strong);border-radius:28px;padding:9px}
+.phone-screen{height:812px;border:1px solid var(--rule);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;background:var(--paper)}
+.m-header{display:flex;align-items:center;justify-content:space-between;height:54px;padding:0 18px;border-bottom:1px solid var(--rule)}
+.m-header .brand b{font-size:19px}
+.m-header .brand span{display:none}
+.m-lang{display:flex;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.m-lang .is-on{color:var(--ink)}
+.m-main{flex:1;overflow:hidden;padding:0 20px}
+.m-main h1{font-family:var(--serif);font-size:34px;line-height:1.32;margin-top:16px}
+.m-sub{margin-top:14px;font-size:13px;line-height:1.85;color:var(--ink-2)}
+.m-meta{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.m-plate{margin-top:20px;border:1px solid var(--rule);background:var(--surface);padding:10px}
+.m-plate svg{display:block;width:100%;height:auto}
+.m-group{margin-top:22px}
+.m-group .group-head{padding:14px 0 8px}
+.m-group h2{font-size:18px}
+.m-sys{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--rule)}
+.m-sys .name{display:block;font-family:var(--serif);font-size:16px}
+.m-sys .desc{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+.m-sys .go{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.m-tab{display:flex;border-top:1px solid var(--rule);height:58px}
+.m-tab div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:var(--muted)}
+.m-tab div.is-on{color:var(--ink)}
+.m-tab svg{width:16px;height:16px}
+.m-tab div.is-on svg{color:var(--coral)}
+.mobile-caption{max-width:34ch;font-size:12px;line-height:1.9;color:var(--muted);padding-top:8px}
+.mobile-caption b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);margin-bottom:10px}
+
+/* ---------- 星盘 ---------- */
+.a-ring{fill:none;stroke:var(--rule);stroke-width:1}
+.a-ring.is-strong{stroke:var(--rule-strong)}
+.a-mansions text{fill:var(--muted);font-family:var(--serif);font-size:10px;text-anchor:middle;dominant-baseline:central;transform-box:view-box;animation:a-counter 300s linear infinite}
+.a-ticks line{stroke:var(--rule-strong);stroke-width:1}
+.a-ticks line.is-major{stroke:var(--ink-2)}
+.a-houses line{stroke:var(--rule);stroke-width:1}
+.a-signs text{fill:var(--ink-2);font-family:var(--sans);font-size:10.5px;letter-spacing:.06em;text-anchor:middle;dominant-baseline:central}
+.a-stars circle{fill:var(--ink);animation:a-twinkle 4s ease-in-out infinite}
+.a-stars circle:nth-child(3n){fill:var(--muted)}
+.a-aspect polygon{fill:none;stroke:var(--coral);stroke-width:.8;opacity:.2;stroke-dasharray:1.5 8;animation:a-dash 40s linear infinite}
+.a-wedge{fill:var(--coral-soft);stroke:none}
+.a-hand{stroke:var(--coral);stroke-width:1;opacity:.55}
+.a-dot{fill:var(--coral)}
+.a-hub-disc{fill:var(--surface)}
+.a-hub-ring{fill:none;stroke:var(--rule-strong)}
+.a-hub-name{fill:var(--ink);font-family:var(--serif);font-size:18px;letter-spacing:.14em;text-anchor:middle}
+.a-hub-en{fill:var(--muted);font-family:var(--mono);font-size:7.5px;letter-spacing:.24em;text-anchor:middle}
+.a-spin,.a-spin-rev,.a-spin-mid,.a-sweep{transform-box:view-box;transform-origin:210px 210px}
+.a-spin{animation:a-rotate 300s linear infinite}
+.a-spin-rev{animation:a-rotate-rev 180s linear infinite}
+.a-spin-mid{animation:a-rotate 160s linear infinite}
+.a-sweep{animation:a-rotate 26s linear infinite}
+@keyframes a-rotate{to{transform:rotate(360deg)}}
+@keyframes a-rotate-rev{to{transform:rotate(-360deg)}}
+@keyframes a-counter{to{transform:rotate(-360deg)}}
+@keyframes a-twinkle{0%,100%{opacity:.2}50%{opacity:.95}}
+@keyframes a-dash{to{stroke-dashoffset:-95}}
+@media (prefers-reduced-motion:reduce){
+  .a-spin,.a-spin-rev,.a-spin-mid,.a-sweep,.a-mansions text,.a-stars circle,.a-aspect polygon{animation:none}
+}
+
+@media (max-width:1100px){
+  .spec{grid-template-columns:1fr 1fr}
+  .spec .principles{grid-column:1 / -1}
+  .hero{grid-template-columns:1fr;gap:40px}
+  .plate{justify-self:start}
+  .chart-grid,.result-grid,.settings-grid{grid-template-columns:1fr;gap:40px}
+  .facts{grid-template-columns:repeat(2,1fr)}
+  .mobile-wrap{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div class="board">
+
+  <header class="board-head">
+    <div>
+      <p class="board-eyebrow">Edition 2026 · Redesign</p>
+      <h1 class="board-title">玄机 · 界面重设计</h1>
+      <p class="board-sub">纸、墨、朱砂的编辑式工作台：更安静的底子，更清楚的层级，一屏只留一处朱砂。以下为五屏桌面样稿与一屏移动端样稿，盘面均为示例数据。</p>
+    </div>
+    <div class="board-meta">
+      DESIGN BOARD / 6 SCREENS<br>
+      1440 FRAME · 1184 CONTENT<br>
+      2026-11
+    </div>
+  </header>
+
+  <section class="spec">
+    <div>
+      <h2>Palette</h2>
+      <div class="swatches">
+        <div class="swatch"><i style="background:#f6f3ec"></i><span>宣纸 #F6F3EC</span></div>
+        <div class="swatch"><i style="background:#23211b"></i><span>墨 #23211B</span></div>
+        <div class="swatch"><i style="background:#676154"></i><span>淡墨 #676154</span></div>
+        <div class="swatch"><i style="background:#b4402f"></i><span>朱砂 #B4402F</span></div>
+      </div>
+    </div>
+    <div>
+      <h2>Type</h2>
+      <div class="type-row"><span class="type-sample-serif">盘面可核对</span><span class="type-role">Noto Serif SC</span></div>
+      <div class="type-row"><span class="type-sample-sans">排盘交给代码，解读交给 AI</span><span class="type-role">Geist / Noto Sans</span></div>
+      <div class="type-row"><span class="type-sample-mono">1992-04-21 08:30 · UTC+8</span><span class="type-role">Geist Mono</span></div>
+    </div>
+    <div class="principles">
+      <h2>Principles</h2>
+      <ul>
+        <li><b>01</b><span>先删后加：一屏只保留一个视觉焦点，朱砂只做批注。</span></li>
+        <li><b>02</b><span>表格优先：体系、记录、盘面都按可扫读的编号索引排，而不是卡片网格。</span></li>
+        <li><b>03</b><span>同一套细线、字阶与留白；信息靠位置分层，不靠阴影和色块。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ 01 首页 ============ -->
+  <section class="screen">
+    <div class="screen-head"><span><b>01 · 首页</b>　/</span><span>Hero · 体系索引 · 页脚</span></div>
+    <div class="screen-body">
+      <header class="app-header">
+        <div class="brand"><b>玄机</b><span>XUANJI</span></div>
+        <nav class="app-nav">
+          <a href="#s-home" class="is-on">首页</a>
+          <a href="#s-chart">起盘</a>
+          <a href="#s-history">记录</a>
+          <a href="#s-settings">设置</a>
+        </nav>
+        <div class="app-right">
+          <div class="lang"><span class="is-on">中</span><span>EN</span></div>
+          <span>主题</span>
+          <a class="login" href="#s-settings">登录</a>
+        </div>
+      </header>
+
+      <div class="hero">
+        <div>
+          <h1>盘面可核对，<br>解读不越界</h1>
+          <p class="hero-sub">排盘、起卦、出题全部由代码完成，结果逐项可查；AI 只解释这份结果，不改动盘面。</p>
+          <p class="hero-meta">11 个体系 · 实时代算 · 逐项可查</p>
+          <div class="hero-actions">
+            <a class="btn" href="#s-chart">开始排盘 <span class="arrow" style="color:inherit">→</span></a>
+            <span class="hero-note">未登录也能排，只是不入库</span>
+          </div>
+        </div>
+        <figure class="plate">
+          <svg id="astro-1" viewBox="0 0 420 420" role="img" aria-label="动态星盘示意"></svg>
+          <figcaption class="plate-cap"><span>黄道十二宫 · 二十八宿</span><span>动态示意</span></figcaption>
+        </figure>
+      </div>
+
+      <section class="system-group">
+        <div class="group-head"><div style="display:flex;align-items:baseline;gap:18px"><span class="idx">01</span><h2>命盘</h2></div><span class="count">4 个可用</span></div>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">01</span>
+          <span><span class="name">四柱八字</span><span class="desc">以出生时刻排出年、月、日、时四柱，看十神格局与大运流年</span></span>
+          <span class="tags"><i>四柱</i><i>十神</i><i>大运</i></span>
+          <span class="go">→</span>
+        </a>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">02</span>
+          <span><span class="name">紫微斗数</span><span class="desc">十二宫、十四主星与四化，看人生各领域的主轴与变化</span></span>
+          <span class="tags"><i>十二宫</i><i>四化</i></span>
+          <span class="go">→</span>
+        </a>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">03</span>
+          <span><span class="name">西方占星</span><span class="desc">太阳、月亮与上升，看性格底色与关系模式</span></span>
+          <span class="tags"><i>本命盘</i><i>行运</i></span>
+          <span class="go">→</span>
+        </a>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">04</span>
+          <span><span class="name">奇门终身局</span><span class="desc">以出生时刻起局，看年命、日干、时干三宫的一生格局</span></span>
+          <span class="tags"><i>三奇六仪</i><i>九宫</i></span>
+          <span class="go">→</span>
+        </a>
+      </section>
+
+      <section class="system-group">
+        <div class="group-head"><div style="display:flex;align-items:baseline;gap:18px"><span class="idx">02</span><h2>合盘</h2></div><span class="count">2 个可用</span></div>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">05</span>
+          <span><span class="name">八字合盘</span><span class="desc">双人四柱对照，看日主、五行与十神的互补</span></span>
+          <span class="tags"><i>双人</i><i>互补</i></span>
+          <span class="go">→</span>
+        </a>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">06</span>
+          <span><span class="name">紫微合盘</span><span class="desc">双人命盘对照，看宫位与四化的呼应</span></span>
+          <span class="tags"><i>双人</i><i>对照</i></span>
+          <span class="go">→</span>
+        </a>
+      </section>
+
+      <section class="system-group">
+        <div class="group-head"><div style="display:flex;align-items:baseline;gap:18px"><span class="idx">03</span><h2>占卜</h2></div><span class="count">4 个可用</span></div>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">07</span>
+          <span><span class="name">六爻</span><span class="desc">三枚铜钱六次成卦，看一事的吉凶与应期</span></span>
+          <span class="tags"><i>纳甲</i><i>应期</i></span>
+          <span class="go">→</span>
+        </a>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">08</span>
+          <span><span class="name">塔罗</span><span class="desc">抽牌成阵，看当下的处境与选择</span></span>
+          <span class="tags"><i>牌阵</i><i>当下</i></span>
+          <span class="go">→</span>
+        </a>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">09</span>
+          <span><span class="name">梅花易数</span><span class="desc">以时间起卦，看事态走向与动静</span></span>
+          <span class="tags"><i>时间起卦</i></span>
+          <span class="go">→</span>
+        </a>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">10</span>
+          <span><span class="name">孔明神卦</span><span class="desc">六十四卦签文，取一签解当下</span></span>
+          <span class="tags"><i>签文</i></span>
+          <span class="go">→</span>
+        </a>
+      </section>
+
+      <section class="system-group">
+        <div class="group-head"><div style="display:flex;align-items:baseline;gap:18px"><span class="idx">04</span><h2>趣味</h2></div><span class="count">1 个可用</span></div>
+        <a class="sys-row" href="#s-chart">
+          <span class="n">11</span>
+          <span><span class="name">MBTI 十六型</span><span class="desc">十六型人格速测，作为理解自己的一个侧面</span></span>
+          <span class="tags"><i>测试</i></span>
+          <span class="go">→</span>
+        </a>
+      </section>
+
+      <footer class="app-footer">
+        <span>命理内容属于传统文化学习参考，不构成医疗、法律或投资建议。</span>
+        <span>账号与记录仅保存在你自己的服务器</span>
+      </footer>
+    </div>
+    <p class="screen-note">改动：卡片墙改为编号索引，扫读更快；首屏加一处主行动；星盘保留为唯一的动态焦点。</p>
+  </section>
+
+  <!-- ============ 02 起盘 ============ -->
+  <section class="screen" id="s-chart">
+    <div class="screen-head"><span><b>02 · 起盘</b>　/chart/bazi</span><span>说明 · 表单 · 提交</span></div>
+    <div class="screen-body">
+      <header class="app-header">
+        <div class="brand"><b>玄机</b><span>XUANJI</span></div>
+        <nav class="app-nav">
+          <a href="#s-home">首页</a>
+          <a href="#s-chart" class="is-on">起盘</a>
+          <a href="#s-history">记录</a>
+          <a href="#s-settings">设置</a>
+        </nav>
+        <div class="app-right">
+          <div class="lang"><span class="is-on">中</span><span>EN</span></div>
+          <span>主题</span>
+          <a class="login" href="#s-settings">登录</a>
+        </div>
+      </header>
+
+      <a class="back" href="#s-home" style="margin-top:26px;display:inline-flex">← 返回</a>
+
+      <div class="chart-grid">
+        <aside class="aside">
+          <h1>四柱八字</h1>
+          <p class="tagline">以出生时刻排出年、月、日、时四柱，看十神格局与大运流年。所有盘面由后端代码计算，可逐项核对。</p>
+          <div class="method">
+            <p class="eyebrow">排盘方法</p>
+            <ol>
+              <li><b>01</b><span>按出生地经度与均时差校正真太阳时</span></li>
+              <li><b>02</b><span>定年、月、日、时四柱与十神</span></li>
+              <li><b>03</b><span>起大运、排流年，标注节气交界</span></li>
+            </ol>
+            <p class="method-note">节气交界前后出生会提示两种可能，结果里同时给出，不做隐藏取舍。</p>
+          </div>
+        </aside>
+
+        <div class="form-card">
+          <div class="fc-head"><h2>生辰信息</h2><span class="eyebrow">必填 4 项</span></div>
+
+          <div class="form-row">
+            <label for="f-name">名字（选填）</label>
+            <input id="f-name" class="field" placeholder="用于记录标题">
+          </div>
+
+          <div class="form-row">
+            <label>性别</label>
+            <div class="seg"><button class="is-on">男</button><button>女</button></div>
+          </div>
+
+          <div class="form-row">
+            <label>历法</label>
+            <div class="seg"><button class="is-on">公历</button><button>农历</button></div>
+          </div>
+
+          <div class="form-row">
+            <label>出生时间</label>
+            <div class="form-grid">
+              <select class="field"><option>1992 年</option></select>
+              <select class="field"><option>04 月</option></select>
+              <select class="field"><option>21 日</option></select>
+              <select class="field"><option>08:30 辰时</option></select>
+            </div>
+            <p class="form-hint">出生时间不确定时可先按整点，结果会标注可能的时柱差异。</p>
+          </div>
+
+          <div class="form-row">
+            <label for="f-place">出生地</label>
+            <input id="f-place" class="field" value="上海 · 中国" >
+            <p class="form-hint">按城市时区与经度校正真太阳时；找不到城市可手动输入经纬度。</p>
+          </div>
+
+          <div class="checkline">
+            <i aria-hidden="true"></i>
+            <p>使用真太阳时<span>已按 UTC+8 与经度 121.47° 校正</span></p>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn">开始排盘 <span class="arrow" style="color:inherit">→</span></button>
+            <span class="form-note">未登录也能排，只是不入库</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="screen-note">改动：说明与表单同屏对照；表单用细线分组、下划线输入，避免一整块白卡；主行动只留一个。</p>
+  </section>
+
+  <!-- ============ 03 结果 ============ -->
+  <section class="screen" id="s-result">
+    <div class="screen-head"><span><b>03 · 结果</b>　/result?id=…</span><span>盘面 · 事实 · 解读</span></div>
+    <div class="screen-body">
+      <header class="app-header">
+        <div class="brand"><b>玄机</b><span>XUANJI</span></div>
+        <nav class="app-nav">
+          <a href="#s-home">首页</a>
+          <a href="#s-chart">起盘</a>
+          <a href="#s-history">记录</a>
+          <a href="#s-settings">设置</a>
+        </nav>
+        <div class="app-right">
+          <div class="lang"><span class="is-on">中</span><span>EN</span></div>
+          <span>主题</span>
+          <a class="login" href="#s-settings">登录</a>
+        </div>
+      </header>
+
+      <div class="result-top">
+        <span class="crumb">← 记录 / 四柱八字</span>
+        <span class="ver">engine 0.9.4 · 已保存</span>
+      </div>
+
+      <div class="result-grid">
+        <aside>
+          <div class="board-card">
+            <div class="bc-head"><span>盘面</span><span>四柱</span></div>
+            <div class="pillars">
+              <div class="pillar"><div class="gh">壬</div><div class="zhi">申</div><div class="lb">年柱</div></div>
+              <div class="pillar"><div class="gh">甲</div><div class="zhi">辰</div><div class="lb">月柱</div></div>
+              <div class="pillar"><div class="gh">丁</div><div class="zhi">卯</div><div class="lb">日柱</div></div>
+              <div class="pillar"><div class="gh">甲</div><div class="zhi">辰</div><div class="lb">时柱</div></div>
+            </div>
+            <div class="board-meta">
+              <div><span>农历</span><b>壬申年 三月十九</b></div>
+              <div><span>节气</span><b>清明后 16 天</b></div>
+              <div><span>真太阳时</span><b>08:27 · 辰时</b></div>
+            </div>
+            <div class="board-actions">
+              <button class="btn-line">重新起盘</button>
+              <button class="btn-line">隐藏生辰</button>
+            </div>
+          </div>
+        </aside>
+
+        <div class="result-main">
+          <div class="result-hero">
+            <h1>1992-04-21 四柱八字</h1>
+            <p class="summary">日主丁火，生于辰月，木火通明而土重；以印为用，喜东南，忌久处湿寒。十神以伤官、正印为主，格局偏清。</p>
+            <p class="born">1992-04-21 08:30 · 上海 · 男</p>
+            <div class="seal" aria-hidden="true">印</div>
+          </div>
+
+          <div class="result-tabs">
+            <button class="is-on">命盘分析</button>
+            <button>AI 解读</button>
+            <span class="hint">盘面由代码算出，解读只基于这份盘面</span>
+          </div>
+
+          <div class="facts">
+            <div class="fact"><div class="lb">四柱</div><div class="val">壬申 甲辰</div><div class="hint">丁卯 甲辰</div></div>
+            <div class="fact"><div class="lb">日主</div><div class="val">丁火</div><div class="hint">阴火 · 灯烛</div></div>
+            <div class="fact"><div class="lb">月令</div><div class="val">辰土</div><div class="hint">伤官当令</div></div>
+            <div class="fact"><div class="lb">大运</div><div class="val">乙巳</div><div class="hint">7 岁起运</div></div>
+          </div>
+
+          <blockquote class="pull">盘面是骨架，解读是语气：先把能核对的说清楚。</blockquote>
+
+          <section class="section">
+            <div class="section-head"><h2>五行分布</h2><span class="eyebrow">按四柱八字统计</span></div>
+            <div class="bars">
+              <div class="bar-row"><span class="ch">木</span><span class="track"><i style="width:32%"></i></span><span class="num">3 · 32%</span></div>
+              <div class="bar-row"><span class="ch">火</span><span class="track"><i style="width:22%"></i></span><span class="num">2 · 22%</span></div>
+              <div class="bar-row"><span class="ch">土</span><span class="track"><i style="width:28%"></i></span><span class="num">3 · 28%</span></div>
+              <div class="bar-row"><span class="ch">金</span><span class="track"><i style="width:10%"></i></span><span class="num">1 · 10%</span></div>
+              <div class="bar-row"><span class="ch">水</span><span class="track"><i style="width:8%"></i></span><span class="num">1 · 8%</span></div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head"><h2>大运</h2><span class="eyebrow">每步十年</span></div>
+            <div class="timeline">
+              <div class="tl"><div class="y">1999</div><div class="gz">乙巳</div><div class="age">7 岁</div></div>
+              <div class="tl"><div class="y">2009</div><div class="gz">丙午</div><div class="age">17 岁</div></div>
+              <div class="tl"><div class="y">2019</div><div class="gz">丁未</div><div class="age">27 岁</div></div>
+              <div class="tl"><div class="y">2029</div><div class="gz">戊申</div><div class="age">37 岁</div></div>
+              <div class="tl"><div class="y">2039</div><div class="gz">己酉</div><div class="age">47 岁</div></div>
+            </div>
+          </section>
+
+          <section class="ai-card">
+            <div class="ac-head"><h2>AI 解读</h2><span>基于这份盘面 · 流式输出</span></div>
+            <div class="chips">
+              <span class="chip is-on">命格总览</span>
+              <span class="chip">事业财运</span>
+              <span class="chip">感情婚姻</span>
+              <span class="chip">健康提示</span>
+              <span class="chip">大运流年</span>
+            </div>
+            <div class="ai-input">想从哪个方向看？可多选，默认「命格总览」。</div>
+            <div class="ai-foot">
+              <button class="btn">开始解读 <span class="arrow" style="color:inherit">→</span></button>
+              <span>生成后会保存到你的账号</span>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <p class="screen-note">改动：盘面、事实、解读三段式；事实用 1px 网格而非卡片阴影；朱砂只出现在盘心印章与引用线。</p>
+  </section>
+
+  <!-- ============ 04 记录 ============ -->
+  <section class="screen" id="s-history">
+    <div class="screen-head"><span><b>04 · 记录</b>　/history</span><span>表格 · 空态 · 上限</span></div>
+    <div class="screen-body">
+      <header class="app-header">
+        <div class="brand"><b>玄机</b><span>XUANJI</span></div>
+        <nav class="app-nav">
+          <a href="#s-home">首页</a>
+          <a href="#s-chart">起盘</a>
+          <a href="#s-history" class="is-on">记录</a>
+          <a href="#s-settings">设置</a>
+        </nav>
+        <div class="app-right">
+          <div class="lang"><span class="is-on">中</span><span>EN</span></div>
+          <span>主题</span>
+          <a class="login" href="#s-settings">登录</a>
+        </div>
+      </header>
+
+      <div class="hist-head">
+        <div>
+          <p class="eyebrow">记录 · History</p>
+          <h1>记录</h1>
+          <p class="note">已登录：记录保存在你的账号里，最多保留 50 条，更旧的自动淘汰。</p>
+        </div>
+        <button class="btn-line">清空记录</button>
+      </div>
+
+      <table class="dtable">
+        <thead>
+          <tr><th style="width:18%">时间</th><th style="width:22%">体系</th><th>盘面</th><th style="width:16%">操作</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="time">11-24 09:12</td>
+            <td><span class="sys">四柱八字</span></td>
+            <td class="board-sum">壬申　甲辰　丁卯　甲辰</td>
+            <td class="acts"><a href="#s-result">查看</a><a href="#s-history" class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td class="time">11-23 22:40</td>
+            <td><span class="sys">紫微斗数</span></td>
+            <td class="board-sum">命宫在午 · 紫微天府</td>
+            <td class="acts"><a href="#s-result">查看</a><a href="#s-history" class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td class="time">11-23 15:02</td>
+            <td><span class="sys">塔罗</span></td>
+            <td class="board-sum">三张牌阵 · 过去 / 现在 / 未来</td>
+            <td class="acts"><a href="#s-result">查看</a><a href="#s-history" class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td class="time">11-22 11:18</td>
+            <td><span class="sys">六爻</span></td>
+            <td class="board-sum">水火既济 · 三世</td>
+            <td class="acts"><a href="#s-result">查看</a><a href="#s-history" class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td class="time">11-21 20:55</td>
+            <td><span class="sys">MBTI</span></td>
+            <td class="board-sum">INTJ · 建筑师</td>
+            <td class="acts"><a href="#s-result">查看</a><a href="#s-history" class="del">删除</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="hist-foot">
+        <span>共 5 条 · 上限 50 条</span>
+        <span>未登录时排盘不落库，换页即失效</span>
+      </div>
+    </div>
+    <p class="screen-note">改动：去掉卡片列表，改用细线表格；时间用等宽数字，盘面摘要用等宽字体，删除默认弱化、悬停才变朱砂。</p>
+  </section>
+
+  <!-- ============ 05 设置 ============ -->
+  <section class="screen" id="s-settings">
+    <div class="screen-head"><span><b>05 · 设置</b>　/settings</span><span>外观 · AI · 数据</span></div>
+    <div class="screen-body">
+      <header class="app-header">
+        <div class="brand"><b>玄机</b><span>XUANJI</span></div>
+        <nav class="app-nav">
+          <a href="#s-home">首页</a>
+          <a href="#s-chart">起盘</a>
+          <a href="#s-history">记录</a>
+          <a href="#s-settings" class="is-on">设置</a>
+        </nav>
+        <div class="app-right">
+          <div class="lang"><span class="is-on">中</span><span>EN</span></div>
+          <span>主题</span>
+          <a class="login" href="#s-settings">登录</a>
+        </div>
+      </header>
+
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">设置 · Settings</p>
+          <h1>设置</h1>
+        </div>
+        <span class="eyebrow">登录为管理员 · 可改全站 AI</span>
+      </div>
+
+      <div class="settings-grid">
+        <nav class="settings-nav">
+          <ul>
+            <li><a href="#set-appearance" class="is-on">外观</a></li>
+            <li><a href="#set-ai">AI 解读</a></li>
+            <li><a href="#set-data">数据</a></li>
+            <li><a href="#set-about">关于</a></li>
+          </ul>
+        </nav>
+
+        <div>
+          <section class="set-sec" id="set-appearance">
+            <div class="set-head"><h2>外观</h2><span class="eyebrow">本机偏好</span></div>
+            <div class="set-row">
+              <div><div class="t">界面语言</div><div class="h">切换后立即生效，偏好保存在本机</div></div>
+              <div class="seg"><button class="is-on">中文</button><button>EN</button></div>
+            </div>
+            <div class="set-row">
+              <div><div class="t">深色模式</div><div class="h">默认跟随纸墨浅色；暗房环境下可切换</div></div>
+              <span class="switch" role="switch" aria-checked="false" aria-label="深色模式"></span>
+            </div>
+          </section>
+
+          <section class="set-sec" id="set-ai">
+            <div class="set-head">
+              <h2>AI 解读</h2>
+              <span class="status"><i></i>已配置 · 设置页</span>
+            </div>
+            <p style="margin-top:14px;font-size:12.5px;line-height:1.8;color:var(--muted);max-width:56ch">模型配置全站共用，只对管理员开放。密钥只写入后端本机文件，接口只回显尾号。</p>
+
+            <div class="set-field">
+              <div class="lb"><span>服务商</span></div>
+              <div class="pills"><button class="is-on">DeepSeek</button><button>OpenAI</button><button>自定义</button></div>
+            </div>
+
+            <div class="set-field">
+              <div class="lb"><span>接口地址</span><span>BASE URL</span></div>
+              <input class="field" value="https://api.deepseek.com" spellcheck="false">
+              <p class="hint">兼容任何 OpenAI 协议服务，也可填本机 Ollama 网关。</p>
+            </div>
+
+            <div class="set-field">
+              <div class="lb"><span>模型</span><span>MODEL</span></div>
+              <input class="field" value="deepseek-chat" spellcheck="false">
+            </div>
+
+            <div class="set-field">
+              <div class="lb"><span>API Key</span><span>已保存 · 尾号 8f2c</span></div>
+              <input class="field" type="password" value="sk-xxxxxxxxxxxxxxxxxxxxxxxx" spellcheck="false">
+              <p class="hint">留空表示不改动已保存的密钥。</p>
+            </div>
+
+            <div class="set-actions">
+              <button class="btn">保存设置</button>
+              <button class="btn-line">清除密钥</button>
+            </div>
+            <p class="set-note">密钥保存在后端 .local/llm.json（权限 0600），不会下发到浏览器。</p>
+          </section>
+
+          <section class="set-sec" id="set-data">
+            <div class="set-head"><h2>数据</h2><span class="eyebrow">仅自己可见</span></div>
+            <div class="set-row">
+              <div><div class="t">排盘记录</div><div class="h">已保存 12 条；每个账号上限 50 条</div></div>
+              <button class="btn-line">清空记录</button>
+            </div>
+            <div class="set-row">
+              <div><div class="t">导出记录</div><div class="h">下载 JSON，包含盘面与已保存的解读</div></div>
+              <button class="btn-line">导出</button>
+            </div>
+          </section>
+
+          <section class="set-sec about" id="set-about">
+            <div class="set-head"><h2>关于</h2><span class="eyebrow">玄机 · 2026</span></div>
+            <p>排盘由后端代码完成，AI 只负责解释这份结果，不改动盘面。</p>
+            <p>环境变量写入 <code>SM_LLM_BASE_URL</code>、<code>SM_LLM_API_KEY</code>、<code>SM_LLM_MODEL</code> 时，设置页的配置优先。</p>
+            <p>命理内容属于传统文化学习参考，不构成医疗、法律或投资建议。</p>
+          </section>
+        </div>
+      </div>
+    </div>
+    <p class="screen-note">改动：左侧目录 + 细线分区；AI 配置去掉卡片盒子，用「标签 + 下划线输入」降低视觉噪声。</p>
+  </section>
+
+  <!-- ============ 06 移动端 ============ -->
+  <section class="screen">
+    <div class="screen-head"><span><b>06 · 移动端</b>　390 × 844</span><span>首页首屏</span></div>
+    <div class="mobile-wrap">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="m-header">
+            <div class="brand"><b>玄机</b><span>XUANJI</span></div>
+            <div class="m-lang"><span class="is-on">中</span><span>EN</span></div>
+          </div>
+          <div class="m-main">
+            <h1>盘面可核对，<br>解读不越界</h1>
+            <p class="m-sub">排盘由代码完成，结果逐项可查；AI 只解释这份结果。</p>
+            <p class="m-meta">11 个体系 · 实时代算</p>
+            <div class="m-plate">
+              <svg id="astro-2" viewBox="0 0 420 420" role="img" aria-label="动态星盘示意"></svg>
+            </div>
+            <div class="m-group">
+              <div class="group-head"><div style="display:flex;align-items:baseline;gap:12px"><span class="idx">01</span><h2>命盘</h2></div><span class="count">4 个可用</span></div>
+              <div class="m-sys"><span><span class="name">四柱八字</span><span class="desc">四柱 · 十神 · 大运</span></span><span class="go">→</span></div>
+              <div class="m-sys"><span><span class="name">紫微斗数</span><span class="desc">十二宫 · 四化</span></span><span class="go">→</span></div>
+              <div class="m-sys"><span><span class="name">西方占星</span><span class="desc">本命盘 · 行运</span></span><span class="go">→</span></div>
+            </div>
+          </div>
+          <div class="m-tab">
+            <div class="is-on">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-5H9v5H4z" stroke-linejoin="round"/></svg>
+              <span>首页</span>
+            </div>
+            <div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m15.5 8.5-2 5-5 2 2-5z" stroke-linejoin="round"/></svg>
+              <span>起盘</span>
+            </div>
+            <div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2" stroke-linecap="round"/></svg>
+              <span>记录</span>
+            </div>
+            <div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h4M12 17h8" stroke-linecap="round"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
+              <span>设置</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mobile-caption">
+        <b>移动端要点</b>
+        首屏保留标题、星盘与第一组体系；星盘按容器缩放，不横向溢出；导航收进底部标签栏，朱砂只留在当前页。
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// 星盘：与前端组件同一套几何，样稿里用 JS 生成，避免手写坐标
+function buildAstro(svg) {
+  if (!svg) return
+  const NS = 'http://www.w3.org/2000/svg'
+  const C = 210
+  const mk = (tag, attrs, text) => {
+    const n = document.createElementNS(NS, tag)
+    for (const k in attrs) n.setAttribute(k, attrs[k])
+    if (text != null) n.textContent = text
+    return n
+  }
+  const pt = (r, deg) => {
+    const a = ((deg - 90) * Math.PI) / 180
+    return [+(C + r * Math.cos(a)).toFixed(1), +(C + r * Math.sin(a)).toFixed(1)]
+  }
+  const add = (tag, attrs, text) => svg.appendChild(mk(tag, attrs, text))
+
+  add('circle', { cx: C, cy: C, r: 198, class: 'a-ring is-strong' })
+  add('circle', { cx: C, cy: C, r: 164, class: 'a-ring' })
+  add('circle', { cx: C, cy: C, r: 148, class: 'a-ring' })
+  add('circle', { cx: C, cy: C, r: 108, class: 'a-ring is-strong' })
+
+  const mansions = '角亢氐房心尾箕斗牛女虚危室壁奎娄胃昴毕觜参井鬼柳星张翼轸'.split('')
+  const gM = mk('g', { class: 'a-spin a-mansions' })
+  mansions.forEach((ch, i) => {
+    const [x, y] = pt(176, (i * 360) / mansions.length)
+    gM.appendChild(mk('text', { x, y, style: 'transform-origin:' + x + 'px ' + y + 'px' }, ch))
+  })
+  svg.appendChild(gM)
+
+  const gT = mk('g', { class: 'a-spin-rev a-ticks' })
+  for (let i = 0; i < 72; i++) {
+    const major = i % 6 === 0
+    const [x1, y1] = pt(160, i * 5)
+    const [x2, y2] = pt(major ? 148 : 154, i * 5)
+    gT.appendChild(mk('line', { x1, y1, x2, y2, class: major ? 'is-major' : '' }))
+  }
+  svg.appendChild(gT)
+
+  const gH = mk('g', { class: 'a-houses' })
+  for (let i = 0; i < 12; i++) {
+    const [x1, y1] = pt(108, i * 30)
+    const [x2, y2] = pt(148, i * 30)
+    gH.appendChild(mk('line', { x1, y1, x2, y2 }))
+  }
+  svg.appendChild(gH)
+
+  const signs = ['白羊', '金牛', '双子', '巨蟹', '狮子', '处女', '天秤', '天蝎', '射手', '摩羯', '水瓶', '双鱼']
+  const gS = mk('g', { class: 'a-signs' })
+  signs.forEach((s, i) => {
+    const [x, y] = pt(126, i * 30 + 15)
+    gS.appendChild(mk('text', { x, y }, s))
+  })
+  svg.appendChild(gS)
+
+  const gStar = mk('g', { class: 'a-stars' })
+  for (let i = 0; i < 40; i++) {
+    const deg = (i * 137.508 + 17) % 360
+    const r = 64 + ((i * 19 + 11) % 40)
+    const [x, y] = pt(r, deg)
+    const size = i % 11 === 0 ? 1.7 : i % 4 === 0 ? 1.2 : 0.8
+    const delay = ((i * 0.41) % 4.4).toFixed(2)
+    const dur = (3.2 + (i % 6) * 0.55).toFixed(2)
+    gStar.appendChild(mk('circle', { cx: x, cy: y, r: size, style: 'animation-delay:' + delay + 's;animation-duration:' + dur + 's' }))
+  }
+  svg.appendChild(gStar)
+
+  const tri = (o) => [0, 1, 2].map((k) => pt(104, o + k * 120).join(',')).join(' ')
+  const gA = mk('g', { class: 'a-spin-mid a-aspect' })
+  gA.appendChild(mk('polygon', { points: tri(0) }))
+  gA.appendChild(mk('polygon', { points: tri(60) }))
+  svg.appendChild(gA)
+
+  const [sx, sy] = pt(160, -13)
+  const [ex, ey] = pt(160, 13)
+  const gW = mk('g', { class: 'a-sweep' })
+  gW.appendChild(mk('path', { d: 'M ' + C + ' ' + C + ' L ' + sx + ' ' + sy + ' A 160 160 0 0 1 ' + ex + ' ' + ey + ' Z', class: 'a-wedge' }))
+  gW.appendChild(mk('line', { x1: C, y1: C, x2: C, y2: C - 198, class: 'a-hand' }))
+  gW.appendChild(mk('circle', { cx: C, cy: C - 190, r: 2.2, class: 'a-dot' }))
+  svg.appendChild(gW)
+
+  const gHub = mk('g', { class: 'a-hub' })
+  gHub.appendChild(mk('circle', { cx: C, cy: C, r: 56, class: 'a-hub-disc' }))
+  gHub.appendChild(mk('circle', { cx: C, cy: C, r: 47, class: 'a-hub-ring' }))
+  gHub.appendChild(mk('text', { x: C, y: C - 4, class: 'a-hub-name' }, '玄机'))
+  gHub.appendChild(mk('text', { x: C, y: C + 17, class: 'a-hub-en' }, '星盘'))
+  svg.appendChild(gHub)
+}
+buildAstro(document.getElementById('astro-1'))
+buildAstro(document.getElementById('astro-2'))
+</script>
+</body>
+</html>

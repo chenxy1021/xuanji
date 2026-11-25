@@ -4,6 +4,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { ApiError, getFocusTopics, getMeta, getReading, saveReading, streamInterpret, type FocusTopic } from '@/api/client'
 import { t, useLocale } from '@/i18n'
 import { isEn } from '@/i18n/terms'
+import { findGuestRecord, getGuestReading, saveGuestReading } from '@/lib/guestRecords'
+import { loadLocalLlm } from '@/lib/llmConfig'
 import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps<{ recordId: string; system: string; chart: unknown; text: string }>()
@@ -52,9 +54,19 @@ function restore() {
   style.value = 'concise'
   question.value = ''
   focus.value = []
-  // 未登录没有服务端存档，输出只留在当前页面
-  if (!auth.isLoggedIn) return
   const id = props.recordId
+  // 未登录、或这张盘本来就是匿名时排的：解读存在浏览器里
+  if (!auth.isLoggedIn || findGuestRecord(id)) {
+    const record = getGuestReading(id)
+    if (record) {
+      output.value = record.text
+      saved.value = true
+      style.value = record.style === 'detailed' ? 'detailed' : 'concise'
+      question.value = record.question ?? ''
+      focus.value = record.focus
+    }
+    return
+  }
   getReading(id)
     .then((record) => {
       if (seq !== restoreSeq || id !== props.recordId || !record) return
@@ -71,14 +83,16 @@ function restore() {
 
 async function persist() {
   const id = props.recordId
+  const body = {
+    text: output.value,
+    focus: [...focus.value],
+    style: style.value,
+    question: question.value,
+    system: props.system,
+  }
   try {
-    await saveReading(id, {
-      text: output.value,
-      focus: [...focus.value],
-      style: style.value,
-      question: question.value,
-      system: props.system,
-    })
+    if (auth.isLoggedIn && !findGuestRecord(id)) await saveReading(id, body)
+    else saveGuestReading(id, body)
     // 保存期间已切到别的记录就不显示标识
     if (id === props.recordId) saved.value = true
   } catch {
@@ -93,7 +107,9 @@ watch(
   async (system) => {
     const [meta, catalog] = await Promise.allSettled([getMeta(), getFocusTopics(system)])
     if (system !== props.system) return // 快速切换体系时丢弃旧响应
-    if (meta.status === 'fulfilled') llmOff.value = !meta.value.llm_configured
+    // 浏览器里保存了自己的模型配置时，即使本站默认没配也能解读
+    const hasLocal = !!loadLocalLlm()
+    llmOff.value = meta.status === 'fulfilled' ? !hasLocal && !meta.value.llm_configured : !hasLocal
     if (catalog.status === 'fulfilled') {
       topics.value = catalog.value.topics
       // 方向目录晚于恢复返回时，只补上存档里已失效的 id
@@ -129,6 +145,8 @@ async function run() {
   copied.value = false
   saved.value = false
   let done = false
+  const localLlm = loadLocalLlm()
+  if (localLlm) llmOff.value = false
   try {
     await streamInterpret(
       {
@@ -137,6 +155,8 @@ async function run() {
         question: question.value.trim(),
         style: style.value,
         focus: focus.value,
+        lang: locale.value,
+        ...(localLlm ? { llm: localLlm } : {}),
       },
       (event, data) => {
         if (event === 'delta') output.value += String(data.text ?? '')
@@ -147,7 +167,7 @@ async function run() {
       },
       controller.signal,
     )
-    if (done && output.value.trim() && auth.isLoggedIn) await persist()
+    if (done && output.value.trim()) await persist()
   } catch (e) {
     if ((e as Error).name === 'AbortError') return
     error.value =
@@ -182,9 +202,7 @@ onBeforeUnmount(stop)
 
 <template>
   <section class="ai-panel" data-ai-panel>
-    <div class="ai-panel__aura" aria-hidden="true" />
-
-    <header class="relative flex flex-wrap items-center gap-2">
+    <header class="flex flex-wrap items-center gap-2">
       <span class="ai-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.7">
           <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z" stroke-linejoin="round" />
@@ -192,14 +210,14 @@ onBeforeUnmount(stop)
       </span>
       <div class="min-w-0">
         <h3 class="text-[14px] font-semibold leading-tight">{{ t('ai.title') }}</h3>
-        <p class="mt-0.5 text-[11px] text-muted">{{ t('ai.badge') }}</p>
+        <p class="mt-0.5 text-[13px] text-muted">{{ t('ai.badge') }}</p>
       </div>
-      <div class="seg ml-auto" role="group" :aria-label="t('ai.styleAria')">
+      <div class="seg seg-wide ml-auto" role="group" :aria-label="t('ai.styleAria')">
         <button
           v-for="s in [{ id: 'concise', label: t('ai.concise') }, { id: 'detailed', label: t('ai.detailed') }] as const"
           :key="s.id"
           type="button"
-          class="min-w-0 px-3 !h-9"
+          class="min-w-0 px-3"
           :class="{ 'is-on': style === s.id }"
           :aria-pressed="style === s.id"
           @click="style = s.id"
@@ -210,20 +228,20 @@ onBeforeUnmount(stop)
     </header>
 
     <!-- 方向选择 -->
-    <div v-if="topics.length" class="relative mt-6">
+    <div v-if="topics.length" class="mt-6">
       <div class="flex items-baseline justify-between gap-3">
-        <p class="eyebrow">{{ t('ai.focusLabel') }}</p>
-        <div class="flex flex-wrap items-center justify-end gap-2 text-[11px] text-muted">
+        <p class="label">{{ t('ai.focusLabel') }}</p>
+        <div class="flex flex-wrap items-center justify-end gap-2 text-[13px] text-muted">
           <span class="tabular">{{ t('ai.focusSelected', { n: focus.length }) }}</span>
-          <button type="button" class="text-primary hover:underline" @click="toggleAll">
+          <button type="button" class="let-action" @click="toggleAll">
             {{ allSelected ? t('ai.focusNone') : t('ai.focusAll') }}
           </button>
-          <button v-if="focus.length" type="button" class="text-primary hover:underline" @click="focus = []">
+          <button v-if="focus.length" type="button" class="let-action" @click="focus = []">
             {{ t('ai.focusClear') }}
           </button>
         </div>
       </div>
-      <p class="mt-1 text-[11px] leading-relaxed text-muted">{{ t('ai.focusHint') }}</p>
+      <p class="mt-1 text-[13px] leading-relaxed text-muted">{{ t('ai.focusHint') }}</p>
       <div class="topic-rail mt-3" role="group" :aria-label="t('ai.focusAria')">
         <button
           v-for="topic in topics"
@@ -235,7 +253,6 @@ onBeforeUnmount(stop)
           :data-focus-id="topic.id"
           @click="toggleTopic(topic.id)"
         >
-          <span class="topic-chip__dot" aria-hidden="true" />
           {{ topicLabel(topic) }}
         </button>
       </div>
@@ -243,27 +260,27 @@ onBeforeUnmount(stop)
 
     <div
       v-if="llmOff"
-      class="relative mt-5 flex gap-2.5 border-l-2 border-l-accent bg-accent-soft/60 p-3 text-xs leading-[1.7] text-accent"
+      class="mt-5 flex gap-2.5 border-l-2 border-line-strong py-1 pl-3 text-xs leading-[1.7] text-ink-2"
       role="status"
     >
-      <span class="flex size-4 shrink-0 items-center justify-center rounded-full border border-accent text-[10px]" aria-hidden="true">!</span>
+      <span class="flex size-4 shrink-0 items-center justify-center border border-line-strong text-[12px] text-muted" aria-hidden="true">!</span>
       <div>
         <p>{{ t('ai.notConfigured') }}</p>
-        <p class="mt-1 opacity-80">{{ t('ai.notConfiguredHint') }}</p>
-        <RouterLink to="/settings#set-ai" class="mt-2 inline-block font-medium underline underline-offset-4">
+        <p class="mt-1 text-muted">{{ t('ai.notConfiguredHint') }}</p>
+        <RouterLink to="/settings#set-ai" class="let-action mt-2 inline-block">
           {{ t('ai.gotoSettings') }}
         </RouterLink>
       </div>
     </div>
 
-    <div class="relative mt-6">
-      <p class="eyebrow mb-2">{{ t('ai.questionOptional') }}</p>
+    <div class="mt-6">
+      <p class="label mb-2">{{ t('ai.questionOptional') }}</p>
       <div class="flex flex-wrap gap-1.5">
         <button
           v-for="p in presets"
           :key="p"
           type="button"
-          class="chip min-h-9 transition-[transform,background-color,color] duration-150 hover:-translate-y-px hover:bg-surface-2"
+          class="chip min-h-9"
           :disabled="running || llmOff"
           @click="usePreset(p)"
         >
@@ -279,14 +296,14 @@ onBeforeUnmount(stop)
         :placeholder="t('ai.placeholder')"
         :aria-label="t('ai.questionAria')"
       />
-      <div class="tabular mt-1 flex items-center justify-between text-[11px] text-muted">
+      <div class="tabular mt-1 flex items-center justify-between text-[13px] text-muted">
         <span>{{ focus.length ? t('ai.focusSelected', { n: focus.length }) : t('ai.focusHint') }}</span>
         <span>{{ question.length }}/{{ QUESTION_MAX }}</span>
       </div>
     </div>
 
-    <div class="relative mt-3 flex gap-2">
-      <button type="button" class="btn-primary flex-1" :disabled="running || llmOff" @click="run">
+    <div class="mt-3 flex gap-2">
+      <button type="button" class="btn-primary flex-1" :class="{ 'is-off': llmOff }" :disabled="running || llmOff" @click="run">
         <svg
           v-if="running"
           viewBox="0 0 24 24"
@@ -305,9 +322,9 @@ onBeforeUnmount(stop)
 
     <div
       v-if="error && !(llmOff && error.code === 'llm_not_configured')"
-      class="relative mt-3 flex gap-2 rounded-[var(--radius-sm)] bg-danger-soft p-3 text-xs leading-[1.6] text-danger"
+      class="mt-3 flex gap-2 border border-danger px-3 py-2 text-xs leading-[1.6] text-danger"
     >
-      <span class="flex size-4 shrink-0 items-center justify-center rounded-full border border-danger text-[10px]" aria-hidden="true">!</span>
+      <span class="flex size-4 shrink-0 items-center justify-center border border-danger text-[12px]" aria-hidden="true">!</span>
       <div>
         <p v-if="error.code === 'llm_not_configured'">{{ t('ai.notConfigured') }}</p>
         <p v-else>{{ error.message }}</p>
@@ -315,22 +332,22 @@ onBeforeUnmount(stop)
       </div>
     </div>
 
-    <div v-if="output" class="ai-output relative mt-4" data-ai-output>
+    <div v-if="output" class="ai-output mt-4" data-ai-output>
       <div class="mb-2 flex items-center justify-between gap-2">
-        <p class="eyebrow flex items-center gap-2">
+        <p class="label flex items-center gap-2">
           {{ t('ai.output') }}
-          <span v-if="saved" class="rounded-full border border-line px-1.5 py-0.5 text-[10px] font-normal normal-case tracking-normal text-muted">
+          <span v-if="saved" class="border border-line px-1.5 py-0.5 text-[12px] font-normal normal-case tracking-normal text-muted">
             {{ t('ai.saved') }}
           </span>
         </p>
-        <button type="button" class="btn-ghost !min-h-8 !px-2 text-[11px]" @click="copyOutput">
+        <button type="button" class="btn-ghost !min-h-8 !px-2 text-[13px]" @click="copyOutput">
           {{ copied ? t('ai.copied') : t('ai.copy') }}
         </button>
       </div>
       <div class="markdown" v-html="html" />
       <span v-if="running" class="stream-caret" aria-hidden="true" />
     </div>
-    <div v-else-if="running && !error" class="relative mt-4 space-y-2" aria-live="polite">
+    <div v-else-if="running && !error" class="mt-4 space-y-2" aria-live="polite">
       <p class="text-sm text-muted">{{ t('ai.thinking') }}</p>
       <div class="skeleton-line w-11/12" />
       <div class="skeleton-line w-9/12" />

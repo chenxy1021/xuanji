@@ -66,9 +66,9 @@ const maxWx = computed(() => Math.max(1, ...wuxingRows.value.map((r) => r.n)))
     <section class="chart-frame">
       <header class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <p class="eyebrow">本命盘 · 四柱</p>
+          <p class="label">四柱</p>
           <p class="tabular mt-1.5 text-[13px] leading-[1.6]">{{ chart.solar_date }}</p>
-          <p class="text-[11px] leading-[1.6] text-muted">
+          <p class="text-[13px] leading-[1.6] text-muted">
             农历 {{ chart.lunar_date }} {{ chart.shichen }}
             <template v-if="chart.zishi !== '无'"> · {{ chart.zishi }}</template>
           </p>
@@ -79,16 +79,16 @@ const maxWx = computed(() => Math.max(1, ...wuxingRows.value.map((r) => r.n)))
         <span v-else class="chip shrink-0">未校正</span>
       </header>
 
-      <!-- 四柱：细线分栏，日柱单独提亮 -->
-      <div class="mt-4 grid grid-cols-4 overflow-hidden rounded-[var(--radius-md)] border border-line">
+      <!-- 四柱：细线分栏，日柱朱砂批注 -->
+      <div class="mt-4 grid grid-cols-4 border-y border-line-strong">
         <div
           v-for="(p, i) in pillars"
           :key="p.key"
           class="relative px-1.5 py-3 text-center"
-          :class="[p.isDay ? 'bg-primary-soft' : '', i > 0 ? 'border-l border-line' : '']"
+          :class="i > 0 ? 'border-l border-line' : ''"
         >
-          <p class="text-[10px] tracking-[0.18em]" :class="p.isDay ? 'text-primary' : 'text-muted'">{{ p.label }}</p>
-          <p class="mt-1 truncate text-[11px]" :class="p.isDay ? 'font-medium text-primary' : 'text-ink-2'">
+          <p class="text-[13px]" :class="p.isDay ? 'text-accent' : 'text-muted'">{{ p.label }}</p>
+          <p class="mt-1 truncate text-[13px]" :class="p.isDay ? 'font-medium text-accent' : 'text-ink-2'">
             {{ p.isDay ? '日主' : p.pillar.shishen }}
           </p>
           <p class="mt-1.5 font-serif text-[32px] leading-[1.05]" :style="charColor(p.pillar.gan)">
@@ -98,29 +98,29 @@ const maxWx = computed(() => Math.max(1, ...wuxingRows.value.map((r) => r.n)))
             {{ p.pillar.zhi }}
           </p>
           <div class="mt-2 border-t border-line/70 pt-1.5">
-            <p class="text-[10px] text-muted">藏干</p>
-            <p class="mt-0.5 text-[10px] leading-[1.5] text-ink-2">{{ p.pillar.canggan }}</p>
+            <p class="text-[12px] text-muted">藏干</p>
+            <p class="mt-0.5 text-[12px] leading-[1.5] text-ink-2">{{ p.pillar.canggan }}</p>
           </div>
         </div>
       </div>
 
       <!-- 五行计数：短条，不是评分 -->
-      <ul class="mt-4 grid grid-cols-5 gap-2">
+      <ul class="mt-4 grid grid-cols-5 gap-2 text-center">
         <li v-for="r in wuxingRows" :key="r.key" class="min-w-0">
-          <div class="flex items-baseline justify-between gap-1">
+          <div class="flex min-w-0 items-baseline justify-center gap-1">
             <span class="font-serif text-[13px]" :style="{ color: `var(--color-${r.key})` }">{{ r.label }}</span>
-            <span class="tabular text-[11px] text-muted">{{ r.n }}</span>
+            <span class="tabular text-[13px] text-muted">{{ r.n }}</span>
           </div>
-          <div class="mt-1 h-[3px] overflow-hidden rounded-full bg-surface-2">
+          <div class="mt-1 h-[3px] overflow-hidden bg-surface-2">
             <span
-              class="block h-full rounded-full"
+              class="block h-full"
               :style="{ width: `${(r.n / maxWx) * 100}%`, background: `var(--color-${r.key})` }"
             />
           </div>
         </li>
       </ul>
 
-      <details v-if="tst" class="mt-3 border-t border-line pt-2 text-[11px] leading-[1.6] text-muted">
+      <details v-if="tst" class="mt-3 border-t border-line pt-2 text-[13px] leading-[1.6] text-muted">
         <summary class="cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
           校正明细 · 钟表时 {{ tst.clock_time }} → {{ tst.true_solar_time }}
         </summary>
@@ -134,7 +134,7 @@ const maxWx = computed(() => Math.max(1, ...wuxingRows.value.map((r) => r.n)))
     <!-- 神煞 -->
     <section v-if="shensha.length">
       <div class="mb-2 flex items-baseline justify-between">
-        <h3 class="text-[13px] font-semibold text-ink-2">神煞</h3>
+        <h3 class="form-label mb-0">神煞</h3>
         <span class="text-xs text-muted">{{ shensha.length }} 项</span>
       </div>
       <ul class="flex flex-wrap gap-1.5">
@@ -147,7 +147,7 @@ const maxWx = computed(() => Math.max(1, ...wuxingRows.value.map((r) => r.n)))
     <!-- 大运 -->
     <section v-if="chart.dayun.length">
       <div class="mb-2 flex items-baseline justify-between">
-        <h3 class="text-[13px] font-semibold text-ink-2">大运</h3>
+        <h3 class="form-label mb-0">大运</h3>
         <span class="text-xs text-muted">{{ chart.qiyun }}起运 · {{ chart.forward ? '顺行' : '逆行' }}</span>
       </div>
       <div class="scroll-x -mx-1 px-1">
@@ -155,25 +155,25 @@ const maxWx = computed(() => Math.max(1, ...wuxingRows.value.map((r) => r.n)))
           <li
             v-for="row in chart.dayun"
             :key="row.index"
-            class="w-[64px] shrink-0 snap-start rounded-[var(--radius-md)] border border-line bg-surface py-2.5 text-center"
+            class="w-[64px] shrink-0 snap-start border-t border-line-strong py-2.5 text-center"
           >
-            <p class="tabular text-[10px] leading-tight text-muted">{{ row.age_range }}</p>
+            <p class="tabular text-[12px] leading-tight text-muted">{{ row.age_range }}</p>
             <p class="mt-1 font-serif text-[19px] leading-tight">
               <span :style="charColor(row.ganzhi[0])">{{ row.ganzhi[0] }}</span><span :style="charColor(row.ganzhi[1])">{{ row.ganzhi[1] }}</span>
             </p>
-            <p class="mt-0.5 text-[10px] leading-tight text-muted">{{ row.index === '起运前' ? '小运' : `第${row.index}步` }}</p>
+            <p class="mt-0.5 text-[12px] leading-tight text-muted">{{ row.index === '起运前' ? '小运' : `第${row.index}步` }}</p>
           </li>
         </ul>
       </div>
-      <p class="mt-2 text-[11px] text-muted">↔ 左右滑动查看全部大运</p>
+      <p class="mt-2 text-[13px] text-muted">↔ 左右滑动查看全部大运</p>
     </section>
 
     <!-- 流年 -->
     <section v-if="chart.liunian.length">
-      <h3 class="mb-2 text-[13px] font-semibold text-ink-2">近年流年</h3>
+      <h3 class="form-label">近年流年</h3>
       <div class="grid grid-cols-4 gap-1.5 sm:grid-cols-6">
-        <div v-for="y in chart.liunian" :key="y.year" class="rounded-[var(--radius-sm)] bg-surface-2 px-1 py-2 text-center">
-          <p class="tabular text-[10px] text-muted">{{ y.year }}</p>
+        <div v-for="y in chart.liunian" :key="y.year" class="border-t border-line px-1 py-2 text-center">
+          <p class="tabular text-[12px] text-muted">{{ y.year }}</p>
           <p class="mt-0.5 font-serif text-[15px] leading-tight">
             <span :style="charColor(y.ganzhi[0])">{{ y.ganzhi[0] }}</span><span :style="charColor(y.ganzhi[1])">{{ y.ganzhi[1] }}</span>
           </p>

@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import LangSwitch from '@/components/layout/LangSwitch.vue'
-import { ApiError, getLlmSettings, getMeta, saveLlmSettings, type LlmSettings } from '@/api/client'
+import {
+  ApiError,
+  getLlmSettings,
+  getMeta,
+  resetLlmSettings,
+  saveLlmSettings,
+  type LlmSettings,
+  type MetaInfo,
+} from '@/api/client'
 import { t } from '@/i18n'
+import { clearLocalLlm, loadLocalLlm, saveLocalLlm, type LocalLlmConfig } from '@/lib/llmConfig'
 import { useAuthStore } from '@/stores/auth'
 import { useChartsStore } from '@/stores/charts'
 import { useSettingsStore } from '@/stores/settings'
@@ -11,21 +20,23 @@ const settings = useSettingsStore()
 const charts = useChartsStore()
 const auth = useAuthStore()
 
-/** 非管理员只能看到 AI 是否可用（公开 /meta），不看也不改配置 */
-const llmPublic = ref(false)
-
 const PROVIDERS = [
   { id: 'deepseek', label: 'DeepSeek', base: 'https://api.deepseek.com', model: 'deepseek-chat' },
   { id: 'openai', label: 'OpenAI', base: 'https://api.openai.com/v1', model: 'gpt-4.1-mini' },
   { id: 'custom', label: '自定义', base: '', model: '' },
 ] as const
 
-const llm = ref<LlmSettings | null>(null)
+/** 用户自己的配置：只存当前浏览器，未登录也能用 */
+const personal = ref<LocalLlmConfig | null>(null)
+/** 本站默认：管理员可改，其他用户只经 /meta 看是否可用 */
+const defaultInfo = ref<LlmSettings | null>(null)
+const server = ref<LlmSettings | null>(null)
 const baseUrl = ref('')
 const model = ref('')
 const apiKey = ref('')
 const showKey = ref(false)
 const saving = ref(false)
+const savingDefault = ref(false)
 const message = ref('')
 const error = ref('')
 
@@ -36,17 +47,23 @@ const provider = computed(() => {
   return 'custom'
 })
 
-const configured = computed(() => !!llm.value?.configured)
+const configured = computed(() => !!personal.value || !!defaultInfo.value?.configured)
 const sourceLabel = computed(() => {
-  const source = llm.value?.source ?? 'default'
-  return t(source === 'runtime' ? 'settings.aiSourceRuntime' : source === 'env' ? 'settings.aiSourceEnv' : 'settings.aiSourceDefault')
+  if (personal.value) return t('settings.aiSourceLocal')
+  const source = defaultInfo.value?.source ?? 'default'
+  return t(
+    source === 'runtime'
+      ? 'settings.aiSourceRuntime'
+      : source === 'env'
+        ? 'settings.aiSourceEnv'
+        : 'settings.aiSourceDefault',
+  )
 })
-
-function apply(info: LlmSettings) {
-  llm.value = info
-  baseUrl.value = info.base_url
-  model.value = info.model
-}
+const personalKeyHint = computed(() => {
+  const key = personal.value?.api_key ?? ''
+  if (!key) return ''
+  return key.length >= 12 ? `••••${key.slice(-4)}` : '••••'
+})
 
 function pickProvider(id: (typeof PROVIDERS)[number]['id']) {
   const p = PROVIDERS.find((x) => x.id === id)
@@ -55,68 +72,128 @@ function pickProvider(id: (typeof PROVIDERS)[number]['id']) {
   model.value = p.model
 }
 
-async function load() {
-  try {
-    apply(await getLlmSettings())
-  } catch (e) {
-    error.value = e instanceof ApiError ? e.message : t('err.generic')
+function applyMeta(info: MetaInfo) {
+  defaultInfo.value = {
+    configured: info.llm_configured,
+    base_url: info.llm_base_url,
+    model: info.llm_model,
+    source: info.llm_source,
+    key_hint: info.llm_key_hint,
   }
+}
+
+function fillForm(info: { base_url: string; model: string } | null) {
+  baseUrl.value = info?.base_url ?? ''
+  model.value = info?.model ?? ''
+}
+
+async function load() {
+  await auth.bootstrap()
+  personal.value = loadLocalLlm()
+  if (auth.isAdmin) {
+    try {
+      server.value = await getLlmSettings()
+      defaultInfo.value = server.value
+    } catch (e) {
+      error.value = e instanceof ApiError ? e.message : t('err.generic')
+    }
+  } else {
+    try {
+      applyMeta(await getMeta())
+    } catch {
+      /* 状态展示失败就不标已配置 */
+    }
+  }
+  fillForm(personal.value ?? defaultInfo.value)
+  if (personal.value) apiKey.value = personal.value.api_key
+}
+
+function readForm(): { url: string; model: string; key: string } | null {
+  const url = baseUrl.value.trim().replace(/\/+$/, '')
+  const name = model.value.trim()
+  if (!/^https?:\/\//.test(url) || /\s/.test(url) || !name) {
+    error.value = t('settings.aiInvalid')
+    return null
+  }
+  return { url, model: name, key: apiKey.value.trim() }
 }
 
 async function save() {
   error.value = ''
   message.value = ''
-  const url = baseUrl.value.trim().replace(/\/+$/, '')
-  if (!/^https?:\/\//.test(url) || /\s/.test(url) || !model.value.trim()) {
-    error.value = t('settings.aiInvalid')
+  const form = readForm()
+  if (!form) return
+  const key = form.key || personal.value?.api_key || ''
+  if (!key) {
+    error.value = t('settings.aiKeyRequired')
     return
   }
   saving.value = true
   try {
-    const info = await saveLlmSettings({
-      base_url: url,
-      model: model.value.trim(),
-      ...(apiKey.value.trim() ? { api_key: apiKey.value.trim() } : {}),
-    })
-    apply(info)
-    apiKey.value = ''
+    const cfg = saveLocalLlm({ base_url: form.url, model: form.model, api_key: key })
+    if (!cfg) {
+      error.value = t('settings.aiInvalid')
+      return
+    }
+    personal.value = cfg
+    apiKey.value = cfg.api_key
     showKey.value = false
-    message.value = t('settings.aiSaved')
-  } catch (e) {
-    error.value = e instanceof ApiError ? e.message : t('settings.aiSaveFailed')
+    message.value = t('settings.aiSavedLocal')
   } finally {
     saving.value = false
   }
 }
 
-async function clearKey() {
+function clearPersonal() {
+  error.value = ''
+  clearLocalLlm()
+  personal.value = null
+  apiKey.value = ''
+  showKey.value = false
+  fillForm(defaultInfo.value)
+  message.value = t('settings.aiClearedLocal')
+}
+
+async function saveAsDefault() {
+  error.value = ''
+  message.value = ''
+  const form = readForm()
+  if (!form) return
+  if (!form.key && !server.value?.configured) {
+    error.value = t('settings.aiKeyRequired')
+    return
+  }
+  savingDefault.value = true
+  try {
+    const info = await saveLlmSettings({
+      base_url: form.url,
+      model: form.model,
+      ...(form.key ? { api_key: form.key } : {}),
+    })
+    server.value = info
+    defaultInfo.value = info
+    message.value = t('settings.aiDefaultSaved')
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : t('settings.aiSaveFailed')
+  } finally {
+    savingDefault.value = false
+  }
+}
+
+async function clearDefault() {
   error.value = ''
   message.value = ''
   try {
-    // 只清密钥，保留已保存的接口地址与模型
-    apply(await saveLlmSettings({ clear_key: true }))
-    apiKey.value = ''
-    message.value = t('settings.aiCleared')
+    const info = await resetLlmSettings()
+    server.value = info
+    defaultInfo.value = info
+    message.value = t('settings.aiDefaultCleared')
   } catch (e) {
     error.value = e instanceof ApiError ? e.message : t('settings.aiSaveFailed')
   }
 }
 
-const canEdit = computed(() => auth.isAdmin)
-const configuredReadOnly = computed(() => llmPublic.value)
-
-onMounted(async () => {
-  await auth.bootstrap()
-  if (auth.isAdmin) {
-    await load()
-    return
-  }
-  try {
-    llmPublic.value = (await getMeta()).llm_configured
-  } catch {
-    /* 状态展示失败就不标已配置 */
-  }
-})
+onMounted(load)
 
 const clearing = ref(false)
 async function clearRecords() {
@@ -135,12 +212,11 @@ async function clearRecords() {
 <template>
   <div>
     <div class="border-b border-line pb-5">
-      <p class="eyebrow">{{ t('settings.eyebrow') }}</p>
-      <h1 class="title-serif h-h1 mt-3">{{ t('settings.title') }}</h1>
+      <h1 class="title-serif h-h1">{{ t('settings.title') }}</h1>
     </div>
 
-    <div class="settings-grid mt-8 grid gap-10 lg:grid-cols-[200px_minmax(0,640px)] lg:gap-16">
-      <nav class="hidden self-start lg:sticky lg:top-[calc(var(--header-h)+32px)] lg:block" :aria-label="t('settings.title')">
+    <div class="settings-grid mt-8">
+      <nav class="settings-nav" :aria-label="t('settings.title')">
         <ul class="space-y-3 text-[13px]">
           <li><a href="#set-appearance" class="text-ink-2 hover:text-ink">{{ t('settings.navAppearance') }}</a></li>
           <li><a href="#set-ai" class="text-ink-2 hover:text-ink">{{ t('settings.navAi') }}</a></li>
@@ -149,9 +225,9 @@ async function clearRecords() {
         </ul>
       </nav>
 
-      <div class="min-w-0 space-y-10">
+      <div class="settings-body">
         <section id="set-appearance" class="scroll-mt-28">
-          <h2 class="eyebrow mb-1 block border-b border-line pb-3">{{ t('settings.navAppearance') }}</h2>
+          <h2 class="label mb-1 block border-b border-line pb-3">{{ t('settings.navAppearance') }}</h2>
           <div class="flex min-h-[64px] items-center justify-between gap-3 border-b border-line py-3">
             <div>
               <p class="text-[15px]">{{ t('settings.language') }}</p>
@@ -165,47 +241,37 @@ async function clearRecords() {
               <p class="text-xs text-muted">{{ t('settings.darkHint') }}</p>
             </div>
             <input
-              :checked="settings.mode === 'dark'"
+              :checked="settings.isDark"
               type="checkbox"
               role="switch"
               :aria-label="t('settings.darkAria')"
               class="switch"
-              @change="settings.setMode(($event.target as HTMLInputElement).checked ? 'dark' : 'system')"
+              @change="settings.setMode(($event.target as HTMLInputElement).checked ? 'dark' : 'light')"
             />
           </label>
         </section>
 
         <section id="set-ai" class="scroll-mt-28">
           <div class="mb-3 flex items-center justify-between gap-3 border-b border-line pb-3">
-            <h2 class="eyebrow">{{ t('settings.navAi') }}</h2>
+            <h2 class="label">{{ t('settings.navAi') }}</h2>
             <span
-              class="inline-flex items-center gap-1.5 text-[11px]"
-              :class="(canEdit ? configured : configuredReadOnly) ? 'text-success' : 'text-muted'"
+              class="inline-flex items-center gap-1.5 text-[13px]"
+              :class="configured ? 'text-success' : 'text-muted'"
               data-llm-status
             >
-              <span
-                class="size-1.5 rounded-full"
-                :class="(canEdit ? configured : configuredReadOnly) ? 'bg-success shadow-[0_0_0_3px_var(--color-success-soft)]' : 'bg-muted'"
-                aria-hidden="true"
-              />
-              {{ (canEdit ? configured : configuredReadOnly) ? t('settings.aiStatusOn') : t('settings.aiStatusOff') }}
-              <span v-if="canEdit && configured" class="text-muted">· {{ sourceLabel }}</span>
+              {{ configured ? t('settings.aiStatusOn') : t('settings.aiStatusOff') }}
+              <span v-if="configured" class="text-muted">/ {{ sourceLabel }}</span>
             </span>
           </div>
 
-          <!-- 非管理员 / 未登录：只读说明 -->
-          <div v-if="!canEdit" class="settings-card" data-llm-readonly>
-            <p class="max-w-[58ch] text-[13px] leading-[1.75] text-muted">{{ t('settings.aiAdminOnly') }}</p>
-            <p v-if="!auth.isLoggedIn" class="mt-3 text-[12px] text-muted">
-              <RouterLink to="/login?next=/settings" class="link-underline text-primary">{{ t('common.login') }}</RouterLink>
-            </p>
-          </div>
-
-          <div v-else class="settings-card" data-llm-settings>
+          <div class="pt-4" data-llm-settings>
             <p class="max-w-[58ch] text-[13px] leading-[1.75] text-muted">{{ t('settings.aiHint') }}</p>
+            <p v-if="personal" class="mt-2 text-[12px] text-success" data-llm-personal>
+              {{ t('settings.aiPersonalOn', { hint: personalKeyHint }) }}
+            </p>
 
             <div class="mt-5">
-              <p class="eyebrow mb-2">{{ t('settings.aiProvider') }}</p>
+              <p class="label mb-2">{{ t('settings.aiProvider') }}</p>
               <div class="flex flex-wrap gap-1.5" role="group" :aria-label="t('settings.aiProvider')">
                 <button
                   v-for="p in PROVIDERS"
@@ -248,10 +314,7 @@ async function clearRecords() {
             </label>
 
             <label class="settings-field mt-4">
-              <span class="settings-field__label">
-                {{ t('settings.aiKey') }}
-                <span v-if="llm?.key_hint" class="tabular ml-1 font-normal text-muted">{{ llm.key_hint }}</span>
-              </span>
+              <span class="settings-field__label">{{ t('settings.aiKey') }}</span>
               <span class="relative block">
                 <input
                   v-model="apiKey"
@@ -263,44 +326,68 @@ async function clearRecords() {
                 />
                 <button
                   type="button"
-                  class="absolute inset-y-0 right-0 px-3 text-[11px] text-muted hover:text-ink"
+                  class="absolute inset-y-0 right-0 px-3 text-[13px] text-muted hover:text-ink"
                   :aria-label="showKey ? t('settings.aiHideKey') : t('settings.aiShowKey')"
                   @click="showKey = !showKey"
                 >
                   {{ showKey ? t('settings.aiHideKey') : t('settings.aiShowKey') }}
                 </button>
               </span>
-              <small v-if="configured" class="settings-field__hint">{{ t('settings.aiKeyKeep', { hint: llm?.key_hint ?? '' }) }}</small>
+              <small v-if="personal" class="settings-field__hint">{{ t('settings.aiKeyKeepLocal', { hint: personalKeyHint }) }}</small>
+              <small v-else class="settings-field__hint">{{ t('settings.aiKeyRequiredHint') }}</small>
             </label>
 
             <div class="mt-5 flex flex-wrap items-center gap-2">
-              <button type="button" class="btn-primary !w-auto !px-5" :disabled="saving" @click="save">
+              <button type="button" class="btn-primary" :disabled="saving" @click="save">
                 {{ saving ? t('settings.aiSaving') : t('settings.aiSave') }}
               </button>
-              <button type="button" class="btn-line" :disabled="!configured || saving" @click="clearKey">
-                {{ t('settings.aiClear') }}
+              <button v-if="personal" type="button" class="btn-line" :disabled="saving" @click="clearPersonal">
+                {{ t('settings.aiClearPersonal') }}
               </button>
-              <span class="ml-auto text-[11px] text-muted">{{ sourceLabel }}</span>
+              <span class="ml-auto text-[13px] text-muted">{{ sourceLabel }}</span>
             </div>
 
             <p v-if="message" class="mt-3 text-[12px] text-success" role="status" aria-live="polite">{{ message }}</p>
             <p v-if="error" class="mt-3 text-[12px] text-danger" role="alert">{{ error }}</p>
 
-            <p class="mt-4 border-t border-line pt-3 text-[11px] leading-[1.7] text-muted">{{ t('settings.aiLocalNote') }}</p>
+            <p class="mt-4 text-[13px] leading-[1.7] text-muted">{{ t('settings.aiLocalNote') }}</p>
+
+            <!-- 管理员：本站默认，供没有个人配置的访问者使用 -->
+            <div v-if="auth.isAdmin" class="mt-6 border-t border-line pt-4" data-llm-default>
+              <p class="label mb-2">{{ t('settings.aiServerTitle') }}</p>
+              <p class="max-w-[58ch] text-[12px] leading-[1.7] text-muted">{{ t('settings.aiServerHint') }}</p>
+              <p class="mt-2 text-[12px]" :class="server?.configured ? 'text-success' : 'text-muted'">
+                {{ server?.configured ? t('settings.aiStatusOn') : t('settings.aiStatusOff') }}
+                <span v-if="server?.key_hint" class="tabular ml-2 text-muted">{{ server.key_hint }}</span>
+              </p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" class="btn-line" :disabled="savingDefault" @click="saveAsDefault">
+                  {{ t('settings.aiSaveDefault') }}
+                </button>
+                <button
+                  type="button"
+                  class="btn-line"
+                  :disabled="!server?.configured || savingDefault"
+                  @click="clearDefault"
+                >
+                  {{ t('settings.aiClearDefault') }}
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
         <section id="set-data" class="scroll-mt-28">
-          <h2 class="eyebrow mb-1 block border-b border-line pb-3">{{ t('settings.navData') }}</h2>
+          <h2 class="label mb-1 block border-b border-line pb-3">{{ t('settings.navData') }}</h2>
           <div class="flex min-h-[64px] items-center justify-between gap-3 border-b border-line py-3">
             <div>
               <p class="text-[15px]">{{ t('settings.records') }}</p>
-              <p class="text-xs text-muted">{{ auth.isLoggedIn ? t('settings.recordsCountOnline', { n: charts.history.length }) : t('settings.recordsGuest') }}</p>
+              <p class="text-xs text-muted">{{ auth.isLoggedIn ? t('settings.recordsCountOnline', { n: charts.history.length }) : t('settings.recordsCountGuest', { n: charts.history.length }) }}</p>
             </div>
             <button
               type="button"
               class="btn-line"
-              :disabled="!auth.isLoggedIn || !charts.history.length || clearing"
+              :disabled="!charts.history.length || clearing"
               @click="clearRecords"
             >
               {{ t('settings.clear') }}
@@ -309,10 +396,10 @@ async function clearRecords() {
         </section>
 
         <section id="set-about" class="scroll-mt-28">
-          <h2 class="eyebrow mb-1 block border-b border-line pb-3">{{ t('settings.navAbout') }}</h2>
+          <h2 class="label mb-1 block border-b border-line pb-3">{{ t('settings.navAbout') }}</h2>
           <div class="space-y-2 pt-4 text-[13px] leading-[1.85] text-muted">
             <p>{{ t('settings.about1') }}</p>
-            <p>{{ t('settings.about2a') }} <code class="rounded-[var(--radius-xs)] bg-bg-subtle px-1 text-ink-2">SM_LLM_API_KEY</code>{{ t('settings.about2b') }}</p>
+            <p>{{ t('settings.about2a') }} <code class="border border-line px-1 text-ink-2">SM_LLM_API_KEY</code>{{ t('settings.about2b') }}</p>
             <p>{{ t('settings.about3') }}</p>
           </div>
         </section>

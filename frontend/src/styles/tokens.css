@@ -76,7 +76,7 @@
   /* ---------- 字号阶梯（移动优先，12px 为下限） ---------- */
   --text-xs: 0.75rem;    /* 12px 标签、藏干 */
   --text-sm: 0.8125rem;  /* 13px 辅助说明 */
-  --text-base: 0.9375rem;/* 15px 正文 */
+  --text-base: 1rem;     /* 16px 正文 */
   --text-md: 1rem;       /* 16px 输入框（避免 iOS 缩放） */
   --text-lg: 1.125rem;   /* 18px 小标题 */
   --text-xl: 1.375rem;   /* 22px 卡片标题 */
@@ -142,7 +142,7 @@
   --touch-min: 44px;      /* 最小触控热区 */
   --container-max: 480px; /* 内容最大宽度（平板/桌面居中） */
   --header-h: 52px;
-  --tabbar-h: 58px;
+  --tabbar-h: calc(58px + env(safe-area-inset-bottom, 0px));
 
   /* ---------- 渐变（仅用于氛围，不铺满屏） ---------- */
   --gradient-hero: radial-gradient(120% 90% at 0% 0%, #ffffff 0%, #f2efe7 55%, #ece7db 100%);

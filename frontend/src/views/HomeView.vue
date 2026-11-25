@@ -1,5 +1,7 @@
 <script setup lang="ts">
+// hero 视觉参考 design/unslop/home.html（unslop by @heydamir · CC BY 4.0）
 import { computed, onMounted, ref } from 'vue'
+import StarChart from '@/components/StarChart.vue'
 import SystemCard from '@/components/SystemCard.vue'
 import { getSystems } from '@/api/client'
 import type { SystemCategory, SystemSpec } from '@/api/types'
@@ -43,54 +45,27 @@ const visibleCount = computed(() => groups.value.reduce((n, g) => n + g.items.le
 
 <template>
   <div class="pb-6">
-    <section class="grid items-center gap-10 pb-12 pt-2 lg:grid-cols-12 lg:gap-6 lg:pb-20 lg:pt-8">
-      <div class="lg:col-span-7">
-        <p class="eyebrow">{{ t('home.eyebrow') }}</p>
-        <h1 class="title-serif h-display mt-4 max-w-[15ch]">
-          {{ t('home.title') }}
+    <section class="home-hero">
+      <div class="mx-auto w-full max-w-[600px] lg:mx-0">
+        <h1>
+          {{ t('home.titleBefore') }}<br />{{ t('home.titleAfter') }}
         </h1>
-        <p class="mt-6 max-w-[560px] text-[15px] leading-[1.85] text-ink-2">
-          {{ t('home.subtitle') }}
-        </p>
-        <p class="mt-2 max-w-[560px] text-[15px] leading-[1.85] text-muted">{{ t('home.lead') }}</p>
-        <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-          <RouterLink to="/chart/bazi" class="btn-ink w-full sm:w-auto">{{ t('home.cta') }}</RouterLink>
-          <span class="text-[12px] text-muted">{{ t('home.meta', { n: visibleCount }) }}</span>
-        </div>
+        <p class="home-sub">{{ t('home.subtitle') }}</p>
+        <p class="home-meta">{{ t('home.meta', { n: visibleCount }) }}</p>
       </div>
-      <div class="hidden justify-end lg:col-span-5 lg:flex" aria-hidden="true">
-        <svg viewBox="0 0 320 320" class="size-[320px] text-muted opacity-70" fill="none" stroke="currentColor" stroke-width="0.8">
-          <circle cx="160" cy="160" r="148" />
-          <circle cx="160" cy="160" r="118" />
-          <circle cx="160" cy="160" r="74" stroke-dasharray="2 6" />
-          <circle cx="160" cy="160" r="30" />
-          <path d="M160 12v296M12 160h296M55 55l210 210M265 55 55 265" stroke-opacity=".35" />
-          <g stroke="none" fill="currentColor">
-            <circle cx="160" cy="42" r="2" />
-            <circle cx="252" cy="272" r="1.6" />
-            <circle cx="70" cy="226" r="1.4" />
-            <circle cx="238" cy="92" r="1.8" />
-          </g>
-          <g fill="currentColor" stroke="none" font-size="11" font-family="var(--font-sans)" text-anchor="middle">
-            <text x="160" y="30">子</text><text x="230" y="46">丑</text><text x="286" y="104">寅</text>
-            <text x="300" y="164">卯</text><text x="276" y="228">辰</text><text x="220" y="286">巳</text>
-            <text x="160" y="306">午</text><text x="100" y="286">未</text><text x="44" y="228">申</text>
-            <text x="22" y="164">酉</text><text x="46" y="102">戌</text><text x="96" y="46">亥</text>
-          </g>
-        </svg>
-      </div>
+      <StarChart />
     </section>
 
-    <section v-for="(g, gi) in groups" :key="g.key" class="pb-10 lg:pb-14" :aria-labelledby="`grp-${g.key}`">
-      <div class="flex items-end justify-between gap-4 border-t-2 border-t-ink pb-5 pt-5">
-        <h2 :id="`grp-${g.key}`" class="flex items-baseline gap-4">
-          <span class="eyebrow tabular">{{ String(gi + 1).padStart(2, '0') }}</span>
-          <span class="title-serif text-[22px] leading-none">{{ t(g.label) }}</span>
-        </h2>
-        <span class="text-[12px] text-muted">{{ t('home.available', { n: g.items.length }) }}</span>
+    <section v-for="(g, gi) in groups" :key="g.key" class="home-group" :aria-labelledby="`grp-${g.key}`">
+      <div class="group-head">
+        <div class="flex items-baseline gap-4">
+          <span class="idx">{{ String(gi + 1).padStart(2, '0') }}</span>
+          <h2 :id="`grp-${g.key}`">{{ t(g.label) }}</h2>
+        </div>
+        <span class="idx">{{ t('home.available', { n: g.items.length }) }}</span>
       </div>
       <div class="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-4">
-        <SystemCard v-for="(s, i) in g.items" :key="s.id" :spec="s" :index="i" />
+        <SystemCard v-for="s in g.items" :key="s.id" :spec="s" />
       </div>
     </section>
 

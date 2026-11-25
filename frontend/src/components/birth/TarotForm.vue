@@ -54,20 +54,20 @@ function submit() {
 <template>
   <form class="space-y-4" @submit.prevent="submit">
     <section>
-      <div class="mb-2 text-[13px] text-ink-2">{{ t('tarot.spread') }}</div>
-      <div class="grid gap-2 sm:grid-cols-2">
+      <div class="form-label">{{ t('tarot.spread') }}</div>
+      <div class="choice-grid choice-grid--2">
         <button
           v-for="s in spreads"
           :key="s.id"
           type="button"
-          class="rounded-[var(--radius-md)] border p-3 text-left"
-          :class="spread === s.id ? 'border-primary bg-primary-soft' : 'border-line-strong bg-surface'"
+          class="choice"
+          :class="{ 'is-on': spread === s.id }"
           :aria-pressed="spread === s.id"
           @click="spread = s.id"
         >
           <span class="flex items-center justify-between">
-            <span class="text-sm font-medium" :class="spread === s.id ? 'text-primary' : ''">{{ s.name }}</span>
-            <span v-if="s.count" class="text-[11px] text-muted">{{ t('tarot.cards', { n: s.count }) }}</span>
+            <span class="text-sm font-medium">{{ s.name }}</span>
+            <span v-if="s.count" class="text-[13px] text-muted">{{ t('tarot.cards', { n: s.count }) }}</span>
           </span>
           <span class="mt-1 block text-xs leading-5 text-muted">{{ s.description }}</span>
         </button>
@@ -75,7 +75,7 @@ function submit() {
     </section>
 
     <section>
-      <div class="mb-2 text-[13px] text-ink-2">{{ t('tarot.question') }}</div>
+      <div class="form-label">{{ t('tarot.question') }}</div>
       <textarea
         v-model="question"
         class="field resize-none"

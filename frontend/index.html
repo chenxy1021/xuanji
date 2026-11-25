@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#f5f3ee" />
+    <meta name="theme-color" content="#f8f6f1" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>命理排盘 · 排盘交给代码，解读交给 AI</title>
     <link
@@ -14,7 +14,10 @@
       // 首屏前定主题，避免闪白
       try {
         const s = JSON.parse(localStorage.getItem('sm_theme') || 'null')
-        const dark = s ? s.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+        const mode = s?.mode ?? s?.theme ?? 'system'
+        const tg = window.Telegram?.WebApp
+        const tgScheme = tg && tg.platform && tg.platform !== 'unknown' ? tg.colorScheme : null
+        const dark = mode === 'dark' || (mode === 'system' && (tgScheme ? tgScheme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches))
         if (dark) document.documentElement.dataset.theme = 'dark'
       } catch {}
     </script>

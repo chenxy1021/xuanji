@@ -53,7 +53,7 @@ function submit() {
   <form :class="inline ? 'space-y-4 border-b border-line pb-4' : 'space-y-4'" @submit.prevent="submit">
     <p v-if="inline && hint" class="text-xs text-muted">{{ hint }}</p>
     <div v-for="f in fields" :key="f.key">
-      <div class="mb-2 text-[13px] text-ink-2">
+      <div class="form-label">
         {{ label(f) }}
         <span v-if="!f.required" class="text-xs text-muted">{{ t('option.optional') }}</span>
       </div>
@@ -129,8 +129,8 @@ function submit() {
     </div>
 
     <template v-if="!inline">
-      <p v-if="error" class="flex items-center gap-1.5 text-xs text-danger">
-        <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[10px]" aria-hidden="true">!</span>
+      <p v-if="error" class="flex items-center gap-1.5 border border-danger px-3 py-2 text-xs text-danger">
+        <span class="flex size-4 items-center justify-center rounded-full border border-danger text-[12px]" aria-hidden="true">!</span>
         {{ error }}
       </p>
       <button type="submit" class="btn-primary" :disabled="submitting">

@@ -51,7 +51,11 @@ const loadState = ref<'idle' | 'loading' | 'missing'>('idle')
 const envelope = computed<HistoryRecord | null>(() => {
   const id = routeId.value
   if (!id) return charts.current
-  return charts.find(id) ?? (fetched.value?.id === id ? fetched.value : null)
+  return (
+    charts.find(id) ??
+    (!auth.isLoggedIn ? charts.findGuest(id) : null) ??
+    (fetched.value?.id === id ? fetched.value : null)
+  )
 })
 
 // 本地没有的 id（刷新、直链、换账号）按账号去服务端取；404/401/未登录统一显示「不存在或无权查看」
@@ -111,6 +115,11 @@ const hasBirth = computed(() => {
 const tab = ref<'analysis' | 'chat'>('analysis')
 const masked = ref(false)
 const boardOpen = ref(true)
+// 手机上 sticky Tab 紧贴固定顶栏；切到 AI 时把 Tab 滚到顶部，避免正文从其下方穿过
+watch(tab, (v) => {
+  if (v !== 'chat' || window.innerWidth >= 1024) return
+  requestAnimationFrame(() => document.querySelector('.result-tabs')?.scrollIntoView({ block: 'start' }))
+})
 const boardLabel = computed(() => heading.value)
 
 /** text 的第一段正文（跳过标题与「输入」这类元信息段） */
@@ -201,6 +210,8 @@ function distRows(count: Record<string, number>, order: string[]) {
   })
 }
 
+const metaSep = computed(() => (locale.value === 'en' ? ', ' : '，'))
+
 /** 标题下的一句盘面摘要：只拼真实字段，不做吉凶判断 */
 const summaryLine = computed(() => {
   const e = envelope.value
@@ -211,40 +222,40 @@ const summaryLine = computed(() => {
     const dayEl = WX_LABEL[WX[dayGan]] ?? ''
     const dist = stemDist.value
     const counts = dist ? dist.map((r) => `${r.label}${r.n}`).join(' ') : ''
-    return [dayGan ? `${dayGan}${dayEl}日主` : '', counts].filter(Boolean).join(' · ')
+    return [dayGan ? `${dayGan}${dayEl}日主` : '', counts].filter(Boolean).join(metaSep.value)
   }
   if (astro.value) {
     const a = astro.value
     const parts = [a.sun?.sign ? `太阳${a.sun.sign}` : '', a.moon?.sign ? `月亮${a.moon.sign}` : '', a.rising?.sign ? `上升${a.rising.sign}` : '']
-    return parts.filter(Boolean).join(' · ')
+    return parts.filter(Boolean).join(metaSep.value)
   }
   if (ziwei.value) {
     const ming = ziwei.value.palaces.find((p) => p.is_ming)
     const majors = ming?.stars.filter((s) => s.kind === 'major').map((s) => s.name) ?? []
     return [ming ? `命宫 ${ming.branch}` : '', ziwei.value.bureau, majors.length ? `主星 ${majors.join('、')}` : '']
       .filter(Boolean)
-      .join(' · ')
+      .join(metaSep.value)
   }
   if (isQimenChart(c)) {
     const anchors = c.lifelong?.anchors ?? []
-    return anchors.map((x) => `${x.label} ${x.ganzhi}`).join(' · ')
+    return anchors.map((x) => `${x.label} ${x.ganzhi}`).join(metaSep.value)
   }
-  if (isSynastryChart(c)) return `合盘 ${c.score} 分 · ${c.level}`
+  if (isSynastryChart(c)) return `合盘 ${c.score} 分${metaSep.value}${c.level}`
   if (isTarotChart(c)) {
-    const names = c.cards.slice(0, 3).map((x) => `${x.position}${x.name}`).join(' · ')
-    return [c.spread_name, names].filter(Boolean).join(' · ')
+    const names = c.cards.slice(0, 3).map((x) => `${x.position}${x.name}`).join(metaSep.value)
+    return [c.spread_name, names].filter(Boolean).join(metaSep.value)
   }
   if (isLiuyaoChart(c)) {
     const moving = c.moving_lines?.length ? `动爻 ${c.moving_lines.join('、')}` : '静卦'
-    return `本卦 ${c.ben_gua.name} · ${moving}`
+    return `本卦 ${c.ben_gua.name}${metaSep.value}${moving}`
   }
   if (isMeihuaChart(c)) {
     const ben = c.ben ?? c.ben_gua
     const rel = typeof c.relation === 'string' ? c.relation : c.relation?.name
-    return [ben?.name ? `本卦 ${ben.name}` : '', rel].filter(Boolean).join(' · ')
+    return [ben?.name ? `本卦 ${ben.name}` : '', rel].filter(Boolean).join(metaSep.value)
   }
-  if (isKongmingChart(c)) return `第 ${c.lot.number} 签 · ${c.lot.level} · ${c.lot.hexagram}`
-  if (isMbtiChart(c)) return `${c.type} · ${c.name}`
+  if (isKongmingChart(c)) return `第 ${c.lot.number} 签${metaSep.value}${c.lot.level}${metaSep.value}${c.lot.hexagram}`
+  if (isMbtiChart(c)) return `${c.type}${metaSep.value}${c.name}`
   return ''
 })
 
@@ -459,7 +470,7 @@ const bornLine = computed(() => {
       ? ` ${String(input.hour).padStart(2, '0')}:${String(input.minute ?? 0).padStart(2, '0')}`
       : ''
   const parts = [date + time, input?.place?.name, input?.gender === 'male' ? t('birth.male') : input?.gender === 'female' ? t('birth.female') : '']
-  return parts.filter(Boolean).join(' · ')
+  return parts.filter(Boolean).join(metaSep.value)
 })
 
 function jump(id: string) {
@@ -477,11 +488,11 @@ function jump(id: string) {
           <path d="m15 5-7 7 7 7" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </RouterLink>
-      <h1 class="min-w-0 flex-1 truncate title-serif text-[20px] lg:text-[13px] lg:tracking-[0.08em] lg:text-muted">{{ heading }}</h1>
+      <h1 class="min-w-0 flex-1 truncate title-serif text-[20px] lg:text-[15px] lg:text-ink-2">{{ heading }}</h1>
       </div>
       <div class="flex items-center gap-1 text-xs text-muted">
         <span class="max-md:hidden">{{ envelope.engine_version }}</span>
-        <button type="button" class="btn-line !min-h-9 !px-3" @click="copyText">
+        <button type="button" class="let-action text-xs" @click="copyText">
           {{ copyState === 'ok' ? t('result.copied') : copyState === 'fail' ? t('result.copyFail') : t('result.copy') }}
         </button>
       </div>
@@ -497,11 +508,11 @@ function jump(id: string) {
           :aria-expanded="boardOpen"
           @click="boardOpen = !boardOpen"
         >
-          <span>{{ t('result.board') }} · {{ boardLabel }}</span>
+          <span>{{ t('result.board') }} / {{ boardLabel }}</span>
           <span class="text-muted">{{ boardOpen ? t('result.collapseBoard') : t('result.expandBoard') }}</span>
         </button>
         <div class="space-y-4" :class="boardOpen ? 'block' : 'hidden lg:block'">
-          <p v-if="masked" class="eyebrow">{{ t('result.masked') }}</p>
+          <p v-if="masked" class="label">{{ t('result.masked') }}</p>
           <template v-else>
             <BaziChartPanel v-if="isBaziChart(envelope.chart)" :chart="envelope.chart" />
             <ZiweiChartPanel v-else-if="isZiweiChart(envelope.chart)" :chart="envelope.chart" />
@@ -517,7 +528,7 @@ function jump(id: string) {
             <QimenPanel v-else-if="isQimenChart(envelope.chart)" :chart="envelope.chart" />
             <MeihuaPanel v-else-if="isMeihuaChart(envelope.chart)" :chart="envelope.chart" />
             <KongmingPanel v-else-if="isKongmingChart(envelope.chart)" :chart="envelope.chart" />
-            <section v-else class="scroll-x rounded-[var(--radius-lg)] border border-line bg-surface p-4">
+            <section v-else class="scroll-x border-t border-line pt-3">
               <pre class="text-xs">{{ JSON.stringify(envelope.chart, null, 2) }}</pre>
             </section>
           </template>
@@ -537,31 +548,28 @@ function jump(id: string) {
 
       <!-- 右栏：分析 / AI -->
       <div class="min-w-0">
-        <!-- 盘头：标题、摘要、印章 -->
+        <!-- 盘头：标题 + 关键事实 -->
         <header class="result-hero" data-result-hero>
-          <div class="result-hero__aura" aria-hidden="true" />
-          <div class="relative flex items-start justify-between gap-5">
+          <div class="flex items-start justify-between gap-5">
             <div class="min-w-0">
-              <p class="eyebrow">{{ t('result.analysisEyebrow') }}</p>
-              <p v-if="bornLine && !masked" class="tabular mt-3 text-[12px] leading-[1.8] text-muted">{{ bornLine }}</p>
-              <h2 class="title-serif mt-2 text-[32px] leading-[1.25] sm:text-[38px] lg:text-[44px]" data-result-title>{{ heading }}</h2>
+              <h2 class="title-serif mt-3 text-[30px] leading-[1.25] sm:text-[36px] lg:text-[42px]" data-result-title>{{ heading }}</h2>
               <p v-if="summaryLine" class="tabular mt-3 max-w-[62ch] text-[13px] leading-[1.8] text-ink-2">{{ summaryLine }}</p>
+              <p v-if="bornLine && !masked" class="tabular mt-1 text-[12px] leading-[1.8] text-muted">{{ bornLine }}</p>
             </div>
             <div class="result-seal" aria-hidden="true">
               <span>{{ seal }}</span>
               <small>{{ sealLabel }}</small>
             </div>
           </div>
-          <div class="relative mt-5 flex flex-wrap items-center gap-2">
-            <span class="chip chip--primary">{{ envelope.engine_version }}</span>
-            <span v-if="envelope.warnings.length" class="chip chip--accent">{{ t('result.warnings') }} {{ envelope.warnings.length }}</span>
+          <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[13px] text-muted">
+            <span class="tabular">{{ envelope.engine_version }}</span>
+            <span v-if="envelope.warnings.length" class="text-accent">{{ t('result.warnings') }} {{ envelope.warnings.length }}</span>
           </div>
         </header>
 
-        <!-- 分段：滑动的胶囊 -->
+        <!-- 分段：文字 + 细下划线 -->
         <div class="result-tabs">
           <div class="result-tabs__track" role="tablist" :aria-label="t('result.tabAnalysis')">
-            <span class="result-tabs__pill" :class="{ 'is-chat': tab === 'chat' }" aria-hidden="true" />
             <button
               type="button"
               class="result-tabs__btn"
@@ -581,22 +589,21 @@ function jump(id: string) {
               {{ t('result.tabChat') }}
             </button>
           </div>
-          <span class="hidden text-[11px] text-muted sm:inline">{{ t('result.aiHint') }}</span>
+          <span class="result-tabs__hint">{{ t('result.aiHint') }}</span>
         </div>
 
         <div v-show="tab === 'analysis'" class="space-y-9 pb-4" :class="tab === 'analysis' ? 'panel-visible' : ''">
           <!-- 盘面要点 -->
           <section v-if="facts.length" data-result-facts>
             <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-              <h3 class="eyebrow">{{ t('result.facts') }}</h3>
-              <span class="text-[11px] text-muted">{{ t('result.factsNote') }}</span>
+              <h3 class="label">{{ t('result.facts') }}</h3>
+              <span class="text-[13px] text-muted">{{ t('result.factsNote') }}</span>
             </div>
             <div class="fact-grid">
               <article
-                v-for="(f, i) in facts"
+                v-for="f in facts"
                 :key="f.label + f.value"
                 class="fact-card"
-                :style="{ animationDelay: `${i * 70}ms` }"
               >
                 <p class="fact-card__label">{{ f.label }}</p>
                 <p class="fact-card__value">{{ f.value }}</p>
@@ -621,13 +628,13 @@ function jump(id: string) {
           </div>
 
           <!-- 分布 -->
-          <section v-if="stemDist || astroElements" id="r-dist" class="insight-card scroll-mt-32">
+          <section v-if="stemDist || astroElements" id="r-dist" class="scroll-mt-32">
             <div class="mb-5 flex flex-wrap items-baseline justify-between gap-3">
               <h3 class="title-serif text-[22px]">{{ t('result.distTitle') }}</h3>
-              <span class="text-[11px] text-muted">{{ t('result.distNote') }}</span>
+              <span class="text-[13px] text-muted">{{ t('result.distNote') }}</span>
             </div>
             <div v-if="stemDist" class="mb-6">
-              <p class="eyebrow mb-3">{{ t('result.stemZhi') }}</p>
+              <p class="label mb-3">{{ t('result.stemZhi') }}</p>
               <ul class="space-y-3">
                 <li v-for="(r, i) in stemDist" :key="r.label" class="grid grid-cols-[2rem_1fr_4.75rem] items-center gap-3">
                   <span class="font-serif text-[16px]" :style="{ color: distColor(r.label) }">{{ r.label }}</span>
@@ -643,7 +650,7 @@ function jump(id: string) {
             </div>
             <div v-if="astroElements" class="grid gap-6 sm:grid-cols-2">
               <div>
-                <p class="eyebrow mb-3">{{ t('result.elements') }}</p>
+                <p class="label mb-3">{{ t('result.elements') }}</p>
                 <ul class="space-y-3">
                   <li v-for="(r, i) in astroElements" :key="r.label" class="grid grid-cols-[2rem_1fr_4.75rem] items-center gap-3">
                     <span class="font-serif text-[16px]" :style="{ color: distColor(r.label) }">{{ r.label }}</span>
@@ -658,7 +665,7 @@ function jump(id: string) {
                 </ul>
               </div>
               <div>
-                <p class="eyebrow mb-3">{{ t('result.modes') }}</p>
+                <p class="label mb-3">{{ t('result.modes') }}</p>
                 <ul class="space-y-3">
                   <li v-for="(r, i) in astroModes ?? []" :key="r.label" class="grid grid-cols-[2rem_1fr_4.75rem] items-center gap-3">
                     <span class="font-serif text-[16px]" :style="{ color: distColor(r.label) }">{{ r.label }}</span>
@@ -676,10 +683,10 @@ function jump(id: string) {
           </section>
 
           <!-- 长文 -->
-          <section v-if="textHtml" id="r-reading" class="reading-card scroll-mt-32">
+          <section v-if="textHtml" id="r-reading" class="scroll-mt-32">
             <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
               <h3 class="title-serif text-[22px]">{{ t('result.longTitle') }}</h3>
-              <span v-if="readingMeta" class="tabular text-[11px] text-muted">{{ readingMeta }}</span>
+              <span v-if="readingMeta" class="tabular text-[13px] text-muted">{{ readingMeta }}</span>
             </div>
             <div class="prose-read" v-html="textHtml" />
           </section>
@@ -691,21 +698,21 @@ function jump(id: string) {
             id="r-risk"
             class="risk-card scroll-mt-32 flex gap-3 text-[13px] leading-[1.8] text-accent"
           >
-            <span class="eyebrow shrink-0 !text-accent">{{ t('result.warnings') }}</span>
+            <span class="label shrink-0 !text-accent">{{ t('result.warnings') }}</span>
             <ul class="space-y-1">
               <li v-for="w in envelope.warnings" :key="w">{{ w }}</li>
             </ul>
           </div>
         </div>
 
-        <div v-show="tab === 'chat'" :class="tab === 'chat' ? 'panel-visible' : ''">
+        <div v-show="tab === 'chat'" class="result-chat" :class="tab === 'chat' ? 'panel-visible' : ''">
           <InterpretPanel :record-id="envelope.id" :system="envelope.system" :chart="envelope.chart" :text="envelope.text" />
         </div>
       </div>
     </div>
   </div>
-  <p v-else-if="loadState === 'loading'" class="animate-pulse py-16 text-center text-sm text-muted">{{ t('common.loading') }}</p>
-  <div v-else class="rounded-[var(--radius-lg)] border border-line bg-surface px-4 py-12 text-center" data-result-missing>
+  <p v-else-if="loadState === 'loading' || !auth.ready" class="animate-pulse py-16 text-center text-sm text-muted">{{ t('common.loading') }}</p>
+  <div v-else class="border-t border-line px-4 py-12 text-center" data-result-missing>
     <svg viewBox="0 0 24 24" class="mx-auto size-12 text-muted opacity-20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v6M12 16.5v.5" stroke-linecap="round" />

@@ -6,12 +6,12 @@ defineProps<{ chart: QimenChart }>()
 
 <template>
   <div class="space-y-3">
-    <section class="rounded-[var(--radius-lg)] border border-line bg-surface p-4">
+    <section class="border-t border-line-strong pt-3">
       <div class="flex items-baseline justify-between">
         <p class="font-serif text-[20px]">{{ chart.ju_text }}<span class="ml-2 text-xs text-muted">{{ chart.yuan }}</span></p>
         <p class="text-xs text-muted">{{ chart.solar_term }}</p>
       </div>
-      <p class="mt-2 text-[11px] text-muted">
+      <p class="mt-2 text-[13px] text-muted">
         {{ chart.datetime }} 出生<span class="mx-1">·</span>{{ chart.lunar_date }}
         <template v-if="chart.lifelong"> · 属{{ chart.lifelong.zodiac }}</template>
       </p>
@@ -29,11 +29,11 @@ defineProps<{ chart: QimenChart }>()
       <article
         v-for="a in chart.lifelong.anchors"
         :key="a.key"
-        class="rounded-[var(--radius-lg)] border border-line bg-surface p-3"
+        class="border-l border-line py-1 pl-3"
       >
         <div class="flex items-baseline justify-between gap-2">
-          <p class="text-[11px] text-muted">{{ a.label }} · {{ a.role }}</p>
-          <span class="chip shrink-0">{{ a.ganzhi }}</span>
+          <p class="text-[13px] text-muted">{{ a.label }} · {{ a.role }}</p>
+          <span class="tabular shrink-0 font-serif text-[15px]">{{ a.ganzhi }}</span>
         </div>
         <template v-if="a.palace">
           <p class="mt-1 font-serif text-[18px] leading-tight">
@@ -41,7 +41,7 @@ defineProps<{ chart: QimenChart }>()
             <span class="mx-1 text-muted">·</span>{{ a.star }}
           </p>
           <p class="mt-1 text-[12px] leading-[1.6] text-ink-2">{{ a.summary }}</p>
-          <p class="mt-1.5 border-t border-line pt-1.5 text-[10px] text-muted">
+          <p class="mt-1.5 border-t border-line pt-1.5 text-[12px] text-muted">
             {{ a.basis }}<template v-if="a.relation?.name"> · {{ a.relation.name }}</template>
           </p>
         </template>
@@ -49,7 +49,7 @@ defineProps<{ chart: QimenChart }>()
       </article>
     </section>
 
-    <section class="grid grid-cols-3 overflow-hidden rounded-[var(--radius-lg)] border border-line">
+    <section class="grid grid-cols-3 overflow-hidden border border-line-strong">
       <article
         v-for="p in chart.grid"
         :key="p.number"
@@ -61,29 +61,29 @@ defineProps<{ chart: QimenChart }>()
           p.number !== 4 && p.number !== 3 && p.number !== 8 ? 'border-l' : '',
         ]"
       >
-        <div class="flex items-center justify-between text-[10px] text-muted">
+        <div class="flex items-center justify-between text-[12px] text-muted">
           <span>{{ p.trigram === '中' ? '中宫' : `${p.trigram}${p.number}` }}</span>
           <span v-if="p.is_horse" class="text-accent">马</span>
         </div>
 
         <template v-if="p.number === 5">
-          <p class="mt-3 text-center text-[11px] text-muted">天禽寄坤</p>
+          <p class="mt-3 text-center text-[13px] text-muted">天禽寄坤</p>
           <p class="mt-1 text-center font-serif text-[16px]">{{ p.earth_stem }}</p>
         </template>
 
         <template v-else>
-          <p class="mt-1 text-[10px] text-muted">{{ p.deity }}</p>
+          <p class="mt-1 text-[12px] text-muted">{{ p.deity }}</p>
           <p class="font-serif text-[15px] leading-tight">{{ p.stars.join('·') || '—' }}</p>
-          <p class="text-[12px] text-primary">{{ p.door }}</p>
-          <p class="tabular mt-0.5 text-[10px] text-muted">
+          <p class="text-[12px] text-ink-2">{{ p.door }}</p>
+          <p class="tabular mt-0.5 text-[12px] text-muted">
             天{{ p.heaven_stems.join('') || '—' }} · 地{{ p.earth_stem }}
           </p>
-          <p v-if="p.void_branches.length" class="text-[10px] text-muted">空{{ p.void_branches.join('') }}</p>
+          <p v-if="p.void_branches.length" class="text-[12px] text-muted">空{{ p.void_branches.join('') }}</p>
         </template>
       </article>
     </section>
 
-    <p class="px-1 text-[11px] leading-[1.6] text-muted">
+    <p class="px-1 text-[13px] leading-[1.6] text-muted">
       终身局以年命看一生底色、日干看本人、时干看事业与晚运；门星神与干宫生克要合看。
     </p>
   </div>
