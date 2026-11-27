@@ -37,7 +37,7 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-dvh bg-bg text-ink">
+  <div class="app-shell min-h-dvh text-ink">
     <DeskNav />
     <AppHeader />
     <main class="wrap app-main pb-28 pt-6 md:pb-10 lg:pt-14">

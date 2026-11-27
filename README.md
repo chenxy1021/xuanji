@@ -2,11 +2,29 @@
 
 一个可切换多种术数体系的在线算命网站。**排盘交给代码，解读交给 AI。**
 
-- 前端：Vue 3 + TypeScript + Vite + Tailwind（深色数据工作台；桌面 / 平板 / 手机三档自适应；中英切换）
+- 前端：Vue 3 + TypeScript + Vite + Tailwind（**玄夜星金**暗黑星盘风默认，支持一键切换**鎏金宣纸**浅色；桌面 / 平板 / 手机三档自适应；中英切换）
 - 后端：Python 3.12/3.13 + FastAPI + [uv](https://docs.astral.sh/uv/)
 - 体系：八字、紫微斗数、西方占星、奇门终身局、八字合盘、紫微合盘、六爻、塔罗、梅花易数、孔明神卦、MBTI 测试
 - 出生地：国内城市 + 41 个国外主要城市（支持英文别名），也可手动填经纬度与 UTC 时区
 - 账号：用户名 + 密码注册登录，记录与 AI 解读按账号隔离；未登录也能设置自己的模型、排盘和解读，记录只留在浏览器
+
+## 界面预览
+
+### 首页 · 玄夜星金（深色）与 鎏金宣纸（浅色）
+
+| 玄夜星金 · 暗黑星盘风（默认） | 鎏金宣纸 · 雅集星盘风（浅色） |
+| :---: | :---: |
+| ![首页 · 玄夜星金](docs/screenshots/home-dark.png) | ![首页 · 鎏金宣纸](docs/screenshots/home-light.png) |
+
+### 在线排盘结果页（四柱八字）
+
+![在线排盘结果页 · 四柱八字](docs/screenshots/result-bazi.png)
+
+### 离线技能单文件 HTML 命盘（`skills/xuanji-suanming`）
+
+| 紫微斗数 · 双栏交互命盘（三方四正联动） | 西方占星 · 黄道本命星轮 |
+| :---: | :---: |
+| ![紫微斗数命盘](docs/screenshots/skill-ziwei.png) | ![西方占星本命盘](docs/screenshots/skill-astrology.png) |
 
 ## 功能要点
 
@@ -23,7 +41,7 @@
   管理员保存的「本站默认」作为后备。个人配置优先于本站默认。
 - **账号与记录隔离**：注册即可用，第一个注册的账号是管理员；登录后每个人只看得到自己的排盘记录与解读。
   未登录时排盘、占卜、AI 解读都能用，记录与解读只写浏览器 `localStorage`，不上传服务器。
-- 浅色纸墨工作台（默认浅色，深色夜读跟随系统）、中英切换；主题与语言偏好存在本机 `localStorage`。
+- **双主题与双语**：默认「玄夜星金」暗黑星盘风，右上角可一键切换「鎏金宣纸」浅色模式，支持中英切换；主题与语言偏好存在本机 `localStorage`。
 
 ## 账号与记录
 
@@ -174,16 +192,7 @@ SM_TUNNEL_HOLD_SECONDS=20 bash scripts/telegram-miniapp.sh --dry-run   # 20 秒�
 backend/    FastAPI 服务与各体系排盘引擎（账号与记录在 .local/app.db）
 frontend/   Vue 单页应用
 scripts/    端到端冒烟（smoke.mjs / 全量 smoke-isolated.sh）与 Telegram Mini App 隧道（telegram-miniapp.sh）
-docs/       产品计划（PLAN.md）与架构契约（ARCHITECTURE.md）
+docs/       产品计划（PLAN.md）、架构契约（ARCHITECTURE.md）与界面预览图（screenshots/）
 ```
-
-## 许可与致谢
-
-本项目自研代码尚未选定许可。部分排盘算法来自 MIT 许可的开源项目，归属声明见：
-
-- `backend/app/domains/bazi/NOTICE.md` —— 八字引擎（bazi-skill, MIT）
-- `backend/app/domains/ziwei/NOTICE.md` —— 紫微算法参考（ziwei-doushu, MIT）
-- `backend/app/domains/qimen/NOTICE.md` —— 奇门排盘（qimen-rs, MIT）
-- `backend/app/domains/kongming/NOTICE.md` —— 孔明神卦的康熙笔画数据（Unicode License）与通行本签文
 
 > 命理内容属于传统文化学习参考，不构成医疗、法律或投资建议。

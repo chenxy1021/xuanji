@@ -1,39 +1,37 @@
 /* ============================================================
-   玄机 · tokens v2（覆盖层，DESIGN-V2.md）
-   浅色默认：data-theme="dark" 才进夜读；同名变量只覆盖值
+   玄机 · tokens v2（玄夜星金 · 暗黑星盘风 + 宣纸浅色切换）
    ============================================================ */
 
 :root {
   color-scheme: light;
 
-  --color-bg: #f8f6f1;
-  --color-bg-subtle: #f1eee7;
+  --color-bg: #f6f3ec;
+  --color-bg-subtle: #eee9de;
   --color-surface: #fffefb;
-  --color-surface-2: #f6f3ec;
-  --color-surface-inverse: #1b1a16;
-  --color-overlay: rgba(24, 23, 19, 0.48);
+  --color-surface-2: #f7f3ea;
+  --color-surface-inverse: #141722;
+  --color-overlay: rgba(12, 15, 24, 0.56);
 
-  --color-border: rgba(27, 26, 22, 0.12);
-  --color-border-strong: rgba(27, 26, 22, 0.26);
-  --color-border-focus: rgba(27, 26, 22, 0.55);
+  --color-border: rgba(158, 116, 40, 0.18);
+  --color-border-strong: rgba(158, 116, 40, 0.4);
+  --color-border-focus: rgba(158, 116, 40, 0.72);
 
   --color-text: #1b1a16;
-  --color-text-secondary: #565248;
-  --color-text-muted: #726c5f;
-  --color-text-inverse: #f8f6f1;
-  --color-text-on-primary: #f8f6f1;
+  --color-text-secondary: #565044;
+  --color-text-muted: #766f60;
+  --color-text-inverse: #f6f3ec;
+  --color-text-on-primary: #fffefb;
 
-  /* unslop：普通交互一律墨色，朱砂只留给 accent（当前/批注） */
-  --color-primary: #1b1a16;
-  --color-primary-hover: #000000;
-  --color-primary-active: #3a3831;
-  --color-primary-soft: rgba(27, 26, 22, 0.06);
-  --color-primary-soft-2: rgba(27, 26, 22, 0.1);
-  --color-primary-border: rgba(27, 26, 22, 0.26);
+  --color-primary: #9e7428;
+  --color-primary-hover: #825d1c;
+  --color-primary-active: #6d4d15;
+  --color-primary-soft: rgba(158, 116, 40, 0.08);
+  --color-primary-soft-2: rgba(158, 116, 40, 0.14);
+  --color-primary-border: rgba(158, 116, 40, 0.4);
 
   --color-accent: #b4402f;
   --color-accent-soft: #fbeae6;
-  --color-accent-border: #eecec6;
+  --color-accent-border: #e5b7ae;
 
   --color-success: #2a7049;
   --color-success-soft: #e5f2ea;
@@ -41,104 +39,110 @@
   --color-warning-soft: #f8efdc;
   --color-danger: #b4402f;
   --color-danger-soft: #fbeae6;
-  --color-info: #35618f;
+  --color-info: #2d5f8f;
   --color-info-soft: #e6eef8;
 
-  --color-mu: #3f7d5c;    --color-mu-soft: #e4f0e9;
-  --color-huo: #b4573d;   --color-huo-soft: #f8e8e2;
+  --color-mu: #357552;    --color-mu-soft: #e4f0e9;
+  --color-huo: #b4402f;   --color-huo-soft: #f8e8e2;
   --color-tu: #97723a;    --color-tu-soft: #f4ede0;
-  --color-jin: #6f757f;   --color-jin-soft: #eceef1;
-  --color-shui: #39688a;  --color-shui-soft: #e4edf4;
+  --color-jin: #626973;   --color-jin-soft: #eceef1;
+  --color-shui: #2c628a;  --color-shui-soft: #e4edf4;
 
   --color-hua-lu: #2a7049;
   --color-hua-quan: #65559a;
-  --color-hua-ke: #35618f;
+  --color-hua-ke: #2d5f8f;
   --color-hua-ji: #b4402f;
 
   --rule: 1px solid var(--color-border);
   --rule-strong: 1px solid var(--color-border-strong);
 
-  --radius-xs: 0;
-  --radius-sm: 2px;
-  --radius-md: 2px;
-  --radius-lg: 4px;
-  --radius-xl: 4px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
 
-  --shadow-xs: none;
-  --shadow-sm: none;
-  --shadow-md: 0 12px 32px -20px rgba(27, 26, 22, 0.22);
-  --shadow-lg: 0 18px 44px -22px rgba(27, 26, 22, 0.3);
+  --shadow-xs: 0 2px 8px rgba(40, 30, 15, 0.05);
+  --shadow-sm: 0 6px 18px rgba(40, 30, 15, 0.06);
+  --shadow-md: 0 14px 36px -18px rgba(40, 30, 15, 0.16);
+  --shadow-lg: 0 22px 48px -20px rgba(40, 30, 15, 0.22);
   --shadow-inset: none;
 
-  --text-display: 64px;
-  --text-h1: 44px;
-  --text-h2: 32px;
+  --text-display: 60px;
+  --text-h1: 42px;
+  --text-h2: 30px;
   --text-h3: 22px;
   --leading-body: 1.85;
 
   --container-max: 1280px;
-  --header-h: 76px;
+  --header-h: 74px;
   --tabbar-h: calc(58px + env(safe-area-inset-bottom, 0px));
 
   --gradient-hero: none;
   --gradient-veil: none;
 }
 
+/* 玄夜星金 · 暗黑星盘风（默认） */
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --color-bg: #121210;
-  --color-bg-subtle: #191917;
-  --color-surface: #191917;
-  --color-surface-2: #1f1f1c;
-  --color-surface-inverse: #ece8de;
-  --color-overlay: rgba(4, 4, 3, 0.72);
+  --color-bg: #07090f;
+  --color-bg-subtle: #0e1220;
+  --color-surface: rgba(14, 18, 30, 0.82);
+  --color-surface-2: rgba(21, 27, 44, 0.78);
+  --color-surface-inverse: #f3efe6;
+  --color-overlay: rgba(3, 5, 10, 0.78);
 
-  --color-border: rgba(236, 232, 222, 0.14);
-  --color-border-strong: rgba(236, 232, 222, 0.28);
-  --color-border-focus: rgba(236, 232, 222, 0.55);
+  --color-border: rgba(224, 188, 118, 0.18);
+  --color-border-strong: rgba(224, 188, 118, 0.42);
+  --color-border-focus: rgba(230, 196, 126, 0.78);
 
-  --color-text: #ece8de;
-  --color-text-secondary: #b5afa2;
-  --color-text-muted: #8c8779;
-  --color-text-inverse: #121210;
-  --color-text-on-primary: #121210;
+  --color-text: #f3efe6;
+  --color-text-secondary: #c4bca9;
+  --color-text-muted: #8b8578;
+  --color-text-inverse: #07090f;
+  --color-text-on-primary: #090b12;
 
-  --color-primary: #ece8de;
-  --color-primary-hover: #fffdf6;
-  --color-primary-active: #d8d3c7;
-  --color-primary-soft: rgba(236, 232, 222, 0.07);
-  --color-primary-soft-2: rgba(236, 232, 222, 0.11);
-  --color-primary-border: rgba(236, 232, 222, 0.28);
+  /* 鎏金主强调色 */
+  --color-primary: #e6c47e;
+  --color-primary-hover: #f3d696;
+  --color-primary-active: #cfa558;
+  --color-primary-soft: rgba(230, 196, 126, 0.12);
+  --color-primary-soft-2: rgba(230, 196, 126, 0.2);
+  --color-primary-border: rgba(230, 196, 126, 0.48);
 
-  --color-accent: #e0705c;
-  --color-accent-soft: #2e1d19;
-  --color-accent-border: #4a2a24;
+  --color-accent: #e6c47e;
+  --color-accent-soft: rgba(230, 196, 126, 0.14);
+  --color-accent-border: rgba(230, 196, 126, 0.52);
 
-  --color-success: #5fb87f;
-  --color-success-soft: #16261c;
-  --color-warning: #d3a049;
-  --color-warning-soft: #2a2314;
-  --color-danger: #e0705c;
-  --color-danger-soft: #2e1d19;
-  --color-info: #7aa8d8;
-  --color-info-soft: #161f2b;
+  --color-success: #52d692;
+  --color-success-soft: rgba(82, 214, 146, 0.14);
+  --color-warning: #e6c47e;
+  --color-warning-soft: rgba(230, 196, 126, 0.14);
+  --color-danger: #f06a5b;
+  --color-danger-soft: rgba(240, 106, 91, 0.16);
+  --color-info: #73c2ff;
+  --color-info-soft: rgba(115, 194, 255, 0.14);
 
-  --color-mu: #6fbf92;    --color-mu-soft: #16261d;
-  --color-huo: #e08065;   --color-huo-soft: #2c1d18;
-  --color-tu: #cfaa6b;    --color-tu-soft: #262014;
-  --color-jin: #a8aeb8;   --color-jin-soft: #20231f;
-  --color-shui: #7aa6c9;  --color-shui-soft: #16202a;
+  --color-mu: #56c98d;    --color-mu-soft: rgba(86, 201, 141, 0.14);
+  --color-huo: #f07060;   --color-huo-soft: rgba(240, 112, 96, 0.14);
+  --color-tu: #e2b660;    --color-tu-soft: rgba(226, 182, 96, 0.14);
+  --color-jin: #d3dae6;   --color-jin-soft: rgba(211, 218, 230, 0.12);
+  --color-shui: #5fb2f5;  --color-shui-soft: rgba(95, 178, 245, 0.14);
 
-  --color-hua-lu: #5fb87f;
-  --color-hua-quan: #a99ad8;
-  --color-hua-ke: #7aa8d8;
-  --color-hua-ji: #e0705c;
+  --color-hua-lu: #52d692;
+  --color-hua-quan: #c6a4ff;
+  --color-hua-ke: #73c2ff;
+  --color-hua-ji: #f26b5e;
 
-  --shadow-md: 0 12px 32px -18px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 24px 56px -28px rgba(0, 0, 0, 0.8);
+  --shadow-xs: 0 4px 14px rgba(0, 0, 0, 0.32);
+  --shadow-sm: 0 10px 28px rgba(0, 0, 0, 0.42);
+  --shadow-md: 0 18px 44px -14px rgba(0, 0, 0, 0.65);
+  --shadow-lg: 0 28px 64px -18px rgba(0, 0, 0, 0.78);
 
-  --gradient-hero: none;
+  --gradient-hero: radial-gradient(ellipse 75% 55% at 18% 8%, rgba(76, 62, 148, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 45% at 84% 12%, rgba(214, 172, 96, 0.16), transparent 62%),
+    radial-gradient(ellipse 70% 50% at 50% 96%, rgba(36, 78, 128, 0.18), transparent 68%);
   --gradient-veil: none;
 }
 

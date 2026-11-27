@@ -8,7 +8,8 @@ export type ThemeMode = 'system' | 'light' | 'dark'
 
 export const useSettingsStore = defineStore('settings', () => {
   const saved = loadJSON<{ mode?: ThemeMode; theme?: 'light' | 'dark' } | null>('sm_theme', null)
-  const mode = ref<ThemeMode>(saved?.mode ?? saved?.theme ?? 'system')
+  // 默认启用「玄夜星金」暗黑星盘主题；用户手动切换后持久化
+  const mode = ref<ThemeMode>(saved?.mode ?? saved?.theme ?? 'dark')
   const media = matchMedia('(prefers-color-scheme: dark)')
   const systemIsDark = ref(media.matches)
   const tgScheme = ref(telegramColorScheme())
