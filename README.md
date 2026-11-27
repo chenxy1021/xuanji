@@ -1,107 +1,173 @@
-# 玄机 · 多体系命理排盘与 AI 解读
+<div align="center">
 
-**中文** | [English](README.en.md)
+<h1>✦ 玄机 · Xuanji ✦</h1>
 
-一个可切换多种术数体系的在线算命网站。**排盘交给代码，解读交给 AI。**
+<p><strong>盘面可核对，解读不越界 —— 多体系命理排盘与 AI 解读工作台</strong></p>
 
-- 前端：Vue 3 + TypeScript + Vite + Tailwind（**玄夜星金**暗黑星盘风默认，支持一键切换**鎏金宣纸**浅色；桌面 / 平板 / 手机三档自适应；中英切换）
-- 后端：Python 3.12/3.13 + FastAPI + [uv](https://docs.astral.sh/uv/)
-- 体系：八字、紫微斗数、西方占星、奇门终身局、八字合盘、紫微合盘、六爻、塔罗、梅花易数、孔明神卦、MBTI 测试
-- 出生地：国内城市 + 41 个国外主要城市（支持英文别名），也可手动填经纬度与 UTC 时区
-- 账号：用户名 + 密码注册登录，记录与 AI 解读按账号隔离；未登录也能设置自己的模型、排盘和解读，记录只留在浏览器
+<p>
+  <a href="README.md"><b>简体中文</b></a> &nbsp;·&nbsp;
+  <a href="README.en.md">English</a>
+</p>
 
-## 界面预览
+<p>
+  <img src="https://img.shields.io/badge/Vue-3.5-42b883?style=flat-square&logo=vuedotjs&logoColor=white" alt="Vue 3" />
+  <img src="https://img.shields.io/badge/FastAPI-Python%203.12+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Systems-11%20%E5%A4%A7%E4%BD%93%E7%B3%BB-c89d54?style=flat-square" alt="11 Systems" />
+  <img src="https://img.shields.io/badge/Theme-%E7%8E%84%E5%A4%9C%E6%98%9F%E9%87%91%20%7C%20%E9%8E%8F%E9%87%91%E5%AE%A3%E7%BA%B8-1a1d2b?style=flat-square" alt="Dual Theme" />
+  <img src="https://img.shields.io/badge/Telegram-Mini%20App-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram Mini App" />
+</p>
 
-### 首页 · 玄夜星金（深色）与 鎏金宣纸（浅色）
+<p>
+  <a href="#-界面预览">界面预览</a> &nbsp;•&nbsp;
+  <a href="#-11-大术数体系">支持体系</a> &nbsp;•&nbsp;
+  <a href="#-核心亮点">核心亮点</a> &nbsp;•&nbsp;
+  <a href="#-快速开始">快速开始</a> &nbsp;•&nbsp;
+  <a href="#-ai-解读配置">AI 配置</a> &nbsp;•&nbsp;
+  <a href="#-离线技能模式">离线技能</a>
+</p>
+
+<br />
+
+<img src="docs/screenshots/home-dark.png" alt="玄机首页 · 玄夜星金" width="100%" />
+
+</div>
+
+---
+
+> **排盘交给代码，解读交给 AI。**  
+> 拒绝「输入生日直接让大模型瞎编星曜」的盲盒式算命。玄机在本地用确定性天文历法与术数引擎算出**逐项可核对的结构化盘面**，再将盘面事实交给大模型按对应体系规则流式解读——**查不到的依据不写，不改动任何盘面数据。**
+
+---
+
+## ✨ 界面预览
+
+### 🌓 双主题星盘工作台：玄夜星金（默认） & 鎏金宣纸（浅色）
 
 | 玄夜星金 · 暗黑星盘风（默认） | 鎏金宣纸 · 雅集星盘风（浅色） |
 | :---: | :---: |
-| ![首页 · 玄夜星金](docs/screenshots/home-dark.png) | ![首页 · 鎏金宣纸](docs/screenshots/home-light.png) |
+| <img src="docs/screenshots/home-dark.png" alt="首页 · 玄夜星金" /> | <img src="docs/screenshots/home-light.png" alt="首页 · 鎏金宣纸" /> |
 
-### 在线排盘结果页（四柱八字）
+### 📊 在线排盘与 AI 解读工作台
 
-![在线排盘结果页 · 四柱八字](docs/screenshots/result-bazi.png)
+<img src="docs/screenshots/result-bazi.png" alt="在线排盘结果页 · 四柱八字" width="100%" />
 
-### 离线技能单文件 HTML 命盘（`skills/xuanji-suanming`）
+### 📜 离线单文件 HTML 命盘（`skills/xuanji-suanming`）
 
-| 紫微斗数 · 双栏交互命盘（三方四正联动） | 西方占星 · 黄道本命星轮 |
+| 紫微斗数 · 双栏交互命盘（三方四正联动） | 西方占星 · SVG 黄道本命星轮 |
 | :---: | :---: |
-| ![紫微斗数命盘](docs/screenshots/skill-ziwei.png) | ![西方占星本命盘](docs/screenshots/skill-astrology.png) |
+| <img src="docs/screenshots/skill-ziwei.png" alt="紫微斗数命盘" /> | <img src="docs/screenshots/skill-astrology.png" alt="西方占星本命盘" /> |
 
-## 功能要点
+---
 
-- **出生地与时区**：城市搜索支持国内城市和国外主要城市（输入 `Tokyo`、`New York` 都能命中，
-  结果行会显示国家与 `UTC+9` 一类的偏移）；找不到城市时可用「手动输入坐标」，
-  填经度（-180..180）、纬度（-90..90）、UTC 时区（-12..14，默认 +8）和可选名称，越界会就地报错。
-  真太阳时按当地时区推标准子午线（`时区 × 15°`）后再做经度差与均时差修正，八字、奇门终身局、
-  紫微用的是同一套口径。
-- **AI 解读**：流式输出，可多选解读方向（默认「命格总览」），方向区有一键**全选 / 取消全选**；
-  生成结果会**自动保存**——登录后存到账号，未登录存到当前浏览器，回到同一条记录都能恢复，并显示「已保存」。
-  解读要求先给结论、术语用大白话解释，避免 AI 套话与固定三段式；**用英文提问就用英文回答**，
-  不提问时跟随界面语言。
-- **模型自配置**：任何人都能在设置页填写自己的接口地址、模型名和密钥（不登录也行），配置只存当前浏览器；
-  管理员保存的「本站默认」作为后备。个人配置优先于本站默认。
-- **账号与记录隔离**：注册即可用，第一个注册的账号是管理员；登录后每个人只看得到自己的排盘记录与解读。
-  未登录时排盘、占卜、AI 解读都能用，记录与解读只写浏览器 `localStorage`，不上传服务器。
-- **双主题与双语**：默认「玄夜星金」暗黑星盘风，右上角可一键切换「鎏金宣纸」浅色模式，支持中英切换；主题与语言偏好存在本机 `localStorage`。
+## 🧭 11 大术数体系
 
-## 账号与记录
+覆盖传统东方命理、西方占星、合盘关系、即时占卜与性格测试，全部由本地代码引擎实时演算：
 
-- **注册 / 登录**：用户名 3–32 位（字母、数字、`_`、`.`、`-`），密码 8–128 位。密码用 scrypt 加盐存储，
-  会话是 HttpOnly + SameSite=Lax 的 `sm_session` Cookie（30 天），服务端只存 token 的 SHA-256。
-- **第一个注册的账号就是管理员**。如果想指定管理员，在启动后端前设置 `SM_ADMIN_USERNAME=<用户名>`，
-  该用户名注册时直接成为管理员（大小写不敏感）。
-- **模型配置**：所有用户（含未登录）都能在 **设置 → AI 解读** 填自己的接口地址、模型和密钥，
-  配置只存在当前浏览器；管理员额外可以把当前填写保存为「本站默认」，写入后端 `.local/llm.json`。
-  设置接口 `GET/PUT/DELETE /settings/llm` 只对管理员开放（未登录 401、非管理员 403）；
-  `/meta` 公开，但只暴露「是否已配置」和接口/模型名，不含密钥。
-- **记录隔离**：登录后起盘会自动存到服务端，历史页可回看、删除、清空；每个人只能看到自己的账号记录，
-  跨账号访问一律当作不存在（404）。每个账号最多保留 50 条，更旧的自动淘汰。
-- **未登录时**：排盘、占卜、MBTI、AI 解读都能正常用；记录与 AI 解读只写当前浏览器的 `localStorage`
-  （同样最多 50 条），历史页可以查看、删除、清空，但换设备或换浏览器不会同步。
-- **AI 解读**按记录保存：回到同一条记录会自动恢复上次正文与所选方向；中途停止、出错或空输出不落盘。
-  早期版本存在浏览器里的 `sm_history` / `sm_ai_readings` 已不再读写（数据保留，不自动删除）。
+| 分组 | 体系 | 核心能力与产出 |
+| :--- | :--- | :--- |
+| **命盘（4）** | **四柱八字** | 真太阳时校正、节气四柱、十神、藏干、大运流年、神煞 |
+| | **紫微斗数** | 传统 4×4 十二宫、十四主星、亮度流派、生年/流年四化、三方四正联动、格局识别 |
+| | **西方占星** | 热带黄道、普拉西度宫位、日月升中天四轴、行星相位、元素/模式分布与 SVG 星轮 |
+| | **奇门终身局** | 拆补转盘、洛书九宫（八门/九星/八神/天地盘干）、年命/日干/时干三宫用神 |
+| **合盘（2）** | **八字合盘** | 双人四柱对比、日主/夫妻宫/生肖冲合互补分析与参考分 |
+| | **紫微合盘** | 双人命宫/夫妻宫呼应、星曜互动张力明细与参考分 |
+| **占卜（4）** | **六爻纳甲** | 铜钱 / 时间 / 数字起卦，SVG 六爻卦象、本/互/变三卦、六神六亲世应 |
+| | **梅花易数** | 时间 / 数字起卦，体用五行生克与本/互/变三卦演变 |
+| | **塔罗牌** | 经典牌阵抽牌、大小阿卡纳正逆位牌面与关键词 |
+| | **孔明神卦** | 诸葛神数三字笔画取 384 签、卦爻与签诗要点 |
+| **性格（1）** | **MBTI 测试** | 32 题四维倾向光谱、优势、盲点与适配方向 |
 
-## 快速开始
+---
 
-```bash
-# 一条命令同时起前后端（Ctrl-C 一起停）
-bash scripts/dev.sh
-# 前端：http://127.0.0.1:5173    后端：http://127.0.0.1:8000/docs
-# 端口被占用时：SM_BE_PORT=8010 SM_FE_PORT=5183 bash scripts/dev.sh
+## ⚡ 核心亮点
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h4>🎯 精准真太阳时与全球出生地</h4>
+      内置国内主要城市与 41 个国外主要城市（支持 <code>Tokyo</code> / <code>New York</code> 英文搜索），也可手动填经纬度与 UTC 时区。按当地标准子午线（<code>时区 × 15°</code>）+ 经度差 + 均时差统一校正。
+    </td>
+    <td width="50%" valign="top">
+      <h4>🤖 流式 AI 解读 · 自动存档</h4>
+      支持多选解读方向（一键全选/取消）、流式输出，结果自动持久化——登录后存账号，未登录存浏览器。用英文提问自动以英文作答，否则跟随界面语言。
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h4>🔑 自由配置任意 OpenAI 协议模型</h4>
+      支持 DeepSeek / OpenAI / Ollama / 自建网关。人人可在设置页填自己的 API Key（仅存本机浏览器），管理员可保存「本站默认」兜底，不配模型也能完整排盘。
+    </td>
+    <td width="50%" valign="top">
+      <h4>🛡️ 账号隔离 & 游客即开即用</h4>
+      首个注册账号自动成为管理员；登录后记录与解读按账号隔离（SQLite，每账号最多 50 条）。未登录同样可用全部 11 体系与 AI 解读，数据仅留本机 <code>localStorage</code>。
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h4>🌗 玄夜星金 / 鎏金宣纸双主题</h4>
+      桌面 / 平板 / 手机三档响应式布局，默认玄夜星金暗黑星盘风，右上角一键切换鎏金宣纸浅色与中/英文，并深度适配 <b>Telegram Mini App</b> 安全区。
+    </td>
+    <td width="50%" valign="top">
+      <h4>📦 内置离线 Agent 技能包</h4>
+      <code>skills/xuanji-suanming</code> 可脱离前后端服务独立运行，零外部依赖本地排盘，全部 11 个体系均可直接输出可离线浏览与 A4 打印的单文件 HTML + JSON + Markdown。
+    </td>
+  </tr>
+</table>
+
+### 🏗 架构概览
+
+```mermaid
+flowchart LR
+  User["用户浏览器 / Telegram Mini App"] --> FE["Vue 3 + TypeScript + Tailwind<br/>玄夜星金 / 鎏金宣纸双主题"]
+  FE -->|"/api/v1/*"| BE["FastAPI 后端"]
+  BE --> Engines["11 大本地排盘引擎<br/>八字 / 紫微 / 占星 / 奇门 / 六爻 / 塔罗..."]
+  BE --> DB[("SQLite<br/>账号 · 记录 · 解读")]
+  BE -->|"结构化盘面 + 体系规则"| LLM["OpenAI 协议大模型<br/>个人配置 > 本站默认 > 环境变量"]
+  LLM -.->|"SSE 流式解读"| FE
 ```
 
-脚本会先检查依赖（缺 `backend/.venv` 就 `uv sync`、缺 `node_modules` 就 `npm install`），
-并把前端 `/api` 代理到本次启动的后端端口；PATH 上的 node 不可用时会自动退回 fnm 的 default 版本。
+---
 
-也可以手动分开起：
+## 🚀 快速开始
+
+### 一键启动（推荐）
 
 ```bash
-# 后端（终端 1）
+# 一条命令同时拉起前后端（自动检查 uv / npm 依赖，Ctrl-C 一键退出）
+bash scripts/dev.sh
+```
+
+启动后访问：
+- **前端界面**：http://127.0.0.1:5173
+- **后端 API 文档**：http://127.0.0.1:8000/docs
+- **自定义端口**：`SM_BE_PORT=8010 SM_FE_PORT=5183 bash scripts/dev.sh`
+
+<details>
+<summary><b>手动分终端启动（点击展开）</b></summary>
+
+```bash
+# 终端 1：启动后端
 cd backend
 uv sync
 uv run uvicorn app.main:app --reload --port 8000
-# 文档：http://127.0.0.1:8000/docs
 
-# 前端（终端 2）
+# 终端 2：启动前端
 cd frontend
 npm install
 npm run dev
-# 打开：http://127.0.0.1:5173
 ```
 
-## 配置 AI 解读（可选）
+</details>
 
-三档优先级：**个人配置 > 本站默认 > 环境变量**。
+---
 
-1. **个人配置（所有人，含未登录）**：打开 **设置 → AI 解读**，填写接口地址、模型名和 API Key。
-   配置只存在当前浏览器的 `localStorage`（`sm_llm_personal`），每次解读随请求发给后端，
-   不写服务器数据库；保存后回到结果页切到「AI 解读」点「开始解读」即可。
-   不要把密钥保存在公共电脑上。
-2. **本站默认（管理员）**：在同一个设置页把当前填写保存为本站默认，写入后端
-   `backend/.local/llm.json`（权限 0600，已 gitignore），接口只回显尾号。
-   没有个人配置的访问者会使用这份配置。
-3. 或使用 `.env` / 环境变量（兼容任何 OpenAI 协议服务）：
+## 🤖 AI 解读配置
+
+三档配置优先级：**个人配置 > 本站默认 > 环境变量**（未配置时排盘照常使用）。
+
+1. **个人配置（所有人，含未登录）**：进入 **设置 → AI 解读** 填写 Base URL、Model 与 API Key，仅存当前浏览器 `localStorage`（`sm_llm_personal`），不写入服务端数据库。
+2. **本站默认（管理员）**：首个注册账号自动为管理员（或启动前设 `SM_ADMIN_USERNAME=<用户名>`），可将配置保存至 `backend/.local/llm.json`（权限 `0600`，已 gitignore）。
+3. **环境变量**（兼容任何 OpenAI 协议服务）：
 
 ```bash
 SM_LLM_BASE_URL=https://api.deepseek.com
@@ -109,92 +175,91 @@ SM_LLM_API_KEY=sk-...
 SM_LLM_MODEL=deepseek-chat
 ```
 
-未配置时排盘照常可用，AI 面板会提前提示并给出「去设置里填写」入口。
-`/settings/llm` 这三个设置接口只对管理员开放（未登录 401、非管理员 403）；`/meta` 仍公开但只报「是否已配置」。
-个人配置与本站默认都允许任意 http(s) 地址（方便接本机 Ollama / Magpie / 自建网关），
-公网部署前建议再加出站白名单。
+---
 
-## 数据存在哪里
+## 📦 离线技能模式
 
-**登录后的账号、排盘记录与 AI 解读都存在后端的 SQLite 里**，按账号隔离；未登录时的记录、解读与个人模型配置只在本浏览器（见下表）：
-
-| 位置 | 内容 | 说明 |
-|---|---|---|
-| `backend/.local/app.db` | 账号、会话、排盘记录、AI 解读 | 目录 0700 / 文件 0600；可用 `SM_DB_PATH` 换位置；**备份这个文件就等于备份全部账号与记录** |
-| 浏览器 `sm_session` Cookie | 登录会话（30 天） | HttpOnly + SameSite=Lax，`SM_COOKIE_SECURE=1` 时加 `Secure` |
-| 浏览器 `localStorage` | `sm_theme` / `sm_locale` 主题语言偏好、`sm_birth` / `sm_birth_b` 上次填写的生辰 | 只存本机，与账号无关 |
-| 浏览器 `localStorage` | `sm_guest_records` / `sm_guest_readings`：未登录时的排盘记录与 AI 解读 | 只在本浏览器，最多 50 条；不上传服务器 |
-| 浏览器 `localStorage` | `sm_llm_personal`：个人模型配置（含 API Key） | 只在本浏览器；公共电脑上用完请在设置页清除 |
-
-每个账号最多 50 条记录，未登录时浏览器里同样最多 50 条，更旧的自动淘汰。
-旧的 `sm_history` / `sm_ai_readings` 两个 key 已不再读写，里面的历史数据不会被删除，需要的话可以自己导出。
-
-> 说明：国外城市的内置时区是**标准时固定偏移，不含夏令时（DST）**。如果出生地实行夏令时，
-> 用「手动输入坐标」把 UTC 时区改成当时的实际偏移即可。
-
-## 自测
+`skills/xuanji-suanming` 是一套可独立运行的多体系本地排盘技能，无需启动前后端即可产出单文件 HTML 命盘、JSON 与 Markdown：
 
 ```bash
-# 后端单测
+# 紫微斗数（生成双栏交互 HTML 命盘 + JSON）
+sh skills/xuanji-suanming/scripts/paipan.sh --name 张三 --gender male \
+  --solar 1994-10-21 --time 08:45 --city 九江 --year 2026 --out ./charts
+
+# 四柱八字 / 西方占星 / 奇门 / 六爻 / 塔罗等其余 10 个体系（生成 HTML + JSON + MD）
+sh skills/xuanji-suanming/scripts/paipan.sh --system astrology --name 张三 --gender male \
+  --solar 1994-10-21 --time 08:45 --city 长沙 --out ./charts
+```
+
+---
+
+## 🔧 进阶说明
+
+<details>
+<summary><b>💾 数据存储与账号安全</b></summary>
+
+| 位置 | 存储内容 | 说明 |
+| :--- | :--- | :--- |
+| `backend/.local/app.db` | 账号、会话、排盘记录、AI 解读 | 目录 `0700` / 文件 `0600`；可用 `SM_DB_PATH` 换路径；备份此文件即备份全部服务端数据 |
+| `sm_session` Cookie | 登录会话（30 天） | `HttpOnly + SameSite=Lax`，密码采用 scrypt 加盐，服务端仅存 token 的 SHA-256；`SM_COOKIE_SECURE=1` 开启 `Secure` |
+| `localStorage` | `sm_theme` / `sm_locale` / `sm_birth` | 主题、语言与上次填写的生辰 |
+| `localStorage` | `sm_guest_records` / `sm_guest_readings` | 未登录时的排盘记录与解读（最多 50 条，不上传） |
+| `localStorage` | `sm_llm_personal` | 个人模型配置（含 API Key，仅存本机浏览器） |
+
+> 注：国外城市内置时区为标准固定偏移（不含夏令时 DST）；若出生日期处于夏令时，请切至「手动输入坐标」并填入当时的实际 UTC 偏移。
+
+</details>
+
+<details>
+<summary><b>🧪 自动化测试与端到端冒烟</b></summary>
+
+```bash
+# 1. 后端单元测试与代码检查
 cd backend && uv run pytest -q && uv run ruff check app tests
 
-# 全量端到端冒烟（27 条）：自动起临时库 + 临时 AI 配置 + 8001/5183，跑完清理，不碰真实服务与真实数据
+# 2. 全量隔离端到端冒烟（27 条用例：临时库 + 临时端口，跑完自动清理）
 bash scripts/smoke-isolated.sh
-# 端口被占用时可改：SMOKE_BE_PORT=8011 SMOKE_FE_PORT=5213 bash scripts/smoke-isolated.sh
 
-# 只对当前 8000/5173 跑（需要预置记录的用例会自动跳过并提示）
-node scripts/smoke.mjs
+# 3. 离线技能 11 体系自检（77 项校验）
+sh skills/xuanji-suanming/scripts/selftest.sh
 ```
 
-冒烟脚本零依赖（Node 原生 WebSocket 直驱 headless Chrome），失败时会把现场文本落到 `/tmp/smoke-fail-*.txt`，
-截图在 `/tmp/smoke-*.png`。
+</details>
 
-## Telegram Mini App（临时公网地址）
+<details>
+<summary><b>📱 Telegram Mini App（一键临时公网隧道）</b></summary>
 
-本机站点可以直接当 Telegram Mini App（Web App）打开。思路是：先挂一个手机能访问的 HTTPS 地址，再把它设成机器人聊天界面左下角的菜单按钮。
+前置条件：`5173` 前端与 `8000` 后端已启动。
 
 ```bash
-# 前置：5173 前端与 8000 后端已在运行（脚本不负责启动服务）
+# 自动通过 cloudflared 拉起 HTTPS 隧道，并同步更新 Telegram 机器人菜单按钮
 bash scripts/telegram-miniapp.sh
+
+# 常用选项
+bash scripts/telegram-miniapp.sh --dry-run    # 仅起隧道并打印配置，不调 Telegram API
+bash scripts/telegram-miniapp.sh --no-menu    # 仅起隧道，不动菜单按钮
 ```
 
-脚本做的事：
+> Quick Tunnel 地址每次重启都会变化，生产环境建议使用 Cloudflare Named Tunnel 或自有域名 HTTPS 反代。
 
-1. 检查 `127.0.0.1:5173` 与 `127.0.0.1:8000/api/v1/meta` 是否 200，不通就报错退出并给出启动命令；
-2. 后台起 `cloudflared tunnel --url http://127.0.0.1:5173 --no-autoupdate`，日志落临时文件，正则解析 `https://*.trycloudflare.com`（最多等 30 秒，失败打印日志尾部）；
-3. 经隧道回访 `/` 与 `/api/v1/meta`，确认都是 200（quick tunnel 域名刚生成时解析会失败一阵，脚本会先等几秒再重试）；
-4. 调用 Telegram `setChatMenuButton`，把地址设成菜单按钮（`type: web_app`）。token 从 `backend/.local/telegram.json`（0600）或 `SM_TELEGRAM_BOT_TOKEN` 读，只在 python 进程内存里用，不进命令行、不进日志；
-5. 前台常驻隧道，`Ctrl-C` 会结束 cloudflared 并清理临时日志。
+</details>
 
-常用变体：
+<details>
+<summary><b>📁 项目目录结构</b></summary>
 
-```bash
-bash scripts/telegram-miniapp.sh --dry-run    # 只起隧道 + 打印将发送的 JSON，不调 Telegram
-bash scripts/telegram-miniapp.sh --no-menu    # 只起隧道，不动菜单按钮
-SM_MINIAPP_TEXT='玄机算命' bash scripts/telegram-miniapp.sh
-SM_TUNNEL_PORT=5183 bash scripts/telegram-miniapp.sh          # 隧道指向别的端口
-SM_TUNNEL_HOLD_SECONDS=20 bash scripts/telegram-miniapp.sh --dry-run   # 20 秒后自动退出（自动化用）
+```text
+xuanji/
+├── backend/                  # FastAPI 服务与 11 大排盘引擎（SQLite 存 .local/app.db）
+├── frontend/                 # Vue 3 + TypeScript + Tailwind 单页应用
+├── skills/xuanji-suanming/   # 可独立运行的 11 体系本地排盘与 HTML 渲染技能包
+├── scripts/                  # 一键启动（dev.sh）、E2E 冒烟测试、Telegram 隧道脚本
+└── docs/                     # 产品计划、架构契约与 README 高清截图（screenshots/）
 ```
 
-打开方式：Telegram 里进 `t.me/cxy_muse_bot`，点底部菜单按钮。
+</details>
 
-几个必须知道的点：
+---
 
-- **quick tunnel 地址每次重启都会变**。变了必须重跑脚本，否则菜单按钮还指着旧地址，点开是打不开的。
-- 隧道只在本机运行：本机关机、`5173`/`8000` 停了，Mini App 立刻打不开。
-- 想要固定地址：自有域名 + Cloudflare **named tunnel**（`cloudflared tunnel create` / `tunnel route dns`），或者部署到 VPS 后用自建 HTTPS 反代，把 URL 写死一次。
-- **BotFather `/newapp` 和 Bot API 菜单按钮不是一回事**：`/newapp` 是给 bot 登记一个独立的 Web App 入口（有自己的短名字）；`setChatMenuButton` 改的是聊天输入框左下角的菜单按钮。两者可以并存，但在 quick tunnel 场景下建议只配菜单按钮，免得两处地址不一致。
-- 本轮**没有**做 Telegram 登录 / `initData` 校验：Mini App 里就是本站的账号密码登录，这个地址用普通浏览器也能直接打开（只是临时地址不公开、会很快失效）。
-
-前端适配点：`frontend/vite.config.ts` 已配 `server.allowedHosts: ['.trycloudflare.com']`（否则 dev server 会以 403 拦掉隧道域名）；`Telegram WebApp SDK` 已接入（`frontend/src/lib/telegram.ts`），在 Telegram 内调用 `ready()` / `expand()`，标题栏与背景跟随站内明暗主题；顶部按 `safeAreaInset + contentSafeAreaInset` 让开 Telegram 标题栏，底部 TabBar 让开 home indicator；普通浏览器打开时这些逻辑自动跳过。
-
-## 目录
-
-```
-backend/    FastAPI 服务与各体系排盘引擎（账号与记录在 .local/app.db）
-frontend/   Vue 单页应用
-scripts/    端到端冒烟（smoke.mjs / 全量 smoke-isolated.sh）与 Telegram Mini App 隧道（telegram-miniapp.sh）
-docs/       产品计划（PLAN.md）、架构契约（ARCHITECTURE.md）与界面预览图（screenshots/）
-```
-
-> 命理内容属于传统文化学习参考，不构成医疗、法律或投资建议。
+<div align="center">
+  <sub>命理内容属于传统文化学习与自我观察参考，不构成医疗、法律或投资建议。</sub>
+</div>
