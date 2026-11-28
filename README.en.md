@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/FastAPI-Python%203.12+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Systems-11%20Engines-c89d54?style=flat-square" alt="11 Systems" />
   <img src="https://img.shields.io/badge/Theme-Obsidian%20Gold%20%7C%20Gilded%20Ivory-1a1d2b?style=flat-square" alt="Dual Theme" />
-  <img src="https://img.shields.io/badge/Telegram-Mini%20App-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram Mini App" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-e6c47e?style=flat-square" alt="MIT License" /></a>
 </p>
 
 <p>
@@ -105,7 +105,7 @@ All 11 systems are computed locally by deterministic engines across Eastern meta
   <tr>
     <td width="50%" valign="top">
       <h4>🌗 Obsidian Gold / Gilded Ivory Dual Themes</h4>
-      Responsive across desktop, tablet, and mobile. Defaults to the Obsidian Gold astrolabe theme with one-click switching to Gilded Ivory light mode, bilingual ZH/EN UI, and native <b>Telegram Mini App</b> safe-area support.
+      Responsive across desktop, tablet, and mobile. Defaults to the Obsidian Gold astrolabe theme with one-click switching to Gilded Ivory light mode and bilingual ZH/EN UI.
     </td>
     <td width="50%" valign="top">
       <h4>📦 Standalone Offline Agent Skill</h4>
@@ -118,7 +118,7 @@ All 11 systems are computed locally by deterministic engines across Eastern meta
 
 ```mermaid
 flowchart LR
-  User["Browser / Telegram Mini App"] --> FE["Vue 3 + TypeScript + Tailwind<br/>Obsidian Gold / Gilded Ivory UI"]
+  User["Browser"] --> FE["Vue 3 + TypeScript + Tailwind<br/>Obsidian Gold / Gilded Ivory UI"]
   FE -->|"/api/v1/*"| BE["FastAPI Backend"]
   BE --> Engines["11 Local Divination Engines<br/>Bazi / Zi Wei / Astrology / Qi Men / Tarot..."]
   BE --> DB[("SQLite<br/>Accounts · Charts · Readings")]
@@ -226,24 +226,6 @@ sh skills/xuanji-suanming/scripts/selftest.sh
 </details>
 
 <details>
-<summary><b>📱 Telegram Mini App (Quick HTTPS Tunnel)</b></summary>
-
-Prerequisite: frontend (`5173`) and backend (`8000`) are running.
-
-```bash
-# Launches a cloudflared HTTPS tunnel and updates the Telegram bot menu button
-bash scripts/telegram-miniapp.sh
-
-# Useful options
-bash scripts/telegram-miniapp.sh --dry-run    # Start tunnel & print payload only
-bash scripts/telegram-miniapp.sh --no-menu    # Start tunnel without updating menu button
-```
-
-> Quick Tunnel URLs rotate on restart; for production, use a Cloudflare Named Tunnel or a VPS with HTTPS reverse proxy.
-
-</details>
-
-<details>
 <summary><b>📁 Directory Structure</b></summary>
 
 ```text
@@ -251,7 +233,7 @@ xuanji/
 ├── backend/                  # FastAPI service & 11 divination engines (SQLite in .local/app.db)
 ├── frontend/                 # Vue 3 + TypeScript + Tailwind SPA
 ├── skills/xuanji-suanming/   # Standalone offline 11-system CLI & HTML chart renderer skill
-├── scripts/                  # One-command dev runner, E2E smoke tests, Telegram tunnel script
+├── scripts/                  # One-command dev runner & E2E smoke test scripts
 └── docs/                     # Product plan, architecture docs & README screenshots
 ```
 

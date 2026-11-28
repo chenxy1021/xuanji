@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/FastAPI-Python%203.12+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Systems-11%20%E5%A4%A7%E4%BD%93%E7%B3%BB-c89d54?style=flat-square" alt="11 Systems" />
   <img src="https://img.shields.io/badge/Theme-%E7%8E%84%E5%A4%9C%E6%98%9F%E9%87%91%20%7C%20%E9%8E%8F%E9%87%91%E5%AE%A3%E7%BA%B8-1a1d2b?style=flat-square" alt="Dual Theme" />
-  <img src="https://img.shields.io/badge/Telegram-Mini%20App-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram Mini App" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-e6c47e?style=flat-square" alt="MIT License" /></a>
 </p>
 
 <p>
@@ -105,7 +105,7 @@
   <tr>
     <td width="50%" valign="top">
       <h4>🌗 玄夜星金 / 鎏金宣纸双主题</h4>
-      桌面 / 平板 / 手机三档响应式布局，默认玄夜星金暗黑星盘风，右上角一键切换鎏金宣纸浅色与中/英文，并深度适配 <b>Telegram Mini App</b> 安全区。
+      桌面 / 平板 / 手机三档响应式布局，默认玄夜星金暗黑星盘风，右上角一键切换鎏金宣纸浅色与中/英文，兼顾沉浸仪式感与清晰阅读体验。
     </td>
     <td width="50%" valign="top">
       <h4>📦 内置离线 Agent 技能包</h4>
@@ -118,7 +118,7 @@
 
 ```mermaid
 flowchart LR
-  User["用户浏览器 / Telegram Mini App"] --> FE["Vue 3 + TypeScript + Tailwind<br/>玄夜星金 / 鎏金宣纸双主题"]
+  User["用户浏览器"] --> FE["Vue 3 + TypeScript + Tailwind<br/>玄夜星金 / 鎏金宣纸双主题"]
   FE -->|"/api/v1/*"| BE["FastAPI 后端"]
   BE --> Engines["11 大本地排盘引擎<br/>八字 / 紫微 / 占星 / 奇门 / 六爻 / 塔罗..."]
   BE --> DB[("SQLite<br/>账号 · 记录 · 解读")]
@@ -227,24 +227,6 @@ sh skills/xuanji-suanming/scripts/selftest.sh
 </details>
 
 <details>
-<summary><b>📱 Telegram Mini App（一键临时公网隧道）</b></summary>
-
-前置条件：`5173` 前端与 `8000` 后端已启动。
-
-```bash
-# 自动通过 cloudflared 拉起 HTTPS 隧道，并同步更新 Telegram 机器人菜单按钮
-bash scripts/telegram-miniapp.sh
-
-# 常用选项
-bash scripts/telegram-miniapp.sh --dry-run    # 仅起隧道并打印配置，不调 Telegram API
-bash scripts/telegram-miniapp.sh --no-menu    # 仅起隧道，不动菜单按钮
-```
-
-> Quick Tunnel 地址每次重启都会变化，生产环境建议使用 Cloudflare Named Tunnel 或自有域名 HTTPS 反代。
-
-</details>
-
-<details>
 <summary><b>📁 项目目录结构</b></summary>
 
 ```text
@@ -252,7 +234,7 @@ xuanji/
 ├── backend/                  # FastAPI 服务与 11 大排盘引擎（SQLite 存 .local/app.db）
 ├── frontend/                 # Vue 3 + TypeScript + Tailwind 单页应用
 ├── skills/xuanji-suanming/   # 可独立运行的 11 体系本地排盘与 HTML 渲染技能包
-├── scripts/                  # 一键启动（dev.sh）、E2E 冒烟测试、Telegram 隧道脚本
+├── scripts/                  # 一键启动（dev.sh）与 E2E 冒烟测试脚本
 └── docs/                     # 产品计划、架构契约与 README 高清截图（screenshots/）
 ```
 

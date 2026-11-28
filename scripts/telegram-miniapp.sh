@@ -9,7 +9,7 @@
 #   SM_MINIAPP_TEXT        菜单按钮文案，默认「玄机算命」
 #   SM_TUNNEL_PORT         隧道指向的本机端口，默认 5173（前端 dev server）
 #   SM_MINIAPP_API_PORT    后端端口，默认 8000（只用于健康检查）
-#   SM_BOT_USERNAME        提示里展示的机器人用户名，默认 cxy_muse_bot
+#   SM_BOT_USERNAME        提示里展示的机器人用户名，默认 your_bot_username
 #   SM_TUNNEL_HOLD_SECONDS 常驻秒数后自动退出；不设则一直挂着（自动化测试用）
 #   CLOUDFLARED            cloudflared 路径，默认 /opt/homebrew/bin/cloudflared
 #
@@ -22,7 +22,7 @@ CLOUDFLARED="${CLOUDFLARED:-/opt/homebrew/bin/cloudflared}"
 PORT="${SM_TUNNEL_PORT:-5173}"
 API_PORT="${SM_MINIAPP_API_PORT:-8000}"
 TEXT="${SM_MINIAPP_TEXT:-玄机算命}"
-BOT_USERNAME="${SM_BOT_USERNAME:-cxy_muse_bot}"
+BOT_USERNAME="${SM_BOT_USERNAME:-your_bot_username}"
 CONFIG_FILE="${SM_TELEGRAM_CONFIG:-$ROOT/backend/.local/telegram.json}"
 HOLD="${SM_TUNNEL_HOLD_SECONDS:-0}"
 
